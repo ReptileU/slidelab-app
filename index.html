@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>SlideLab</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E0E12; --card:#17171C; --card2:#1E1633; --line:#26262E;
+  --text:#FFFFFF; --muted:#A1A1AA; --soft:#D4D4D8;
+  --v:#8B5CF6; --v2:#A78BFA; --v3:#C4B5FD;
+  --r:20px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,-apple-system,sans-serif}
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px}
+.logo{font-weight:800;letter-spacing:.14em;font-size:15px;color:var(--soft)}
+.logo b{color:var(--v2)}
+.lang{display:flex;background:var(--card);border-radius:999px;padding:3px}
+.lang button{border:0;background:none;color:var(--muted);font:600 13px Manrope,system-ui,sans-serif;padding:6px 12px;border-radius:999px}
+.lang button.on{background:var(--v);color:#fff}
+
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
+nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 14px Manrope,system-ui,sans-serif;padding:11px 6px;border-radius:14px}
+nav.tabs button.on{background:var(--card2);border-color:var(--v);color:#fff}
+
+section{display:none} section.on{display:block;animation:in .25s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h1{font-size:34px;line-height:1.05;margin:10px 0 10px;font-weight:800;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--v2)}
+h2{font-size:20px;margin:28px 0 12px;font-weight:800}
+p.lead{color:var(--muted);font-size:15px;line-height:1.5;margin:0 0 16px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+.badge{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;color:var(--soft)}
+
+.price{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid transparent;border-radius:var(--r);padding:18px;margin-bottom:10px;cursor:pointer}
+.price.pop{background:var(--card2);border-color:var(--v)}
+.price .n{font-weight:800;font-size:18px}
+.price .s{color:var(--muted);font-size:13px;margin-top:4px}
+.price .p{font-weight:800;font-size:22px;color:var(--v3);white-space:nowrap}
+.tag{display:inline-block;background:var(--v);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.extras{color:var(--soft);font-size:14px;line-height:1.8;background:var(--card);border-radius:var(--r);padding:14px 18px}
+
+.gallery{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 6px;scrollbar-width:none}
+.gallery::-webkit-scrollbar{display:none}
+.work{flex:0 0 86%;scroll-snap-align:center;background:var(--card);border-radius:var(--r);overflow:hidden}
+.work img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#111}
+.work div{padding:12px 14px;font-weight:700;font-size:14px}
+.work small{display:block;color:var(--muted);font-weight:500;margin-top:2px}
+
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feat div{background:var(--card);border-radius:var(--r);padding:14px}
+.feat i{font-style:normal;font-size:22px}
+.feat b{display:block;margin:6px 0 4px;font-size:14px}
+.feat span{color:var(--muted);font-size:12.5px;line-height:1.4}
+.feat div.hl{background:var(--card2);outline:1px solid var(--v)}
+
+.cta{display:block;width:100%;border:0;background:var(--v);color:#fff;font:800 16px Manrope,system-ui,sans-serif;padding:16px;border-radius:16px;margin:22px 0 8px}
+
+/* форма */
+.q{margin:22px 0 10px;font-weight:800;font-size:16px}
+.q small{color:var(--muted);font-weight:500;font-size:13px;margin-left:4px}
+textarea,input{width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;color:#fff;font:500 15px Manrope,system-ui,sans-serif;padding:14px;outline:none;resize:none}
+textarea:focus,input:focus{border-color:var(--v)}
+textarea::placeholder,input::placeholder{color:#6B6B75}
+.chips{display:grid;gap:8px}
+.c3{grid-template-columns:repeat(3,1fr)} .c1{grid-template-columns:1fr}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--soft);border-radius:14px;padding:12px 10px;font:600 14px Manrope,system-ui,sans-serif;text-align:center}
+.chip small{display:block;color:var(--muted);font-weight:500;font-size:12px;margin-top:3px}
+.c1 .chip{text-align:left;padding:14px}
+.chip.on{background:var(--card2);border-color:var(--v);color:#fff}
+.chip.on small{color:var(--v3)}
+.chip:disabled{opacity:.35}
+.tog{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:8px;font-weight:600;font-size:14px}
+.tog.on{border-color:var(--v);background:var(--card2)}
+.sw{width:44px;height:26px;border-radius:999px;background:#33333D;position:relative;flex:0 0 auto;transition:.2s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+.tog.on .sw{background:var(--v)} .tog.on .sw:after{left:21px}
+.hint{color:var(--muted);font-size:12.5px;margin-top:8px;line-height:1.4}
+.total{display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--v);border-radius:var(--r);padding:16px 18px;margin-top:22px}
+.total span{color:var(--soft);font-size:14px}
+.total b{font-size:24px;color:var(--v3)}
+.note{color:var(--muted);font-size:12.5px;text-align:center;margin:10px 0}
+#fallbackBtn{display:none}
+
+details{background:var(--card);border-radius:16px;margin-bottom:8px;padding:0 16px}
+summary{list-style:none;padding:15px 0;font-weight:700;font-size:15px;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";color:var(--v2);font-size:20px;line-height:1}
+details[open] summary:after{content:"–"}
+details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
+.contact{color:var(--v2);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">SLIDE<b>LAB</b></div>
+    <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button></div>
+  </header>
+  <nav class="tabs">
+    <button data-tab="home" data-t="tab_home"></button>
+    <button data-tab="order" data-t="tab_order"></button>
+    <button data-tab="faq" data-t="tab_faq"></button>
+  </nav>
+
+  <!-- ГЛАВНАЯ -->
+  <section id="home">
+    <h1 data-t="hero" data-html></h1>
+    <p class="lead" data-t="lead"></p>
+    <div class="badges">
+      <span class="badge" data-t="b1"></span><span class="badge" data-t="b2"></span><span class="badge" data-t="b3"></span>
+    </div>
+
+    <h2 data-t="h_price"></h2>
+    <div id="prices"></div>
+    <div class="extras" data-t="extras" data-html></div>
+
+    <h2 data-t="h_works"></h2>
+    <div class="gallery" id="gallery"></div>
+
+    <h2 data-t="h_why"></h2>
+    <div class="feat" id="feat"></div>
+
+    <button class="cta" data-go="order" data-t="cta"></button>
+  </section>
+
+  <!-- ЗАКАЗ -->
+  <section id="order">
+    <div class="q" data-t="q_topic"></div>
+    <textarea id="topic" rows="2" maxlength="300"></textarea>
+
+    <div class="q" data-t="q_slides"></div>
+    <div class="chips c3" id="slides"></div>
+
+    <div class="q" data-t="q_deadline"></div>
+    <div class="chips c1" id="deadline"></div>
+    <div class="hint" id="urgentHint" data-t="urgent_hint" style="display:none"></div>
+
+    <div class="q" data-t="q_plang"></div>
+    <div class="chips c3" id="plang"></div>
+
+    <div class="q" data-t="q_design"></div>
+    <div class="chips c1" id="design"></div>
+
+    <div class="q" data-t="q_extras"></div>
+    <div class="tog" id="t_text"><span data-t="x_text"></span><span class="sw"></span></div>
+    <div class="tog" id="t_notes"><span data-t="x_notes"></span><span class="sw"></span></div>
+
+    <div class="q"><span data-t="q_contact"></span> <small data-t="optional"></small></div>
+    <input id="contact" maxlength="60" inputmode="tel">
+
+    <div class="q"><span data-t="q_comment"></span> <small data-t="optional2"></small></div>
+    <textarea id="comment" rows="3" maxlength="400"></textarea>
+    <div class="hint" data-t="files_hint"></div>
+
+    <div class="total"><span data-t="total"></span><b id="sum">—</b></div>
+    <p class="note" data-t="note"></p>
+    <button class="cta" id="fallbackBtn"></button>
+  </section>
+
+  <!-- ВОПРОСЫ -->
+  <section id="faq"><div id="faqList"></div><p class="note"><span data-t="faq_more"></span> <a class="contact" href="https://t.me/slidelab_uz">@slidelab_uz</a></p></section>
+</div>
+
+<script>
+const IMG = "https://d2ol7oe51mr4n9.cloudfront.net/user_3Kg776n2YVTxhk4uIcG7vcKL8Pt/";
+const PRICE = {s10:30000, s20:50000, s30:80000};
+const EXTRA = 10000, URGENT = 0.5;
+
+const T = {
+ru:{
+ tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы",
+ hero:"Презентации, которые <em>хочется показывать</em>",
+ lead:"Свой стиль под каждую тему, проверенные факты и живой PPTX, где меняется каждый текст и график.",
+ b1:"✏️ Всё редактируется", b2:"🎁 Обложка бесплатно", b3:"🇷🇺 🇺🇿 🇬🇧",
+ h_price:"Прайс", h_works:"Работы", h_why:"Почему SlideLab",
+ pk:{s10:["Мини","до 10 слайдов · ⏱ 24 часа"], s20:["Стандарт","11–20 слайдов · ⏱ 1–2 дня"], s30:["Большой","21–30 слайдов · ⏱ 2–3 дня"]},
+ pop:"Популярный",
+ extras:"⚡ Срочно за 6–8 часов (до 20 слайдов): +50%<br>✍️ Текст под ключ: +10 000<br>📝 Конспект для выступления: +10 000<br>✏️ 2 правки бесплатно",
+ works:[["Неон-журнал","Экономика Узбекистана 2026"],["Винтажный скрапбук","История, 1929–1939"],["Индустриальный","Экономика и милитаризация"]],
+ feat:[["✏️","Всё редактируется","Каждый текст, график и таблица — не картинки"],["👀","Превью на старте","Обложка и стиль до основной работы"],["📚","Проверенные факты","Цифры с источниками"],["🔒","Конфиденциально","Портфолио — только с разрешения"]],
+ cta:"📝 Оформить заказ",
+ q_topic:"Тема презентации", ph_topic:"Например: Экономика Японии после 1990 года",
+ q_slides:"Сколько слайдов?", sl:{s10:"до 10",s20:"11–20",s30:"21–30"},
+ q_deadline:"Срок", dl:{d1:["⚡ Срочно — 6–8 часов","+50% к цене"],d2:["📅 Обычный срок","по прайсу, без доплат"],d3:["🐢 Не спешу","3+ дня"]},
+ urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
+ q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
+ q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","пришлёте файл в чат после заявки"]},
+ q_extras:"Дополнительно", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
+ q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
+ q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
+ files_hint:"📎 Файлы (текст, шаблон, требования) пришлёте в чат с ботом сразу после заявки.",
+ total:"Примерная цена", note:"Точную цену подтвердим в чате до начала работы.",
+ send:"Отправить заявку", fill:"Заполните тему, объём и срок", sum:" сум",
+ no_tg:"Откройте приложение через бота @slidelab_order_bot",
+ not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
+ faq_more:"Новости и работы — в канале",
+ faq:[["Как быстро?","До 10 слайдов — 24 часа, 11–20 — 1–2 дня, 21–30 — 2–3 дня. Срочно (до 20 слайдов) — 6–8 часов, +50%."],
+      ["Как оплатить?","Click / Payme. 50% предоплата, остальное — когда всё понравится."],
+      ["А если не понравится?","Сначала делаем бесплатную обложку. Потом 2 правки бесплатно. Не подошло после правок — вернём предоплату."],
+      ["В каком формате?","PPTX (PowerPoint, Google Slides) и PDF. Каждый текст и график можно изменить."],
+      ["Есть свой шаблон?","Пришлите — оформим в нём. Нет — придумаем дизайн под вашу тему."],
+      ["Больше 30 слайдов?","Напишите нам — обсудим объём и срок индивидуально."],
+      ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
+},
+uz:{
+ tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar",
+ hero:"Ko‘rsatgingiz keladigan <em>taqdimotlar</em>",
+ lead:"Har bir mavzuga o‘z uslubi, tekshirilgan faktlar va har bir matn hamda grafik o‘zgaradigan jonli PPTX.",
+ b1:"✏️ Hammasi tahrirlanadi", b2:"🎁 Muqova bepul", b3:"🇷🇺 🇺🇿 🇬🇧",
+ h_price:"Narxlar", h_works:"Ishlar", h_why:"Nega SlideLab",
+ pk:{s10:["Mini","10 slaydgacha · ⏱ 24 soat"], s20:["Standart","11–20 slayd · ⏱ 1–2 kun"], s30:["Katta","21–30 slayd · ⏱ 2–3 kun"]},
+ pop:"Ommabop",
+ extras:"⚡ Shoshilinch — 6–8 soatda (20 slaydgacha): +50%<br>✍️ Matnni yozib beramiz: +10 000<br>📝 Chiqish uchun konspekt: +10 000<br>✏️ 2 marta tuzatish bepul",
+ works:[["Neon-jurnal","O‘zbekiston iqtisodiyoti 2026"],["Vintaj skrapbuk","Tarix, 1929–1939"],["Industrial","Iqtisodiyot va militarizatsiya"]],
+ feat:[["✏️","Hammasi tahrirlanadi","Har bir matn, grafik va jadval — rasm emas"],["👀","Boshida prevyu","Muqova va uslub asosiy ishdan oldin"],["📚","Tekshirilgan faktlar","Manbali raqamlar"],["🔒","Maxfiy","Portfolioga — faqat ruxsat bilan"]],
+ cta:"📝 Buyurtma berish",
+ q_topic:"Taqdimot mavzusi", ph_topic:"Masalan: 1990-yildan keyingi Yaponiya iqtisodiyoti",
+ q_slides:"Nechta slayd?", sl:{s10:"10 gacha",s20:"11–20",s30:"21–30"},
+ q_deadline:"Muddat", dl:{d1:["⚡ Shoshilinch — 6–8 soat","narxga +50%"],d2:["📅 Odatiy muddat","narx bo‘yicha, qo‘shimchasiz"],d3:["🐢 Shoshilmayman","3+ kun"]},
+ urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
+ q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
+ q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","arizadan keyin chatga yuborasiz"]},
+ q_extras:"Qo‘shimcha", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
+ q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
+ q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
+ files_hint:"📎 Fayllarni (matn, shablon, talablar) arizadan so‘ng bot chatiga yuborasiz.",
+ total:"Taxminiy narx", note:"Aniq narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
+ send:"Arizani yuborish", fill:"Mavzu, hajm va muddatni to‘ldiring", sum:" so‘m",
+ no_tg:"Ilovani @slidelab_order_bot orqali oching",
+ not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
+ faq_more:"Yangiliklar va ishlar — kanalda",
+ faq:[["Qancha vaqtda?","10 slaydgacha — 24 soat, 11–20 — 1–2 kun, 21–30 — 2–3 kun. Shoshilinch (20 slaydgacha) — 6–8 soat, +50%."],
+      ["Qanday to‘lanadi?","Click / Payme. 50% oldindan, qolgani — hammasi yoqqach."],
+      ["Yoqmasa-chi?","Avval bepul muqova. Keyin 2 marta tuzatish bepul. Tuzatishdan keyin ham yoqmasa — oldindan to‘lovni qaytaramiz."],
+      ["Qaysi formatda?","PPTX (PowerPoint, Google Slides) va PDF. Har bir matn va grafikni o‘zgartirish mumkin."],
+      ["O‘z shabloningiz bormi?","Yuboring — shunda bezaymiz. Yo‘q bo‘lsa — mavzuga mos dizayn o‘ylab topamiz."],
+      ["30 slayddan ko‘p?","Bizga yozing — hajm va muddatni alohida kelishamiz."],
+      ["Ishimni boshqalarga ko‘rsatasizmi?","Yo‘q, faqat ruxsatingiz bilan."]]
+}};
+const WORKS = ["d797f293-74e4-4247-b132-38a2005c472b","3c279dba-3468-4157-b550-8faccea7e58c","3ff9c549-44f5-4f93-ade8-bee16281befd"];
+
+const tg = window.Telegram && window.Telegram.WebApp;
+const inTg = !!(tg && tg.initData !== undefined && tg.platform && tg.platform !== "unknown");
+const qs = new URLSearchParams(location.search);
+let L = qs.get("lang") || ((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code === "uz") ? "uz" : "ru");
+if (!T[L]) L = "ru";
+const st = {slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
+const haptic = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} };
+
+function chips(el, dict, key, sub){
+  el.innerHTML = "";
+  for (const [k,v] of Object.entries(dict)){
+    const b = document.createElement("button");
+    b.className = "chip" + (st[key]===k ? " on":"");
+    b.innerHTML = Array.isArray(v) ? `${v[0]}<small>${v[1]}</small>` : v;
+    b.onclick = () => { st[key]=k; haptic(); renderForm(); };
+    el.appendChild(b);
+  }
+}
+
+function price(){
+  if (!st.slides) return null;
+  let p = PRICE[st.slides];
+  if (st.deadline==="d1") p = Math.round(p*(1+URGENT));
+  if (st.text) p += EXTRA;
+  if (st.notes) p += EXTRA;
+  return p;
+}
+
+function valid(){ return $("#topic").value.trim().length >= 3 && st.slides && st.deadline; }
+
+function renderForm(){
+  const t = T[L];
+  if (st.slides==="s30" && st.deadline==="d1") st.deadline="d2";
+  chips($("#slides"), t.sl, "slides");
+  chips($("#deadline"), t.dl, "deadline");
+  const urg = $("#deadline").children[0];
+  urg.disabled = st.slides==="s30";
+  $("#urgentHint").style.display = st.slides==="s30" ? "block":"none";
+  chips($("#plang"), t.pl, "plang");
+  chips($("#design"), t.ds, "design");
+  $("#t_text").classList.toggle("on", st.text);
+  $("#t_notes").classList.toggle("on", st.notes);
+  const p = price();
+  $("#sum").textContent = p ? fmt(p)+t.sum : "—";
+  updateButton();
+}
+
+function updateButton(){
+  const t = T[L], p = price(), ok = valid();
+  const label = ok ? `${t.send} · ${fmt(p)}${t.sum}` : t.fill;
+  const onOrder = $("#order").classList.contains("on");
+  if (inTg){
+    const mb = tg.MainButton;
+    mb.setText(label);
+    if (onOrder){ mb.show(); } else { mb.hide(); }
+    if (ok){ mb.enable(); mb.color = "#8B5CF6"; mb.textColor = "#FFFFFF"; }
+    else { mb.disable(); mb.color = "#33333D"; mb.textColor = "#A1A1AA"; }
+  } else {
+    const b = $("#fallbackBtn"); b.style.display="block"; b.textContent = label; b.disabled = !ok; b.style.opacity = ok?1:.5;
+  }
+}
+
+function submit(){
+  const t = T[L];
+  if (!valid()) { tg ? tg.showAlert(t.fill) : alert(t.fill); return; }
+  const data = {v:1, lang:L, topic:$("#topic").value.trim().slice(0,300), slides:st.slides, deadline:st.deadline,
+    plang:st.plang, design:st.design, text:st.text, notes:st.notes,
+    contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400)};
+  if (!inTg){ alert(t.no_tg); return; }
+  // sendData работает, только если приложение открыто кнопкой клавиатуры в чате
+  if (tg.initDataUnsafe && tg.initDataUnsafe.query_id){ tg.showAlert(t.not_kb); return; }
+  try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
+  tg.sendData(JSON.stringify(data));
+}
+
+function render(){
+  const t = T[L];
+  document.documentElement.lang = L;
+  document.querySelectorAll("[data-t]").forEach(el => {
+    const v = t[el.dataset.t]; if (v===undefined) return;
+    if (el.hasAttribute("data-html")) el.innerHTML = v; else el.textContent = v;
+  });
+  document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l===L));
+  $("#topic").placeholder = t.ph_topic; $("#contact").placeholder = t.ph_contact; $("#comment").placeholder = t.ph_comment;
+  $("#prices").innerHTML = Object.entries(t.pk).map(([k,[n,s]]) =>
+    `<div class="price${k==='s20'?' pop':''}" data-k="${k}"><div><div class="n">${n}${k==='s20'?`<span class="tag">${t.pop}</span>`:''}</div><div class="s">${s}</div></div><div class="p">${fmt(PRICE[k])}</div></div>`).join("");
+  document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
+  $("#gallery").innerHTML = t.works.map(([a,b],i) =>
+    `<div class="work"><img loading="lazy" src="${IMG+WORKS[i]}.png" alt="${a}" onerror="this.closest('.work').style.display='none'"><div>${a}<small>${b}</small></div></div>`).join("");
+  $("#feat").innerHTML = t.feat.map(([i,b,s],n) => `<div class="${n===0?'hl':''}"><i>${i}</i><b>${b}</b><span>${s}</span></div>`).join("");
+  $("#faqList").innerHTML = t.faq.map(([q,a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("");
+  renderForm();
+}
+
+function go(tab){
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id===tab));
+  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
+  window.scrollTo({top:0});
+  if (inTg){ tab==="home" ? tg.BackButton.hide() : tg.BackButton.show(); }
+  renderForm();
+}
+
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { haptic(); go(b.dataset.tab); });
+document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { L = b.dataset.l; haptic(); render(); });
+$("#t_text").onclick = () => { st.text=!st.text; haptic(); renderForm(); };
+$("#t_notes").onclick = () => { st.notes=!st.notes; haptic(); renderForm(); };
+$("#topic").oninput = updateButton;
+$("#fallbackBtn").onclick = submit;
+
+if (inTg){
+  tg.ready(); tg.expand();
+  try { tg.setHeaderColor("#0E0E12"); tg.setBackgroundColor("#0E0E12"); } catch(e){}
+  tg.MainButton.onClick(submit);
+  tg.BackButton.onClick(() => go("home"));
+}
+render();
+go(qs.get("tab")==="order" ? "order" : "home");
+</script>
+</body>
+</html>
