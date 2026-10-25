@@ -18,7 +18,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{overscroll-behavior:none;margin:0;background:var(--bg) radial-gradient(120% 60% at 50% -10%,rgba(43,179,177,.14),transparent 60%) no-repeat;color:var(--text);font-family:Manrope,system-ui,-apple-system,sans-serif}
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+:root{--top:calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px))}
+.wrap{max-width:560px;margin:0 auto;padding:var(--top) 16px 0}
 header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px}
 .logo{font-weight:800;letter-spacing:.14em;font-size:15px;color:var(--soft)}
 .logo b{color:var(--v2)}
@@ -26,7 +27,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .lang button{border:0;background:none;color:var(--muted);font:600 13px Manrope,system-ui,sans-serif;padding:6px 12px;border-radius:999px}
 .lang button.on{background:var(--v);color:var(--on)}
 
-nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
+nav.tabs{position:sticky;top:var(--top);z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
 nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 14px Manrope,system-ui,sans-serif;padding:11px 6px;border-radius:14px}
 nav.tabs button.on{background:var(--card2);border-color:var(--v);color:#fff}
 
@@ -476,6 +477,8 @@ if (inTg){
   tg.ready(); tg.expand();
   // не закрывать приложение свайпом вниз — только крестиком (Telegram 7.7+)
   try { tg.disableVerticalSwipes && tg.disableVerticalSwipes(); } catch(e){}
+  // во весь экран, как у Student App (Telegram 8.0+); на телефонах — да, на компьютере — нет
+  try { if (tg.isVersionAtLeast && tg.isVersionAtLeast("8.0") && ["ios","android"].includes(tg.platform)) tg.requestFullscreen(); } catch(e){}
   try { tg.isVersionAtLeast && tg.isVersionAtLeast("7.7") || tg.enableClosingConfirmation && tg.enableClosingConfirmation(); } catch(e){}
   try { tg.setHeaderColor("#0F1B2D"); tg.setBackgroundColor("#0F1B2D"); tg.setBottomBarColor && tg.setBottomBarColor("#0F1B2D"); } catch(e){}
   tg.MainButton.onClick(submit);
