@@ -116,6 +116,9 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .ask{background:var(--card2);border:1px solid var(--v);border-radius:var(--r);padding:16px;margin-top:14px}
 .ask p{margin:0 0 10px;color:var(--soft);font-size:14px}
 .ask .cta{margin:10px 0 0}
+.need{outline:2px solid #E2553F;outline-offset:4px;border-radius:16px;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.req{color:#E2553F;margin-left:4px}
 .ready{display:flex;gap:10px;align-items:flex-start;background:rgba(43,179,177,.12);border:1px solid var(--v);border-radius:16px;padding:14px 16px;margin:20px 0 14px;font-size:14px;line-height:1.45;color:var(--soft)}
 .ready>b{font-size:18px}
 .ready span b{color:#fff}
@@ -178,13 +181,13 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
   <!-- ЗАКАЗ -->
   <section id="order">
-    <div class="q" data-t="q_topic"></div>
+    <div class="q"><span data-t="q_topic"></span><span class="req">*</span></div>
     <textarea id="topic" rows="2" maxlength="300"></textarea>
 
-    <div class="q" data-t="q_slides"></div>
+    <div class="q"><span data-t="q_slides"></span><span class="req">*</span></div>
     <div class="chips c3" id="slides"></div>
 
-    <div class="q" data-t="q_deadline"></div>
+    <div class="q"><span data-t="q_deadline"></span><span class="req">*</span></div>
     <div class="chips c1" id="deadline"></div>
     <div class="hint" id="urgentHint" data-t="urgent_hint" style="display:none"></div>
 
@@ -256,7 +259,7 @@ ru:{
  q_slides:"Сколько слайдов?", sl:{s10:"до 10",s20:"11–20",s30:"21–30"},
  q_deadline:"Срок", dl:{d1:["⚡ Срочно","+50% к цене"],d2:["📅 Обычно","срок обсудим в чате, без доплат"],d3:["🐢 Не спешу","делаем спокойно, без доплат"]},
  urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
- ready:"<b>Этого достаточно — можно отправлять заявку.</b> Всё, что ниже, — по желанию: язык, дизайн, доп. услуги, источники.", opt_title:"⚙️ Дополнительно", opt_tag:"НЕОБЯЗАТЕЛЬНО", q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
+ ready:"<b>Заполните три поля со звёздочкой * — и можно отправлять.</b> Всё, что ниже, — по желанию: язык, дизайн, доп. услуги, источники.", opt_title:"⚙️ Дополнительно", opt_tag:"НЕОБЯЗАТЕЛЬНО", q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
  q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","ссылка (Google Slides, Canva, Figma…) или файл"]},
  q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
@@ -266,7 +269,7 @@ ru:{
  q_sources:"📚 Откуда брать информацию", src_hint:"Есть лекция, учебник или сайт, по которым нужна презентация? Дайте их — факты и цифры возьмём именно оттуда. Нет — найдём проверенные источники сами.", ph_sources:"Например: ссылка на лекцию, статью, сайт или видео, название учебника", x_srcfiles:"📎 Есть файлы (лекция, методичка) — перешлю в чат",
  pop_title:"Отправляем заявку", pop_ok:"Отправить", pop_msg:"Приложение закроется и откроется чат с ботом.", pop_links:" Ваши источники уйдут вместе с заявкой.", pop_files:" Файлы и ссылки просто перешлите боту из любого чата — сохранять на телефон не нужно.",
  total:"Примерная стоимость", free:"<b>Сейчас вы ничего не платите.</b> Это только ориентир цены. Мы напишем вам, уточним детали и пришлём бесплатную обложку — оплата только после согласования.", note:"Итоговую цену подтвердим в чате до начала работы.",
- send:"Отправить заявку — без оплаты", send_chat:"Продолжить в чате — без оплаты", fill:"Заполните тему, объём и срок", sum:" сум",
+ send:"Отправить заявку — без оплаты", send_chat:"Продолжить в чате — без оплаты", fill:"Заполните тему, объём и срок", left:"Выберите: ", miss_topic:"тема", miss_slides:"слайды", miss_deadline:"срок", sum:" сум",
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
@@ -299,7 +302,7 @@ uz:{
  q_slides:"Nechta slayd?", sl:{s10:"10 gacha",s20:"11–20",s30:"21–30"},
  q_deadline:"Muddat", dl:{d1:["⚡ Shoshilinch","narxga +50%"],d2:["📅 Odatiy","muddatni chatda kelishamiz, qo‘shimchasiz"],d3:["🐢 Shoshilmayman","xotirjam, qo‘shimchasiz"]},
  urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
- ready:"<b>Shuning o‘zi yetarli — arizani yuborish mumkin.</b> Pastdagilar — ixtiyoriy: til, dizayn, qo‘shimcha xizmatlar, manbalar.", opt_title:"⚙️ Qo‘shimcha", opt_tag:"IXTIYORIY", q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
+ ready:"<b>Yulduzchali * uchta maydonni to‘ldiring — va yuborish mumkin.</b> Pastdagilar — ixtiyoriy: til, dizayn, qo‘shimcha xizmatlar, manbalar.", opt_title:"⚙️ Qo‘shimcha", opt_tag:"IXTIYORIY", q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
  q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","havola (Google Slides, Canva, Figma…) yoki fayl"]},
  q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
@@ -309,7 +312,7 @@ uz:{
  q_sources:"📚 Ma’lumot qayerdan olinsin", src_hint:"Taqdimot qaysi ma’ruza, darslik yoki sayt asosida bo‘lishi kerak? Bering — fakt va raqamlarni aynan shulardan olamiz. Yo‘q bo‘lsa — ishonchli manbalarni o‘zimiz topamiz.", ph_sources:"Masalan: ma’ruza, maqola, sayt yoki video havolasi, darslik nomi", x_srcfiles:"📎 Fayllar bor (ma’ruza, qo‘llanma) — chatga forward qilaman",
  pop_title:"Arizani yuboramiz", pop_ok:"Yuborish", pop_msg:"Ilova yopiladi va bot chati ochiladi.", pop_links:" Manbalaringiz ariza bilan birga ketadi.", pop_files:" Fayl va havolalarni istalgan chatdan botga forward qiling — telefonga saqlash shart emas.",
  total:"Taxminiy narx", free:"<b>Hozir hech narsa to‘lamaysiz.</b> Bu faqat taxminiy narx. Biz sizga yozamiz, tafsilotlarni aniqlaymiz va bepul muqova yuboramiz — to‘lov faqat kelishuvdan keyin.", note:"Yakuniy narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
- send:"Arizani yuborish — to‘lovsiz", send_chat:"Chatda davom etish — to‘lovsiz", fill:"Mavzu, hajm va muddatni to‘ldiring", sum:" so‘m",
+ send:"Arizani yuborish — to‘lovsiz", send_chat:"Chatda davom etish — to‘lovsiz", fill:"Mavzu, hajm va muddatni to‘ldiring", left:"Tanlang: ", miss_topic:"mavzu", miss_slides:"slaydlar", miss_deadline:"muddat", sum:" so‘m",
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
@@ -341,7 +344,7 @@ let ORDERS = [];
 try { const o = qs.get("o"); if (o){ const b = atob(o.replace(/-/g,"+").replace(/_/g,"/")); ORDERS = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); } } catch(e){ ORDERS = []; }
 const STEPS = ["new","cover","work","done"];
 const stepOf = x => x === "edit" ? 2 : STEPS.indexOf(x);
-const st = {srcfiles:false, slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
+const st = {srcfiles:false, slides:null, deadline:null, plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
 const haptic = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} };
@@ -366,11 +369,29 @@ function price(){
   return p;
 }
 
-function valid(){ return $("#topic").value.trim().length >= 3 && st.slides && st.deadline; }
+function missing(){
+  const m = [];
+  if ($("#topic").value.trim().length < 3) m.push("topic");
+  if (!st.slides) m.push("slides");
+  if (!st.deadline) m.push("deadline");
+  return m;
+}
+function valid(){ return missing().length === 0; }
+function showMissing(){
+  const t = T[L], m = missing();
+  document.querySelectorAll(".need").forEach(e => e.classList.remove("need"));
+  const map = {topic:"#topic", slides:"#slides", deadline:"#deadline"};
+  m.forEach(k => $(map[k]).classList.add("need"));
+  if (m.length){ $(map[m[0]]).scrollIntoView({behavior:"smooth", block:"center"}); if (m[0]==="topic") $("#topic").focus(); }
+  try { tg && tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("error"); } catch(e){}
+}
 
 function renderForm(){
   const t = T[L];
-  if (st.slides==="s30" && st.deadline==="d1") st.deadline="d2";
+  if (st.slides==="s30" && st.deadline==="d1") st.deadline=null;
+  if (st.slides) $("#slides").classList.remove("need");
+  if (st.deadline) $("#deadline").classList.remove("need");
+  if ($("#topic").value.trim().length >= 3) $("#topic").classList.remove("need");
   chips($("#slides"), t.sl, "slides");
   chips($("#deadline"), t.dl, "deadline");
   const urg = $("#deadline").children[0];
@@ -389,16 +410,17 @@ function renderForm(){
 
 function updateButton(){
   const t = T[L], p = price(), ok = valid();
-  const label = ok ? (linkMode ? t.send_chat : t.send) : t.fill;
+  const left = missing().map(k => t["miss_"+k]);
+  const label = ok ? (linkMode ? t.send_chat : t.send) : t.left + left.join(", ");
   const onOrder = $("#order").classList.contains("on");
   if (inTg){
     const mb = tg.MainButton;
     mb.setText(label);
     if (onOrder){ mb.show(); } else { mb.hide(); }
     if (ok){ mb.enable(); mb.color = "#2BB3B1"; mb.textColor = "#0F1B2D"; }
-    else { mb.disable(); mb.color = "#233650"; mb.textColor = "#9AA8BC"; }
+    else { mb.enable(); mb.color = "#233650"; mb.textColor = "#9AA8BC"; }
   } else {
-    const b = $("#fallbackBtn"); b.style.display="block"; b.textContent = label; b.disabled = !ok; b.style.opacity = ok?1:.5;
+    const b = $("#fallbackBtn"); b.style.display="block"; b.textContent = label; b.disabled = false; b.style.opacity = ok?1:.55;
   }
 }
 
@@ -414,7 +436,7 @@ function startCode(d){
 
 function submit(){
   const t = T[L];
-  if (!valid()) { tg ? tg.showAlert(t.fill) : alert(t.fill); return; }
+  if (!valid()) { showMissing(); return; }
   const data = {v:1, lang:L, topic:$("#topic").value.trim().slice(0,300), slides:st.slides, deadline:st.deadline,
     plang:st.plang, design:st.design, text:st.text, notes:st.notes,
     contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400),
