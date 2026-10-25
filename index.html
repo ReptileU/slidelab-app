@@ -28,7 +28,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .lang button.on{background:var(--v);color:var(--on)}
 
 nav.tabs{position:sticky;top:var(--top);z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
-nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 14px Manrope,system-ui,sans-serif;padding:11px 6px;border-radius:14px}
+nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 13px Manrope,system-ui,sans-serif;padding:11px 3px;border-radius:14px;white-space:nowrap}
 nav.tabs button.on{background:var(--card2);border-color:var(--v);color:#fff}
 
 section{display:none} section.on{display:block;animation:in .25s ease}
@@ -102,6 +102,15 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 #fallbackBtn{display:none}
 
 .orders{margin:6px 0 4px}
+.teaser{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--v);border-radius:var(--r);padding:14px 16px;margin:4px 0 14px;font-size:14px;color:var(--soft);cursor:pointer;line-height:1.4}
+.teaser b{color:#fff}.teaser i{font-style:normal;margin-left:auto;color:var(--v2);font-size:22px}
+.mehead{display:flex;align-items:center;gap:14px;margin:8px 0 14px}
+.mehead .av{width:60px;height:60px;border-radius:50%;background:var(--card2) center/cover;border:2px solid var(--v);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:var(--v2);flex:0 0 auto}
+.mehead .nm{font-weight:800;font-size:20px}.mehead .un{color:var(--muted);font-size:13px;margin-top:2px}
+.empty{background:var(--card);border:1px dashed #2C405C;border-radius:var(--r);padding:16px;color:var(--muted);font-size:14px;text-align:center}
+.pres{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px}
+.pres .ic{font-size:22px}.pres .tx{flex:1;min-width:0;font-weight:700;font-size:14px;overflow-wrap:anywhere}.pres .tx small{display:block;color:var(--muted);font-weight:500;font-size:12px;margin-top:2px}
+.pres button{border:1px solid var(--v);background:transparent;color:var(--v2);font:700 13px Manrope,system-ui,sans-serif;padding:8px 12px;border-radius:10px;white-space:nowrap}
 .plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
 .plan.vip{background:var(--card2);border-color:var(--v3);box-shadow:inset 3px 0 0 var(--v3)}
 .plan .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -166,12 +175,12 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <button data-tab="home" data-t="tab_home"></button>
     <button data-tab="order" data-t="tab_order"></button>
     <button data-tab="faq" data-t="tab_faq"></button>
+    <button data-tab="me" data-t="tab_me"></button>
   </nav>
 
   <!-- ГЛАВНАЯ -->
   <section id="home">
-    <div id="mysub"></div>
-    <div class="orders" id="orders"></div>
+    <div class="teaser" data-go="me" id="teaser"></div>
     <div class="band"></div>
     <h1 data-t="hero" data-html></h1>
     <p class="lead" data-t="lead"></p>
@@ -183,9 +192,6 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div id="prices"></div>
     <div class="extras" data-t="extras" data-html></div>
 
-    <h2 data-t="h_subs"></h2>
-    <p class="lead" data-t="subs_lead" style="margin-top:-4px"></p>
-    <div id="subs"></div>
 
     <h2 data-t="h_works"></h2>
     <div class="gallery" id="gallery"></div>
@@ -248,6 +254,18 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   </section>
 
   <!-- ВОПРОСЫ -->
+  <section id="me">
+    <div class="mehead" id="mehead"></div>
+    <div id="mysub"></div>
+    <h2 data-t="h_hist"></h2>
+    <div class="orders" id="orders"></div>
+    <h2 data-t="h_pres"></h2>
+    <div id="pres"></div>
+    <h2 id="subs_h"></h2>
+    <p class="lead" data-t="subs_lead" style="margin-top:-4px"></p>
+    <div id="subs"></div>
+  </section>
+
   <section id="faq">
     <div class="search"><b>🔎</b><input id="qsearch" maxlength="300"></div>
     <div id="faqList"></div>
@@ -261,7 +279,7 @@ const EXTRA = 10000, URGENT = 0.5;
 
 const T = {
 ru:{
- tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы",
+ tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы", tab_me:"Профиль",
  hero:"Презентации, которые <em>хочется показывать</em>",
  lead:"Свой стиль под каждую тему, проверенные факты и живой PPTX, где меняется каждый текст и график.",
  b1:"✏️ Всё редактируется", b2:"🎁 Обложка бесплатно", b3:"🇷🇺 🇺🇿 🇬🇧",
@@ -290,7 +308,7 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
- h_subs:"⭐ Подписки", subs_lead:"Для тех, кому презентации нужны регулярно. Лимит — чтобы каждую мы делали качественно.",
+ h_subs:"⭐ Подписки", h_subs2:"⭐ Другие тарифы", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>подписки, история заказов и ваши презентации</span>", subs_lead:"Для тех, кому презентации нужны регулярно. Лимит — чтобы каждую мы делали качественно.",
  plans:{week:["Неделя","7 дней",2,80000,"−20%",["2 презентации до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
         month:["Месяц","30 дней",4,150000,"−25%",["4 презентации до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
         vip:["VIP","30 дней",10,350000,"−30%",["до 10 презентаций*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
@@ -312,7 +330,7 @@ ru:{
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
 },
 uz:{
- tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar",
+ tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil",
  hero:"Ko‘rsatgingiz keladigan <em>taqdimotlar</em>",
  lead:"Har bir mavzuga o‘z uslubi, tekshirilgan faktlar va har bir matn hamda grafik o‘zgaradigan jonli PPTX.",
  b1:"✏️ Hammasi tahrirlanadi", b2:"🎁 Muqova bepul", b3:"🇷🇺 🇺🇿 🇬🇧",
@@ -341,7 +359,7 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
- h_subs:"⭐ Obunalar", subs_lead:"Taqdimot muntazam kerak bo‘lganlar uchun. Limit — har birini sifatli qilishimiz uchun.",
+ h_subs:"⭐ Obunalar", h_subs2:"⭐ Boshqa tariflar", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>obunalar, buyurtmalar tarixi va taqdimotlaringiz</span>", subs_lead:"Taqdimot muntazam kerak bo‘lganlar uchun. Limit — har birini sifatli qilishimiz uchun.",
  plans:{week:["Hafta","7 kun",2,80000,"−20%",["30 slaydgacha 2 ta taqdimot*","muqova bepul, har biriga 2 tuzatish"]],
         month:["Oy","30 kun",4,150000,"−25%",["30 slaydgacha 4 ta taqdimot*","muqova bepul, har biriga 2 tuzatish"]],
         vip:["VIP","30 kun",10,350000,"−30%",["10 tagacha taqdimot*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
@@ -538,13 +556,26 @@ function render(){
   $("#faqList").innerHTML = t.faq.map(([q,a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("") + `<p class="note" id="nothing" style="display:none">${t.nothing}</p>`;
   $("#qsearch").placeholder = t.ph_search; $("#qtext").placeholder = t.ph_q; filterFaq();
   const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  $("#orders").innerHTML = ORDERS.length ? `<h2 style="margin-top:6px">${t.my_title}</h2>` + ORDERS.map(([id,topic,sl,status,price]) => {
+  $("#orders").innerHTML = !ORDERS.length ? `<div class="empty">${t.no_orders}</div>` : ORDERS.map(([id,topic,sl,status,price]) => {
       const n = stepOf(status);
       return `<div class="ord"><div class="top">#${id} · ${esc(topic)}<span>${fmt(price)}${t.sum}</span></div>
         <div class="meta">${t.sl[sl] || ""}</div>
         ${status==="cancel" ? "" : `<div class="steps">${STEPS.map((x,i)=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`}
         <div class="st">${t.st[status] || status}</div>
-        ${["done","edit"].includes(status) ? `<div class="edit" data-id="${id}"><button>${t.ed_btn}</button><textarea rows="3" maxlength="1500" placeholder="${t.ed_ph}"></textarea><small>${t.ed_note}</small></div>` : ""}</div>`; }).join("") : "";
+        ${["done","edit"].includes(status) ? `<div class="edit" data-id="${id}"><button>${t.ed_btn}</button><textarea rows="3" maxlength="1500" placeholder="${t.ed_ph}"></textarea><small>${t.ed_note}</small></div>` : ""}</div>`; }).join("");
+  const done = ORDERS.filter(o => ["done","edit"].includes(o[3]) || o[5] || o[6]);
+  $("#pres").innerHTML = !done.length ? `<div class="empty">${t.no_pres}</div>` : done.map(([id,topic,sl,status,price,link]) =>
+    `<div class="pres"><span class="ic">🎞</span><div class="tx">#${id} · ${esc(topic)}<small>${link ? esc(link.replace(/^https?:\/\//,"").slice(0,42)) : t.in_chat}</small></div><button data-link="${link ? esc(link) : ""}">${link ? t.open : t.go_chat}</button></div>`).join("");
+  document.querySelectorAll(".pres button").forEach(b => b.onclick = () => {
+    haptic(); const l = b.dataset.link;
+    if (l && /^https:\/\//.test(l)) { tg ? tg.openLink(l) : window.open(l); }
+    else if (tg) { tg.openTelegramLink(`https://t.me/${BOT}`); setTimeout(() => tg.close(), 300); }
+  });
+  const u = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
+  const nm = u ? [u.first_name, u.last_name].filter(Boolean).join(" ") : t.guest;
+  $("#mehead").innerHTML = `<div class="av" style="${u && u.photo_url ? `background-image:url('${esc(u.photo_url)}')` : ""}">${u && u.photo_url ? "" : esc(nm[0] || "S")}</div><div><div class="nm">${esc(nm)}</div><div class="un">${u && u.username ? "@"+esc(u.username) : ""}</div></div>`;
+  $("#subs_h").textContent = SUB ? t.h_subs2 : t.h_subs;
+  $("#teaser").innerHTML = t.teaser + "<i>›</i>";
   document.querySelectorAll(".ord .edit").forEach(box => {
     const btn = box.querySelector("button"), ta = box.querySelector("textarea");
     btn.onclick = () => {
