@@ -111,6 +111,18 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .pres{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:8px}
 .pres .ic{font-size:22px}.pres .tx{flex:1;min-width:0;font-weight:700;font-size:14px;overflow-wrap:anywhere}.pres .tx small{display:block;color:var(--muted);font-weight:500;font-size:12px;margin-top:2px}
 .pres button{border:1px solid var(--v);background:transparent;color:var(--v2);font:700 13px Manrope,system-ui,sans-serif;padding:8px 12px;border-radius:10px;white-space:nowrap}
+.promo{position:relative;overflow:hidden;background:linear-gradient(135deg,#113A47 0%,#16263D 70%);border:1px solid var(--v3);border-radius:var(--r);padding:16px 18px 16px 24px;margin:4px 0 16px;box-shadow:0 0 22px rgba(217,164,65,.12)}
+.promo:before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:repeating-linear-gradient(180deg,var(--v) 0 10px,var(--v3) 10px 14px,var(--bg) 14px 18px)}
+.promo .pt{font-weight:800;font-size:16px;color:#fff;margin-bottom:6px;padding-right:22px}
+.promo .pt span{color:var(--v3)}
+.promo .px{font-size:13.5px;line-height:1.5;color:var(--soft)}
+.promo .px b{color:var(--v3)}
+.promo .pr{display:flex;gap:6px;margin:10px 0 12px;flex-wrap:wrap}
+.promo .pr i{font-style:normal;font-size:12px;font-weight:700;background:rgba(15,27,45,.6);border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--soft)}
+.promo .pr i b{color:var(--v2)}
+.promo button.go{width:100%;border:0;border-radius:12px;padding:11px;background:var(--v3);color:var(--on);font:800 14px Manrope,system-ui,sans-serif}
+.promo .x{position:absolute;top:8px;right:10px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:4px}
+.promo.ok{border-color:var(--v);box-shadow:none}.promo.ok .pt span{color:var(--v2)}
 .plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
 .plan.vip{background:var(--card2);border-color:var(--v3);box-shadow:inset 3px 0 0 var(--v3)}
 .plan .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -204,6 +216,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
   <!-- ЗАКАЗ -->
   <section id="order">
+    <div id="promo"></div>
     <div class="q"><span data-t="q_topic"></span><span class="req">*</span></div>
     <textarea id="topic" rows="2" maxlength="300"></textarea>
 
@@ -308,7 +321,7 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
- h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
+ promo_t:"💡 <span>Выгоднее пакетом</span>", promo_x:"Нужно несколько презентаций — на учёбу, работу, на весь семестр? В пакете каждая выходит дешевле, а остаток не сгорает.", promo_go:"Посмотреть пакеты →", promo_have:"📦 <span>У вас в пакете: {l} шт</span>", promo_have_x:"Этот заказ спишется из пакета — платить отдельно не нужно (кроме срочности и текста).", promo_empty:"📦 <span>Пакет закончился</span>", promo_empty_x:"Докупите пакет — и следующие презентации снова будут дешевле.", promo_go2:"Докупить пакет →", pc:"шт", h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
  plans:{week:["2 презентации","действует 14 дней",2,80000,"−20%",["40 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
         month:["4 презентации","действует 30 дней",4,150000,"−25%",["37 500 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
         vip:["VIP · 10 презентаций","действует 60 дней",10,350000,"−30%",["35 000 сум за презентацию*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
@@ -359,7 +372,7 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
- h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
+ promo_t:"💡 <span>Paket bilan arzonroq</span>", promo_x:"Bir nechta taqdimot kerakmi — o‘qish, ish yoki butun semestr uchun? Paketda har biri arzonroq, qoldiq esa yonmaydi.", promo_go:"Paketlarni ko‘rish →", promo_have:"📦 <span>Paketingizda: {l} ta</span>", promo_have_x:"Bu buyurtma paketdan yechiladi — alohida to‘lash shart emas (shoshilinch va matndan tashqari).", promo_empty:"📦 <span>Paket tugadi</span>", promo_empty_x:"Paket oling — keyingi taqdimotlar yana arzonroq bo‘ladi.", promo_go2:"Paket olish →", pc:"ta", h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
  plans:{week:["2 ta taqdimot","14 kun amal qiladi",2,80000,"−20%",["30 slaydgacha taqdimot — 40 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
         month:["4 ta taqdimot","30 kun amal qiladi",4,150000,"−25%",["30 slaydgacha taqdimot — 37 500 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
         vip:["VIP · 10 ta taqdimot","60 kun amal qiladi",10,350000,"−30%",["taqdimot — 35 000 so‘m*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
@@ -575,6 +588,17 @@ function render(){
   const nm = u ? [u.first_name, u.last_name].filter(Boolean).join(" ") : t.guest;
   $("#mehead").innerHTML = `<div class="av" style="${u && u.photo_url ? `background-image:url('${esc(u.photo_url)}')` : ""}">${u && u.photo_url ? "" : esc(nm[0] || "S")}</div><div><div class="nm">${esc(nm)}</div><div class="un">${u && u.username ? "@"+esc(u.username) : ""}</div></div>`;
   $("#subs_h").textContent = SUB ? t.h_subs2 : t.h_subs;
+  let hidePromo = false; try { hidePromo = sessionStorage.getItem("promo_x") === "1"; } catch(e){}
+  if (SUB && SUB.left > 0){
+    $("#promo").innerHTML = `<div class="promo ok"><div class="pt">${t.promo_have.replace("{l}", SUB.left)}</div><div class="px">${t.promo_have_x}</div></div>`;
+  } else if (SUB){
+    $("#promo").innerHTML = `<div class="promo"><div class="pt">${t.promo_empty}</div><div class="px">${t.promo_empty_x}</div><div class="pr"></div><button class="go">${t.promo_go2}</button></div>`;
+  } else if (!hidePromo){
+    $("#promo").innerHTML = `<div class="promo"><button class="x" aria-label="×">×</button><div class="pt">${t.promo_t}</div><div class="px">${t.promo_x}</div>
+      <div class="pr">${Object.values(t.plans).map(([n,d,lim,pr]) => `<i>${lim} ${t.pc} — <b>${fmt(Math.round(pr/lim))}</b>${t.per}</i>`).join("")}</div><button class="go">${t.promo_go}</button></div>`;
+  } else $("#promo").innerHTML = "";
+  const pg = $("#promo .go"); if (pg) pg.onclick = () => { haptic(); go("me"); setTimeout(() => window.scrollTo({top: $("#subs_h").getBoundingClientRect().top + window.scrollY - 90, behavior:"smooth"}), 80); };
+  const px = $("#promo .x"); if (px) px.onclick = () => { try { sessionStorage.setItem("promo_x","1"); } catch(e){} $("#promo").innerHTML = ""; };
   $("#teaser").innerHTML = t.teaser + "<i>›</i>";
   document.querySelectorAll(".ord .edit").forEach(box => {
     const btn = box.querySelector("button"), ta = box.querySelector("textarea");
