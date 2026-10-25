@@ -100,6 +100,21 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .total .free b{font-size:inherit;color:#fff;font-weight:700}
 #fallbackBtn{display:none}
 
+.orders{margin:6px 0 4px}
+.ord{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
+.ord .top{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:15px}
+.ord .top span{color:var(--v3);white-space:nowrap}
+.ord .meta{color:var(--muted);font-size:12.5px;margin:4px 0 10px}
+.steps{display:flex;gap:4px}
+.steps i{flex:1;height:6px;border-radius:3px;background:#2C405C}
+.steps i.on{background:var(--v)}
+.ord .st{font-size:13px;color:var(--v2);font-weight:700;margin-top:8px}
+.search{position:relative;margin-bottom:12px}
+.search input{padding-left:42px}
+.search b{position:absolute;left:14px;top:13px;font-size:17px}
+.ask{background:var(--card2);border:1px solid var(--v);border-radius:var(--r);padding:16px;margin-top:14px}
+.ask p{margin:0 0 10px;color:var(--soft);font-size:14px}
+.ask .cta{margin:10px 0 0}
 details{background:var(--card);border-radius:16px;margin-bottom:8px;padding:0 16px}
 summary{list-style:none;padding:15px 0;font-weight:700;font-size:15px;display:flex;justify-content:space-between}
 summary::-webkit-details-marker{display:none}
@@ -123,6 +138,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
   <!-- ГЛАВНАЯ -->
   <section id="home">
+    <div class="orders" id="orders"></div>
     <div class="band"></div>
     <h1 data-t="hero" data-html></h1>
     <p class="lead" data-t="lead"></p>
@@ -183,7 +199,10 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   </section>
 
   <!-- ВОПРОСЫ -->
-  <section id="faq"><div id="faqList"></div><p class="note"><span data-t="faq_more"></span> <a class="contact" href="https://t.me/slidelab_uz">@slidelab_uz</a></p></section>
+  <section id="faq">
+    <div class="search"><b>🔎</b><input id="qsearch" maxlength="300"></div>
+    <div id="faqList"></div>
+    <div class="ask"><p data-t="ask_hint"></p><textarea id="qtext" rows="3" maxlength="1000"></textarea><button class="cta" id="askBtn" data-t="ask_btn"></button></div><p class="note"><span data-t="faq_more"></span> <a class="contact" href="https://t.me/slidelab_uz">@slidelab_uz</a></p></section>
 </div>
 
 <script>
@@ -221,6 +240,10 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
+ my_title:"📦 Мои заказы", st:{new:"🆕 Принят",cover:"🎨 Обложка готова",work:"🛠 В работе",done:"✅ Готово",cancel:"✖️ Отменён"},
+ ph_search:"Поиск по вопросам…", nothing:"Похожих вопросов нет — спросите менеджера ниже 👇",
+ ask_hint:"Не нашли ответ? Напишите вопрос — менеджер ответит в чате с ботом.", ph_q:"Ваш вопрос…", ask_btn:"💬 Спросить менеджера",
+ ask_pop:"Приложение закроется, вопрос уйдёт менеджеру. Ответ придёт в чат с ботом.", ask_pop_link:"Приложение закроется и откроется чат с ботом — там напишите вопрос, ответ придёт туда же.", ask_empty:"Напишите вопрос",
  faq:[["Как быстро?","До 10 слайдов — 24 часа, 11–20 — 1–2 дня, 21–30 — 2–3 дня. Срочно (до 20 слайдов) — 6–8 часов, +50%."],
       ["Как оплатить?","Click / Payme. 50% предоплата, остальное — когда всё понравится."],
       ["А если не понравится?","Сначала делаем бесплатную обложку. Потом 2 правки бесплатно. Не подошло после правок — вернём предоплату."],
@@ -258,6 +281,10 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
+ my_title:"📦 Buyurtmalarim", st:{new:"🆕 Qabul qilindi",cover:"🎨 Muqova tayyor",work:"🛠 Ishlanmoqda",done:"✅ Tayyor",cancel:"✖️ Bekor qilindi"},
+ ph_search:"Savollar bo‘yicha qidirish…", nothing:"O‘xshash savol yo‘q — pastda menejerdan so‘rang 👇",
+ ask_hint:"Javob topmadingizmi? Savol yozing — menejer bot chatida javob beradi.", ph_q:"Savolingiz…", ask_btn:"💬 Menejerdan so‘rash",
+ ask_pop:"Ilova yopiladi, savol menejerga ketadi. Javob bot chatiga keladi.", ask_pop_link:"Ilova yopiladi va bot chati ochiladi — u yerda savol yozing, javob shu yerga keladi.", ask_empty:"Savol yozing",
  faq:[["Qancha vaqtda?","10 slaydgacha — 24 soat, 11–20 — 1–2 kun, 21–30 — 2–3 kun. Shoshilinch (20 slaydgacha) — 6–8 soat, +50%."],
       ["Qanday to‘lanadi?","Click / Payme. 50% oldindan, qolgani — hammasi yoqqach."],
       ["Yoqmasa-chi?","Avval bepul muqova. Keyin 2 marta tuzatish bepul. Tuzatishdan keyin ham yoqmasa — oldindan to‘lovni qaytaramiz."],
@@ -277,6 +304,9 @@ if (!T[L]) L = "ru";
 // sendData там не работает, поэтому заявку передаём через ссылку /start в чат с ботом.
 const linkMode = !!(inTg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
 const BOT = "slidelab_order_bot";
+let ORDERS = [];
+try { const o = qs.get("o"); if (o){ const b = atob(o.replace(/-/g,"+").replace(/_/g,"/")); ORDERS = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); } } catch(e){ ORDERS = []; }
+const STEPS = ["new","cover","work","done"];
 const st = {srcfiles:false, slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
@@ -388,8 +418,39 @@ function render(){
   $("#gallery").innerHTML = t.works.map(([a,b],i) =>
     `<div class="work"><img loading="lazy" src="${IMG+WORKS[i]}.png" alt="${a}" onerror="this.closest('.work').style.display='none'"><div>${a}<small>${b}</small></div></div>`).join("");
   $("#feat").innerHTML = t.feat.map(([i,b,s],n) => `<div class="${n===0?'hl':''}"><i>${i}</i><b>${b}</b><span>${s}</span></div>`).join("");
-  $("#faqList").innerHTML = t.faq.map(([q,a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("");
+  $("#faqList").innerHTML = t.faq.map(([q,a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("") + `<p class="note" id="nothing" style="display:none">${t.nothing}</p>`;
+  $("#qsearch").placeholder = t.ph_search; $("#qtext").placeholder = t.ph_q; filterFaq();
+  const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  $("#orders").innerHTML = ORDERS.length ? `<h2 style="margin-top:6px">${t.my_title}</h2>` + ORDERS.map(([id,topic,sl,status,price]) => {
+      const n = STEPS.indexOf(status);
+      return `<div class="ord"><div class="top">#${id} · ${esc(topic)}<span>${fmt(price)}${t.sum}</span></div>
+        <div class="meta">${t.sl[sl] || ""}</div>
+        ${status==="cancel" ? "" : `<div class="steps">${STEPS.map((x,i)=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`}
+        <div class="st">${t.st[status] || status}</div></div>`; }).join("") : "";
   renderForm();
+}
+
+function filterFaq(){
+  const q = ($("#qsearch").value || "").trim().toLowerCase();
+  let shown = 0;
+  document.querySelectorAll("#faqList details").forEach(d => {
+    const ok = !q || d.innerText.toLowerCase().split(/\s+/).some(w => q.split(/\s+/).some(x => x.length > 2 && w.includes(x))) || d.innerText.toLowerCase().includes(q);
+    d.style.display = ok ? "" : "none"; if (ok) shown++;
+    if (q && ok) d.open = true; if (!q) d.open = false;
+  });
+  const n = $("#nothing"); if (n) n.style.display = (q && !shown) ? "block" : "none";
+}
+
+function ask(){
+  const t = T[L];
+  const text = ($("#qtext").value || $("#qsearch").value || "").trim();
+  if (!inTg){ alert(t.no_tg); return; }
+  if (linkMode){
+    tg.showConfirm(t.ask_pop_link, ok => { if (ok){ tg.openTelegramLink(`https://t.me/${BOT}?start=ask`); setTimeout(() => tg.close(), 300); } });
+    return;
+  }
+  if (!text){ tg.showAlert(t.ask_empty); return; }
+  tg.showConfirm(t.ask_pop, ok => { if (ok) tg.sendData(JSON.stringify({type:"q", lang:L, text:text.slice(0,1000)})); });
 }
 
 function go(tab){
@@ -408,6 +469,8 @@ $("#t_notes").onclick = () => { st.notes=!st.notes; haptic(); renderForm(); };
 $("#t_srcfiles").onclick = () => { st.srcfiles=!st.srcfiles; haptic(); renderForm(); };
 $("#topic").oninput = updateButton;
 $("#fallbackBtn").onclick = submit;
+$("#qsearch").oninput = filterFaq;
+$("#askBtn").onclick = ask;
 
 if (inTg){
   tg.ready(); tg.expand();
