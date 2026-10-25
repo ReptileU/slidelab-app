@@ -28,7 +28,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .lang button.on{background:var(--v);color:var(--on)}
 
 nav.tabs{position:sticky;top:var(--top);z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
-nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 13px Manrope,system-ui,sans-serif;padding:11px 3px;border-radius:14px;white-space:nowrap}
+nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 14px Manrope,system-ui,sans-serif;padding:11px 6px;border-radius:14px;white-space:nowrap}
 nav.tabs button.on{background:var(--card2);border-color:var(--v);color:#fff}
 
 section{display:none} section.on{display:block;animation:in .25s ease}
@@ -104,6 +104,11 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .orders{margin:6px 0 4px}
 .teaser{display:flex;align-items:center;gap:12px;background:var(--card2);border:1px solid var(--v);border-radius:var(--r);padding:14px 16px;margin:4px 0 14px;font-size:14px;color:var(--soft);cursor:pointer;line-height:1.4}
 .teaser b{color:#fff}.teaser i{font-style:normal;margin-left:auto;color:var(--v2);font-size:22px}
+.hr{display:flex;align-items:center;gap:10px}
+.mebtn{position:relative;width:40px;height:40px;border-radius:50%;padding:0;border:2px solid var(--line);background:var(--card);cursor:pointer;flex:0 0 auto;transition:border-color .2s,box-shadow .2s}
+.mebtn.on{border-color:var(--v);box-shadow:0 0 14px rgba(43,179,177,.45)}
+.mav{position:absolute;inset:2px;border-radius:50%;background:var(--card2) center/cover;display:flex;align-items:center;justify-content:center;font:800 15px Manrope,system-ui,sans-serif;color:var(--v2)}
+.mdot{position:absolute;right:-4px;top:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--v3);color:var(--on);font:800 11px/18px Manrope,system-ui,sans-serif;font-style:normal;text-align:center;border:2px solid var(--bg)}
 .mehead{display:flex;align-items:center;gap:14px;margin:8px 0 14px}
 .mehead .av{width:60px;height:60px;border-radius:50%;background:var(--card2) center/cover;border:2px solid var(--v);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:var(--v2);flex:0 0 auto}
 .mehead .nm{font-weight:800;font-size:20px}.mehead .un{color:var(--muted);font-size:13px;margin-top:2px}
@@ -181,18 +186,19 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 <div class="wrap">
   <header>
     <div class="logo">SLIDE<b>LAB</b></div>
-    <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button></div>
+    <div class="hr">
+      <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button></div>
+      <button class="mebtn" id="meBtn" aria-label="Профиль"><span class="mav" id="mav"></span><i class="mdot" id="mdot"></i></button>
+    </div>
   </header>
   <nav class="tabs">
     <button data-tab="home" data-t="tab_home"></button>
     <button data-tab="order" data-t="tab_order"></button>
     <button data-tab="faq" data-t="tab_faq"></button>
-    <button data-tab="me" data-t="tab_me"></button>
   </nav>
 
   <!-- ГЛАВНАЯ -->
   <section id="home">
-    <div class="teaser" data-go="me" id="teaser"></div>
     <div class="band"></div>
     <h1 data-t="hero" data-html></h1>
     <p class="lead" data-t="lead"></p>
@@ -599,7 +605,10 @@ function render(){
   } else $("#promo").innerHTML = "";
   const pg = $("#promo .go"); if (pg) pg.onclick = () => { haptic(); go("me"); setTimeout(() => window.scrollTo({top: $("#subs_h").getBoundingClientRect().top + window.scrollY - 90, behavior:"smooth"}), 80); };
   const px = $("#promo .x"); if (px) px.onclick = () => { try { sessionStorage.setItem("promo_x","1"); } catch(e){} $("#promo").innerHTML = ""; };
-  $("#teaser").innerHTML = t.teaser + "<i>›</i>";
+  $("#mav").style.backgroundImage = u && u.photo_url ? `url('${esc(u.photo_url)}')` : "";
+  $("#mav").textContent = u && u.photo_url ? "" : (u ? (nm[0] || "S") : "👤");
+  $("#mdot").textContent = SUB && SUB.left > 0 ? SUB.left : (ORDERS.some(o => ["done","edit"].includes(o[3])) ? "✓" : "");
+  $("#mdot").style.display = $("#mdot").textContent ? "" : "none";
   document.querySelectorAll(".ord .edit").forEach(box => {
     const btn = box.querySelector("button"), ta = box.querySelector("textarea");
     btn.onclick = () => {
@@ -641,12 +650,14 @@ function ask(){
 function go(tab){
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id===tab));
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
+  $("#meBtn").classList.toggle("on", tab==="me");
   window.scrollTo({top:0});
   if (inTg){ tab==="home" ? tg.BackButton.hide() : tg.BackButton.show(); }
   renderForm();
 }
 
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { haptic(); go(b.dataset.tab); });
+$("#meBtn").onclick = () => { haptic(); go("me"); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { L = b.dataset.l; haptic(); render(); });
 $("#t_text").onclick = () => { st.text=!st.text; haptic(); renderForm(); };
