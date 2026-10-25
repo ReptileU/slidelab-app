@@ -177,6 +177,10 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
     <div class="q" data-t="q_design"></div>
     <div class="chips c1" id="design"></div>
+    <div id="ownBox" style="display:none;margin-top:10px">
+      <input class="lk" id="dlink" maxlength="500" inputmode="url">
+      <div class="hint" data-t="own_hint"></div>
+    </div>
 
     <div class="q" data-t="q_extras"></div>
     <div class="tog" id="t_text"><span data-t="x_text"></span><span class="sw"></span></div>
@@ -229,11 +233,12 @@ ru:{
  q_deadline:"Срок", dl:{d1:["⚡ Срочно","+50% к цене"],d2:["📅 Обычно","срок обсудим в чате, без доплат"],d3:["🐢 Не спешу","делаем спокойно, без доплат"]},
  urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
  q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
- q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","пришлёте файл в чат после заявки"]},
+ q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","ссылка (Canva, Google Slides, Figma…) или файл"]},
  q_extras:"Дополнительно", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Сохранять файлы на телефон не нужно: после заявки просто перешлите их боту из любого чата — группы, канала, лички. Подходят PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы и ссылки.",
+ ph_dlink:"Ссылка на шаблон: canva.com/…, docs.google.com/…", own_hint:"Файл шаблона (PPTX, PDF, скриншоты) перешлите в чат с ботом после заявки — из любого чата, сохранять не нужно.",
  q_sources:"📚 Свои источники", ph_sources:"Ссылки на сайты, статьи, видео, книги — по одной на строку", x_srcfiles:"📎 Перешлю файлы из других чатов",
  pop_title:"Отправляем заявку", pop_ok:"Отправить", pop_msg:"Приложение закроется и откроется чат с ботом.", pop_links:" Ваши источники уйдут вместе с заявкой.", pop_files:" Файлы и ссылки просто перешлите боту из любого чата — сохранять на телефон не нужно.",
  total:"Примерная стоимость", free:"<b>Сейчас вы ничего не платите.</b> Это только ориентир цены. Мы напишем вам, уточним детали и пришлём бесплатную обложку — оплата только после согласования.", note:"Итоговую цену подтвердим в чате до начала работы.",
@@ -270,11 +275,12 @@ uz:{
  q_deadline:"Muddat", dl:{d1:["⚡ Shoshilinch","narxga +50%"],d2:["📅 Odatiy","muddatni chatda kelishamiz, qo‘shimchasiz"],d3:["🐢 Shoshilmayman","xotirjam, qo‘shimchasiz"]},
  urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
  q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
- q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","arizadan keyin chatga yuborasiz"]},
+ q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","havola (Canva, Google Slides, Figma…) yoki fayl"]},
  q_extras:"Qo‘shimcha", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni telefonga saqlash shart emas: arizadan so‘ng ularni istalgan chatdan — guruh, kanal, shaxsiy — botga forward qiling. PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv va havolalar mos.",
+ ph_dlink:"Shablon havolasi: canva.com/…, docs.google.com/…", own_hint:"Shablon faylini (PPTX, PDF, skrinshot) arizadan so‘ng bot chatiga istalgan chatdan forward qiling — saqlash shart emas.",
  q_sources:"📚 O‘z manbalaringiz", ph_sources:"Sayt, maqola, video, kitob havolalari — har biri yangi qatorda", x_srcfiles:"📎 Fayllarni boshqa chatlardan forward qilaman",
  pop_title:"Arizani yuboramiz", pop_ok:"Yuborish", pop_msg:"Ilova yopiladi va bot chati ochiladi.", pop_links:" Manbalaringiz ariza bilan birga ketadi.", pop_files:" Fayl va havolalarni istalgan chatdan botga forward qiling — telefonga saqlash shart emas.",
  total:"Taxminiy narx", free:"<b>Hozir hech narsa to‘lamaysiz.</b> Bu faqat taxminiy narx. Biz sizga yozamiz, tafsilotlarni aniqlaymiz va bepul muqova yuboramiz — to‘lov faqat kelishuvdan keyin.", note:"Yakuniy narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
@@ -345,6 +351,7 @@ function renderForm(){
   $("#urgentHint").style.display = st.slides==="s30" ? "block":"none";
   chips($("#plang"), t.pl, "plang");
   chips($("#design"), t.ds, "design");
+  $("#ownBox").style.display = st.design === "own" ? "block" : "none";
   $("#t_text").classList.toggle("on", st.text);
   $("#t_notes").classList.toggle("on", st.notes);
   $("#t_srcfiles").classList.toggle("on", st.srcfiles);
@@ -384,7 +391,7 @@ function submit(){
   const data = {v:1, lang:L, topic:$("#topic").value.trim().slice(0,300), slides:st.slides, deadline:st.deadline,
     plang:st.plang, design:st.design, text:st.text, notes:st.notes,
     contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400),
-    sources:$("#sources").value.trim().slice(0,1500), srcfiles:st.srcfiles};
+    sources:$("#sources").value.trim().slice(0,1500), srcfiles:st.srcfiles, dlink: st.design==="own" ? $("#dlink").value.trim().slice(0,500) : ""};
   if (!inTg){ alert(t.no_tg); return; }
   // Предупреждаем: приложение закроется, файлы-источники присылают в чат
   let msg = t.pop_msg + (data.sources && !linkMode ? t.pop_links : "") + (data.srcfiles || linkMode ? t.pop_files : "");
@@ -412,7 +419,7 @@ function render(){
     if (el.hasAttribute("data-html")) el.innerHTML = v; else el.textContent = v;
   });
   document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l===L));
-  $("#topic").placeholder = t.ph_topic; $("#sources").placeholder = t.ph_sources; $("#contact").placeholder = t.ph_contact; $("#comment").placeholder = t.ph_comment;
+  $("#topic").placeholder = t.ph_topic; $("#dlink").placeholder = t.ph_dlink; $("#sources").placeholder = t.ph_sources; $("#contact").placeholder = t.ph_contact; $("#comment").placeholder = t.ph_comment;
   $("#prices").innerHTML = Object.entries(t.pk).map(([k,[n,s]]) =>
     `<div class="price${k==='s20'?' pop':''}" data-k="${k}"><div><div class="n">${n}${k==='s20'?`<span class="tag">${t.pop}</span>`:''}</div><div class="s">${s}</div></div><div class="p">${fmt(PRICE[k])}</div></div>`).join("");
   document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
