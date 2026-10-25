@@ -109,6 +109,10 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .mebtn.on{border-color:var(--v);box-shadow:0 0 14px rgba(43,179,177,.45)}
 .mav{position:absolute;inset:2px;border-radius:50%;background:var(--card2) center/cover;display:flex;align-items:center;justify-content:center;font:800 15px Manrope,system-ui,sans-serif;color:var(--v2)}
 .mdot{position:absolute;right:-4px;top:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--v3);color:var(--on);font:800 11px/18px Manrope,system-ui,sans-serif;font-style:normal;text-align:center;border:2px solid var(--bg)}
+.back{border:0;background:none;color:var(--v2);font:700 14px Manrope,system-ui,sans-serif;padding:4px 0 10px;cursor:pointer}
+.melink{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin:0 0 6px;cursor:pointer}
+.melink .ic{font-size:22px}.melink div{flex:1}.melink b{display:block;color:#fff;font-size:15px}.melink small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.melink i{font-style:normal;color:var(--v2);font-size:22px}
 .mehead{display:flex;align-items:center;gap:14px;margin:8px 0 14px}
 .mehead .av{width:60px;height:60px;border-radius:50%;background:var(--card2) center/cover;border:2px solid var(--v);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;color:var(--v2);flex:0 0 auto}
 .mehead .nm{font-weight:800;font-size:20px}.mehead .un{color:var(--muted);font-size:13px;margin-top:2px}
@@ -194,7 +198,6 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <nav class="tabs">
     <button data-tab="home" data-t="tab_home"></button>
     <button data-tab="order" data-t="tab_order"></button>
-    <button data-tab="faq" data-t="tab_faq"></button>
   </nav>
 
   <!-- ГЛАВНАЯ -->
@@ -276,6 +279,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <section id="me">
     <div class="mehead" id="mehead"></div>
     <div id="mysub"></div>
+    <div class="melink" data-go="faq"><span class="ic">❓</span><div><b data-t="me_faq"></b><small data-t="me_faq_x"></small></div><i>›</i></div>
     <h2 data-t="h_hist"></h2>
     <div class="orders" id="orders"></div>
     <h2 data-t="h_pres"></h2>
@@ -286,6 +290,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   </section>
 
   <section id="faq">
+    <button class="back" data-go="me">‹ <span data-t="tab_me"></span></button>
     <div class="search"><b>🔎</b><input id="qsearch" maxlength="300"></div>
     <div id="faqList"></div>
     <div class="ask"><p data-t="ask_hint"></p><textarea id="qtext" rows="3" maxlength="1000"></textarea><button class="cta" id="askBtn" data-t="ask_btn"></button></div><p class="note"><span data-t="faq_more"></span> <a class="contact" href="https://t.me/slidelab_uz">@slidelab_uz</a></p></section>
@@ -298,7 +303,7 @@ const EXTRA = 10000, URGENT = 0.5;
 
 const T = {
 ru:{
- tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы", tab_me:"Профиль",
+ tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы", tab_me:"Профиль", me_faq:"Вопросы и помощь", me_faq_x:"Ответы на частые вопросы и связь с менеджером",
  hero:"Презентации, которые <em>хочется показывать</em>",
  lead:"Свой стиль под каждую тему, проверенные факты и живой PPTX, где меняется каждый текст и график.",
  b1:"✏️ Всё редактируется", b2:"🎁 Обложка бесплатно", b3:"🇷🇺 🇺🇿 🇬🇧",
@@ -349,7 +354,7 @@ ru:{
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
 },
 uz:{
- tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil",
+ tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil", me_faq:"Savollar va yordam", me_faq_x:"Ko‘p beriladigan savollar va menejer bilan aloqa",
  hero:"Ko‘rsatgingiz keladigan <em>taqdimotlar</em>",
  lead:"Har bir mavzuga o‘z uslubi, tekshirilgan faktlar va har bir matn hamda grafik o‘zgaradigan jonli PPTX.",
  b1:"✏️ Hammasi tahrirlanadi", b2:"🎁 Muqova bepul", b3:"🇷🇺 🇺🇿 🇬🇧",
@@ -650,7 +655,7 @@ function ask(){
 function go(tab){
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id===tab));
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
-  $("#meBtn").classList.toggle("on", tab==="me");
+  $("#meBtn").classList.toggle("on", tab==="me" || tab==="faq");
   window.scrollTo({top:0});
   if (inTg){ tab==="home" ? tg.BackButton.hide() : tg.BackButton.show(); }
   renderForm();
@@ -677,7 +682,7 @@ if (inTg){
   try { tg.isVersionAtLeast && tg.isVersionAtLeast("7.7") || tg.enableClosingConfirmation && tg.enableClosingConfirmation(); } catch(e){}
   try { tg.setHeaderColor("#0F1B2D"); tg.setBackgroundColor("#0F1B2D"); tg.setBottomBarColor && tg.setBottomBarColor("#0F1B2D"); } catch(e){}
   tg.MainButton.onClick(submit);
-  tg.BackButton.onClick(() => go("home"));
+  tg.BackButton.onClick(() => go(document.querySelector("section#faq.on") ? "me" : "home"));
 }
 render();
 go(qs.get("tab")==="order" ? "order" : "home");
