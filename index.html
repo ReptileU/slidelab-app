@@ -87,6 +87,10 @@ textarea::placeholder,input::placeholder{color:#6B6B75}
 .total span{color:var(--soft);font-size:14px}
 .total b{font-size:24px;color:var(--v3)}
 .note{color:var(--muted);font-size:12.5px;text-align:center;margin:10px 0}
+.total{flex-wrap:wrap;gap:4px}
+.total .free{flex-basis:100%;display:flex;gap:8px;align-items:flex-start;margin-top:10px;padding-top:12px;border-top:1px solid #3a2f5c;color:var(--soft);font-size:13px;line-height:1.45}
+.total .free i{font-style:normal}
+.total .free b{font-size:inherit;color:#fff;font-weight:700}
 #fallbackBtn{display:none}
 
 details{background:var(--card);border-radius:16px;margin-bottom:8px;padding:0 16px}
@@ -153,14 +157,14 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div class="tog" id="t_text"><span data-t="x_text"></span><span class="sw"></span></div>
     <div class="tog" id="t_notes"><span data-t="x_notes"></span><span class="sw"></span></div>
 
-    <div class="q"><span data-t="q_contact"></span> <small data-t="optional"></small></div>
-    <input id="contact" maxlength="60" inputmode="tel">
+    <div class="q lk"><span data-t="q_contact"></span> <small data-t="optional"></small></div>
+    <input class="lk" id="contact" maxlength="60" inputmode="tel">
 
-    <div class="q"><span data-t="q_comment"></span> <small data-t="optional2"></small></div>
-    <textarea id="comment" rows="3" maxlength="400"></textarea>
+    <div class="q lk"><span data-t="q_comment"></span> <small data-t="optional2"></small></div>
+    <textarea class="lk" id="comment" rows="3" maxlength="400"></textarea>
     <div class="hint" data-t="files_hint"></div>
 
-    <div class="total"><span data-t="total"></span><b id="sum">—</b></div>
+    <div class="total"><span data-t="total"></span><b id="sum">—</b><div class="free"><i>💳</i><span data-t="free" data-html></span></div></div>
     <p class="note" data-t="note"></p>
     <button class="cta" id="fallbackBtn"></button>
   </section>
@@ -197,8 +201,8 @@ ru:{
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Файлы (текст, шаблон, требования) пришлёте в чат с ботом сразу после заявки.",
- total:"Примерная цена", note:"Точную цену подтвердим в чате до начала работы.",
- send:"Отправить заявку", fill:"Заполните тему, объём и срок", sum:" сум",
+ total:"Примерная стоимость", free:"<b>Сейчас вы ничего не платите.</b> Это только ориентир цены. Мы напишем вам, уточним детали и пришлём бесплатную обложку — оплата только после согласования.", note:"Итоговую цену подтвердим в чате до начала работы.",
+ send:"Отправить заявку — без оплаты", send_chat:"Продолжить в чате — без оплаты", fill:"Заполните тему, объём и срок", sum:" сум",
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
@@ -232,8 +236,8 @@ uz:{
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni (matn, shablon, talablar) arizadan so‘ng bot chatiga yuborasiz.",
- total:"Taxminiy narx", note:"Aniq narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
- send:"Arizani yuborish", fill:"Mavzu, hajm va muddatni to‘ldiring", sum:" so‘m",
+ total:"Taxminiy narx", free:"<b>Hozir hech narsa to‘lamaysiz.</b> Bu faqat taxminiy narx. Biz sizga yozamiz, tafsilotlarni aniqlaymiz va bepul muqova yuboramiz — to‘lov faqat kelishuvdan keyin.", note:"Yakuniy narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
+ send:"Arizani yuborish — to‘lovsiz", send_chat:"Chatda davom etish — to‘lovsiz", fill:"Mavzu, hajm va muddatni to‘ldiring", sum:" so‘m",
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
@@ -252,6 +256,10 @@ const inTg = !!(tg && tg.initData !== undefined && tg.platform && tg.platform !=
 const qs = new URLSearchParams(location.search);
 let L = qs.get("lang") || ((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code === "uz") ? "uz" : "ru");
 if (!T[L]) L = "ru";
+// Открыто не кнопкой клавиатуры (кнопка «Открыть» в списке чатов, меню, ссылка) —
+// sendData там не работает, поэтому заявку передаём через ссылку /start в чат с ботом.
+const linkMode = !!(inTg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
+const BOT = "slidelab_order_bot";
 const st = {slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
@@ -298,7 +306,7 @@ function renderForm(){
 
 function updateButton(){
   const t = T[L], p = price(), ok = valid();
-  const label = ok ? `${t.send} · ${fmt(p)}${t.sum}` : t.fill;
+  const label = ok ? (linkMode ? t.send_chat : t.send) : t.fill;
   const onOrder = $("#order").classList.contains("on");
   if (inTg){
     const mb = tg.MainButton;
@@ -311,6 +319,16 @@ function updateButton(){
   }
 }
 
+// Код заявки для /start (до 64 символов): o + выбор + тема в base64url
+function startCode(d){
+  const code = "o" + {s10:1,s20:2,s30:3}[d.slides] + {d1:1,d2:2,d3:3}[d.deadline] +
+    {ru:"r",uz:"u",en:"e"}[d.plang] + (d.design==="own"?"w":"o") + (d.text?1:0) + (d.notes?1:0) + (d.lang==="uz"?"u":"r");
+  let bytes = new TextEncoder().encode(d.topic), max = Math.floor((64 - code.length) * 6 / 8);
+  if (bytes.length > max){ bytes = bytes.slice(0, max); while (bytes.length && (bytes[bytes.length-1] & 0xC0) === 0x80) bytes = bytes.slice(0,-1); if (bytes.length && bytes[bytes.length-1] >= 0xC0) bytes = bytes.slice(0,-1); }
+  let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
+  return code + btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+
 function submit(){
   const t = T[L];
   if (!valid()) { tg ? tg.showAlert(t.fill) : alert(t.fill); return; }
@@ -318,14 +336,14 @@ function submit(){
     plang:st.plang, design:st.design, text:st.text, notes:st.notes,
     contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400)};
   if (!inTg){ alert(t.no_tg); return; }
-  // sendData работает, только если приложение открыто кнопкой клавиатуры в чате
-  if (tg.initDataUnsafe && tg.initDataUnsafe.query_id){ tg.showAlert(t.not_kb); return; }
   try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
+  if (linkMode){ tg.openTelegramLink(`https://t.me/${BOT}?start=${startCode(data)}`); setTimeout(() => tg.close(), 300); return; }
   tg.sendData(JSON.stringify(data));
 }
 
 function render(){
   const t = T[L];
+  document.querySelectorAll(".lk").forEach(el => el.style.display = linkMode ? "none" : "");
   document.documentElement.lang = L;
   document.querySelectorAll("[data-t]").forEach(el => {
     const v = t[el.dataset.t]; if (v===undefined) return;
