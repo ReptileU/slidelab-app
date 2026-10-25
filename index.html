@@ -116,6 +116,22 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .ask{background:var(--card2);border:1px solid var(--v);border-radius:var(--r);padding:16px;margin-top:14px}
 .ask p{margin:0 0 10px;color:var(--soft);font-size:14px}
 .ask .cta{margin:10px 0 0}
+.ready{display:flex;gap:10px;align-items:flex-start;background:rgba(43,179,177,.12);border:1px solid var(--v);border-radius:16px;padding:14px 16px;margin:20px 0 14px;font-size:14px;line-height:1.45;color:var(--soft)}
+.ready>b{font-size:18px}
+.ready span b{color:#fff}
+.ord .edit{margin-top:12px}
+.ord .edit button{width:100%;border:1px solid var(--v);background:transparent;color:var(--v2);font:700 14px Manrope,system-ui,sans-serif;padding:11px;border-radius:12px}
+.ord .edit textarea{margin-top:8px;display:none}
+.ord .edit.open{display:flex;flex-direction:column}
+.ord .edit.open textarea{display:block;order:1;margin:0 0 8px}
+.ord .edit.open button{order:2}
+.ord .edit.open small{order:3}
+.ord .edit small{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+details.opt{background:transparent;border:1.5px dashed #2C405C;border-radius:var(--r);padding:0 14px;margin:0}
+details.opt>summary{padding:16px 2px;font-size:16px;font-weight:800;align-items:center}
+details.opt>summary em{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--muted);border:1px solid #2C405C;border-radius:999px;padding:3px 8px;margin-left:auto;margin-right:10px}
+details.opt .opt-in{padding-bottom:16px}
+details.opt .opt-in .q:first-child{margin-top:4px}
 details{background:var(--card);border-radius:16px;margin-bottom:8px;padding:0 16px}
 summary{list-style:none;padding:15px 0;font-weight:700;font-size:15px;display:flex;justify-content:space-between}
 summary::-webkit-details-marker{display:none}
@@ -172,6 +188,11 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div class="chips c1" id="deadline"></div>
     <div class="hint" id="urgentHint" data-t="urgent_hint" style="display:none"></div>
 
+    <div class="ready"><b>✅</b><span data-t="ready" data-html></span></div>
+
+    <details class="opt" id="optBox">
+    <summary><span data-t="opt_title"></span><em data-t="opt_tag"></em></summary>
+    <div class="opt-in">
     <div class="q" data-t="q_plang"></div>
     <div class="chips c3" id="plang"></div>
 
@@ -197,6 +218,8 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <textarea class="lk" id="sources" rows="3" maxlength="1500"></textarea>
     <div class="tog" id="t_srcfiles"><span data-t="x_srcfiles"></span><span class="sw"></span></div>
     <div class="hint" data-t="files_hint"></div>
+    </div>
+    </details>
 
     <div class="band"></div>
     <div class="total"><span data-t="total"></span><b id="sum">—</b><div class="free"><i>💳</i><span data-t="free" data-html></span></div></div>
@@ -233,9 +256,9 @@ ru:{
  q_slides:"Сколько слайдов?", sl:{s10:"до 10",s20:"11–20",s30:"21–30"},
  q_deadline:"Срок", dl:{d1:["⚡ Срочно","+50% к цене"],d2:["📅 Обычно","срок обсудим в чате, без доплат"],d3:["🐢 Не спешу","делаем спокойно, без доплат"]},
  urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
- q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
+ ready:"<b>Этого достаточно — можно отправлять заявку.</b> Всё, что ниже, — по желанию: язык, дизайн, доп. услуги, источники.", opt_title:"⚙️ Дополнительно", opt_tag:"НЕОБЯЗАТЕЛЬНО", q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
  q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","ссылка (Google Slides, Canva, Figma…) или файл"]},
- q_extras:"Дополнительно", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
+ q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Сохранять файлы на телефон не нужно: после заявки просто перешлите их боту из любого чата — группы, канала, лички. Подходят PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы и ссылки.",
@@ -247,7 +270,7 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
- my_title:"📦 Мои заказы", st:{new:"🆕 Принят",cover:"🎨 Обложка готова",work:"🛠 В работе",done:"✅ Готово",cancel:"✖️ Отменён"},
+ my_title:"📦 Мои заказы", st:{new:"🆕 Принят",cover:"🎨 Обложка готова",work:"🛠 В работе",edit:"✏️ Вносим правки",done:"✅ Готово",cancel:"✖️ Отменён"}, ed_btn:"✏️ Внести правки", ed_send:"📨 Отправить правки", ed_ph:"Что поменять? Например: слайд 3 — заменить график, слайд 5 — убрать текст", ed_note:"2 правки бесплатно. Скриншоты и файлы можно прислать в чат после отправки.", ed_pop:"Приложение закроется, правки уйдут менеджеру. Скриншоты пришлите в чат.", ed_pop_link:"Приложение закроется и откроется чат — там напишите правки или пришлите скриншоты.", ed_empty:"Опишите, что поменять",
  ph_search:"Поиск по вопросам…", nothing:"Похожих вопросов нет — спросите менеджера ниже 👇",
  ask_hint:"Не нашли ответ? Напишите вопрос — менеджер ответит в чате с ботом.", ph_q:"Ваш вопрос…", ask_btn:"💬 Спросить менеджера",
  ask_pop:"Приложение закроется, вопрос уйдёт менеджеру. Ответ придёт в чат с ботом.", ask_pop_link:"Приложение закроется и откроется чат с ботом — там напишите вопрос, ответ придёт туда же.", ask_empty:"Напишите вопрос",
@@ -257,6 +280,7 @@ ru:{
       ["В каком формате?","PPTX (PowerPoint, Google Slides) и PDF. Каждый текст и график можно изменить."],
       ["Есть свой шаблон?","Пришлите — оформим в нём. Нет — придумаем дизайн под вашу тему."],
       ["Больше 30 слайдов?","Напишите нам — обсудим объём и срок индивидуально."],
+      ["Как внести правки?","Когда файл готов, откройте «📦 Мои заказы» (на главной или в меню бота) и нажмите «✏️ Внести правки» — опишите, что поменять, и пришлите скриншоты в чат. 2 правки бесплатно."],
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
 },
 uz:{
@@ -275,9 +299,9 @@ uz:{
  q_slides:"Nechta slayd?", sl:{s10:"10 gacha",s20:"11–20",s30:"21–30"},
  q_deadline:"Muddat", dl:{d1:["⚡ Shoshilinch","narxga +50%"],d2:["📅 Odatiy","muddatni chatda kelishamiz, qo‘shimchasiz"],d3:["🐢 Shoshilmayman","xotirjam, qo‘shimchasiz"]},
  urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
- q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
+ ready:"<b>Shuning o‘zi yetarli — arizani yuborish mumkin.</b> Pastdagilar — ixtiyoriy: til, dizayn, qo‘shimcha xizmatlar, manbalar.", opt_title:"⚙️ Qo‘shimcha", opt_tag:"IXTIYORIY", q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
  q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","havola (Google Slides, Canva, Figma…) yoki fayl"]},
- q_extras:"Qo‘shimcha", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
+ q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni telefonga saqlash shart emas: arizadan so‘ng ularni istalgan chatdan — guruh, kanal, shaxsiy — botga forward qiling. PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv va havolalar mos.",
@@ -289,7 +313,7 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
- my_title:"📦 Buyurtmalarim", st:{new:"🆕 Qabul qilindi",cover:"🎨 Muqova tayyor",work:"🛠 Ishlanmoqda",done:"✅ Tayyor",cancel:"✖️ Bekor qilindi"},
+ my_title:"📦 Buyurtmalarim", st:{new:"🆕 Qabul qilindi",cover:"🎨 Muqova tayyor",work:"🛠 Ishlanmoqda",edit:"✏️ Tuzatilmoqda",done:"✅ Tayyor",cancel:"✖️ Bekor qilindi"}, ed_btn:"✏️ Tuzatish kiritish", ed_send:"📨 Tuzatishlarni yuborish", ed_ph:"Nimani o‘zgartirish kerak? Masalan: 3-slayd — grafikni almashtirish", ed_note:"2 marta tuzatish bepul. Skrinshot va fayllarni keyin chatga yuborish mumkin.", ed_pop:"Ilova yopiladi, tuzatishlar menejerga ketadi. Skrinshotlarni chatga yuboring.", ed_pop_link:"Ilova yopiladi va chat ochiladi — u yerda tuzatishlarni yozing yoki skrinshot yuboring.", ed_empty:"Nimani o‘zgartirishni yozing",
  ph_search:"Savollar bo‘yicha qidirish…", nothing:"O‘xshash savol yo‘q — pastda menejerdan so‘rang 👇",
  ask_hint:"Javob topmadingizmi? Savol yozing — menejer bot chatida javob beradi.", ph_q:"Savolingiz…", ask_btn:"💬 Menejerdan so‘rash",
  ask_pop:"Ilova yopiladi, savol menejerga ketadi. Javob bot chatiga keladi.", ask_pop_link:"Ilova yopiladi va bot chati ochiladi — u yerda savol yozing, javob shu yerga keladi.", ask_empty:"Savol yozing",
@@ -299,6 +323,7 @@ uz:{
       ["Qaysi formatda?","PPTX (PowerPoint, Google Slides) va PDF. Har bir matn va grafikni o‘zgartirish mumkin."],
       ["O‘z shabloningiz bormi?","Yuboring — shunda bezaymiz. Yo‘q bo‘lsa — mavzuga mos dizayn o‘ylab topamiz."],
       ["30 slayddan ko‘p?","Bizga yozing — hajm va muddatni alohida kelishamiz."],
+      ["Qanday tuzatish kiritaman?","Fayl tayyor bo‘lgach, «📦 Buyurtmalarim» (bosh sahifada yoki bot menyusida) → «✏️ Tuzatish kiritish» ni bosing — nimani o‘zgartirishni yozing va skrinshotlarni chatga yuboring. 2 marta tuzatish bepul."],
       ["Ishimni boshqalarga ko‘rsatasizmi?","Yo‘q, faqat ruxsatingiz bilan."]]
 }};
 const WORKS = ["d797f293-74e4-4247-b132-38a2005c472b","3c279dba-3468-4157-b550-8faccea7e58c","3ff9c549-44f5-4f93-ade8-bee16281befd"];
@@ -315,6 +340,7 @@ const BOT = "slidelab_order_bot";
 let ORDERS = [];
 try { const o = qs.get("o"); if (o){ const b = atob(o.replace(/-/g,"+").replace(/_/g,"/")); ORDERS = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); } } catch(e){ ORDERS = []; }
 const STEPS = ["new","cover","work","done"];
+const stepOf = x => x === "edit" ? 2 : STEPS.indexOf(x);
 const st = {srcfiles:false, slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
@@ -431,11 +457,24 @@ function render(){
   $("#qsearch").placeholder = t.ph_search; $("#qtext").placeholder = t.ph_q; filterFaq();
   const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   $("#orders").innerHTML = ORDERS.length ? `<h2 style="margin-top:6px">${t.my_title}</h2>` + ORDERS.map(([id,topic,sl,status,price]) => {
-      const n = STEPS.indexOf(status);
+      const n = stepOf(status);
       return `<div class="ord"><div class="top">#${id} · ${esc(topic)}<span>${fmt(price)}${t.sum}</span></div>
         <div class="meta">${t.sl[sl] || ""}</div>
         ${status==="cancel" ? "" : `<div class="steps">${STEPS.map((x,i)=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`}
-        <div class="st">${t.st[status] || status}</div></div>`; }).join("") : "";
+        <div class="st">${t.st[status] || status}</div>
+        ${["done","edit"].includes(status) ? `<div class="edit" data-id="${id}"><button>${t.ed_btn}</button><textarea rows="3" maxlength="1500" placeholder="${t.ed_ph}"></textarea><small>${t.ed_note}</small></div>` : ""}</div>`; }).join("") : "";
+  document.querySelectorAll(".ord .edit").forEach(box => {
+    const btn = box.querySelector("button"), ta = box.querySelector("textarea");
+    btn.onclick = () => {
+      haptic();
+      if (linkMode){ tg.showConfirm(t.ed_pop_link, ok => { if (ok){ tg.openTelegramLink(`https://t.me/${BOT}?start=edit_${box.dataset.id}`); setTimeout(() => tg.close(), 300); } }); return; }
+      if (!box.classList.contains("open")){ box.classList.add("open"); btn.textContent = t.ed_send; ta.focus(); return; }
+      const text = ta.value.trim();
+      if (!text){ tg ? tg.showAlert(t.ed_empty) : alert(t.ed_empty); return; }
+      if (!inTg){ alert(t.no_tg); return; }
+      tg.showConfirm(t.ed_pop, ok => { if (ok) tg.sendData(JSON.stringify({type:"edit", lang:L, id:+box.dataset.id, text:text.slice(0,1500)})); });
+    };
+  });
   renderForm();
 }
 
