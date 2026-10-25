@@ -193,6 +193,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <textarea class="lk" id="comment" rows="3" maxlength="400"></textarea>
 
     <div class="q"><span data-t="q_sources"></span> <small data-t="optional2"></small></div>
+    <div class="hint" data-t="src_hint" style="margin:-4px 0 10px"></div>
     <textarea class="lk" id="sources" rows="3" maxlength="1500"></textarea>
     <div class="tog" id="t_srcfiles"><span data-t="x_srcfiles"></span><span class="sw"></span></div>
     <div class="hint" data-t="files_hint"></div>
@@ -239,7 +240,7 @@ ru:{
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Сохранять файлы на телефон не нужно: после заявки просто перешлите их боту из любого чата — группы, канала, лички. Подходят PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы и ссылки.",
  ph_dlink:"Ссылка: Google Slides, Canva, Figma…", own_hint:"🔓 Откройте доступ по ссылке («Все, у кого есть ссылка» — просмотр), чтобы мы могли открыть шаблон. Файл (PPTX, PDF, скриншоты) можно переслать в чат с ботом после заявки.",
- q_sources:"📚 Свои источники", ph_sources:"Ссылки на сайты, статьи, видео, книги — по одной на строку", x_srcfiles:"📎 Перешлю файлы из других чатов",
+ q_sources:"📚 Откуда брать информацию", src_hint:"Есть лекция, учебник или сайт, по которым нужна презентация? Дайте их — факты и цифры возьмём именно оттуда. Нет — найдём проверенные источники сами.", ph_sources:"Например: ссылка на лекцию, статью, сайт или видео, название учебника", x_srcfiles:"📎 Есть файлы (лекция, методичка) — перешлю в чат",
  pop_title:"Отправляем заявку", pop_ok:"Отправить", pop_msg:"Приложение закроется и откроется чат с ботом.", pop_links:" Ваши источники уйдут вместе с заявкой.", pop_files:" Файлы и ссылки просто перешлите боту из любого чата — сохранять на телефон не нужно.",
  total:"Примерная стоимость", free:"<b>Сейчас вы ничего не платите.</b> Это только ориентир цены. Мы напишем вам, уточним детали и пришлём бесплатную обложку — оплата только после согласования.", note:"Итоговую цену подтвердим в чате до начала работы.",
  send:"Отправить заявку — без оплаты", send_chat:"Продолжить в чате — без оплаты", fill:"Заполните тему, объём и срок", sum:" сум",
@@ -281,7 +282,7 @@ uz:{
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni telefonga saqlash shart emas: arizadan so‘ng ularni istalgan chatdan — guruh, kanal, shaxsiy — botga forward qiling. PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv va havolalar mos.",
  ph_dlink:"Havola: Google Slides, Canva, Figma…", own_hint:"🔓 Havola orqali kirishni oching («Havolaga ega barcha» — ko‘rish), shunda shablonni ocha olamiz. Faylni (PPTX, PDF, skrinshot) arizadan so‘ng bot chatiga forward qilish mumkin.",
- q_sources:"📚 O‘z manbalaringiz", ph_sources:"Sayt, maqola, video, kitob havolalari — har biri yangi qatorda", x_srcfiles:"📎 Fayllarni boshqa chatlardan forward qilaman",
+ q_sources:"📚 Ma’lumot qayerdan olinsin", src_hint:"Taqdimot qaysi ma’ruza, darslik yoki sayt asosida bo‘lishi kerak? Bering — fakt va raqamlarni aynan shulardan olamiz. Yo‘q bo‘lsa — ishonchli manbalarni o‘zimiz topamiz.", ph_sources:"Masalan: ma’ruza, maqola, sayt yoki video havolasi, darslik nomi", x_srcfiles:"📎 Fayllar bor (ma’ruza, qo‘llanma) — chatga forward qilaman",
  pop_title:"Arizani yuboramiz", pop_ok:"Yuborish", pop_msg:"Ilova yopiladi va bot chati ochiladi.", pop_links:" Manbalaringiz ariza bilan birga ketadi.", pop_files:" Fayl va havolalarni istalgan chatdan botga forward qiling — telefonga saqlash shart emas.",
  total:"Taxminiy narx", free:"<b>Hozir hech narsa to‘lamaysiz.</b> Bu faqat taxminiy narx. Biz sizga yozamiz, tafsilotlarni aniqlaymiz va bepul muqova yuboramiz — to‘lov faqat kelishuvdan keyin.", note:"Yakuniy narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
  send:"Arizani yuborish — to‘lovsiz", send_chat:"Chatda davom etish — to‘lovsiz", fill:"Mavzu, hajm va muddatni to‘ldiring", sum:" so‘m",
