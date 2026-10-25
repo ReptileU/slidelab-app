@@ -170,6 +170,10 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
     <div class="q lk"><span data-t="q_comment"></span> <small data-t="optional2"></small></div>
     <textarea class="lk" id="comment" rows="3" maxlength="400"></textarea>
+
+    <div class="q"><span data-t="q_sources"></span> <small data-t="optional2"></small></div>
+    <textarea class="lk" id="sources" rows="3" maxlength="1500"></textarea>
+    <div class="tog" id="t_srcfiles"><span data-t="x_srcfiles"></span><span class="sw"></span></div>
     <div class="hint" data-t="files_hint"></div>
 
     <div class="band"></div>
@@ -209,7 +213,9 @@ ru:{
  q_extras:"Дополнительно", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
- files_hint:"📎 Файлы (текст, шаблон, требования) пришлёте в чат с ботом сразу после заявки.",
+ files_hint:"📎 Любые файлы (PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы) и ссылки пришлёте в чат с ботом сразу после заявки — приложение закроется и откроет чат.",
+ q_sources:"📚 Свои источники", ph_sources:"Ссылки на сайты, статьи, видео, книги — по одной на строку", x_srcfiles:"📎 Пришлю файлы-источники в чат (любые)",
+ pop_title:"Отправляем заявку", pop_ok:"Отправить", pop_msg:"Приложение закроется и откроется чат с ботом.", pop_links:" Ваши источники уйдут вместе с заявкой.", pop_files:" Файлы любого вида (PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы) и ссылки просто пришлите в чат.",
  total:"Примерная стоимость", free:"<b>Сейчас вы ничего не платите.</b> Это только ориентир цены. Мы напишем вам, уточним детали и пришлём бесплатную обложку — оплата только после согласования.", note:"Итоговую цену подтвердим в чате до начала работы.",
  send:"Отправить заявку — без оплаты", send_chat:"Продолжить в чате — без оплаты", fill:"Заполните тему, объём и срок", sum:" сум",
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
@@ -244,7 +250,9 @@ uz:{
  q_extras:"Qo‘shimcha", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
- files_hint:"📎 Fayllarni (matn, shablon, talablar) arizadan so‘ng bot chatiga yuborasiz.",
+ files_hint:"📎 Istalgan fayllar (PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv) va havolalarni arizadan so‘ng bot chatiga yuborasiz — ilova yopilib, chat ochiladi.",
+ q_sources:"📚 O‘z manbalaringiz", ph_sources:"Sayt, maqola, video, kitob havolalari — har biri yangi qatorda", x_srcfiles:"📎 Manba fayllarini chatga yuboraman (istalgan)",
+ pop_title:"Arizani yuboramiz", pop_ok:"Yuborish", pop_msg:"Ilova yopiladi va bot chati ochiladi.", pop_links:" Manbalaringiz ariza bilan birga ketadi.", pop_files:" Istalgan fayllar (PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv) va havolalarni chatga yuboring.",
  total:"Taxminiy narx", free:"<b>Hozir hech narsa to‘lamaysiz.</b> Bu faqat taxminiy narx. Biz sizga yozamiz, tafsilotlarni aniqlaymiz va bepul muqova yuboramiz — to‘lov faqat kelishuvdan keyin.", note:"Yakuniy narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
  send:"Arizani yuborish — to‘lovsiz", send_chat:"Chatda davom etish — to‘lovsiz", fill:"Mavzu, hajm va muddatni to‘ldiring", sum:" so‘m",
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
@@ -269,7 +277,7 @@ if (!T[L]) L = "ru";
 // sendData там не работает, поэтому заявку передаём через ссылку /start в чат с ботом.
 const linkMode = !!(inTg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
 const BOT = "slidelab_order_bot";
-const st = {slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
+const st = {srcfiles:false, slides:null, deadline:"d2", plang:L==="uz"?"uz":"ru", design:"ours", text:false, notes:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
 const haptic = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} };
@@ -308,6 +316,7 @@ function renderForm(){
   chips($("#design"), t.ds, "design");
   $("#t_text").classList.toggle("on", st.text);
   $("#t_notes").classList.toggle("on", st.notes);
+  $("#t_srcfiles").classList.toggle("on", st.srcfiles);
   const p = price();
   $("#sum").textContent = p ? fmt(p)+t.sum : "—";
   updateButton();
@@ -343,11 +352,24 @@ function submit(){
   if (!valid()) { tg ? tg.showAlert(t.fill) : alert(t.fill); return; }
   const data = {v:1, lang:L, topic:$("#topic").value.trim().slice(0,300), slides:st.slides, deadline:st.deadline,
     plang:st.plang, design:st.design, text:st.text, notes:st.notes,
-    contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400)};
+    contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400),
+    sources:$("#sources").value.trim().slice(0,1500), srcfiles:st.srcfiles};
   if (!inTg){ alert(t.no_tg); return; }
-  try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
-  if (linkMode){ tg.openTelegramLink(`https://t.me/${BOT}?start=${startCode(data)}`); setTimeout(() => tg.close(), 300); return; }
-  tg.sendData(JSON.stringify(data));
+  // Предупреждаем: приложение закроется, файлы-источники присылают в чат
+  let msg = t.pop_msg + (data.sources && !linkMode ? t.pop_links : "") + (data.srcfiles || linkMode ? t.pop_files : "");
+  const go = () => {
+    try { tg.HapticFeedback && tg.HapticFeedback.notificationOccurred("success"); } catch(e){}
+    if (linkMode){ tg.openTelegramLink(`https://t.me/${BOT}?start=${startCode(data)}`); setTimeout(() => tg.close(), 300); return; }
+    let json = JSON.stringify(data);
+    while (new TextEncoder().encode(json).length > 4000 && data.sources){ data.sources = data.sources.slice(0, -100); json = JSON.stringify(data); }
+    tg.sendData(json);
+  };
+  try {
+    tg.showPopup({title:t.pop_title, message:msg.slice(0,256), buttons:[{id:"ok", type:"default", text:t.pop_ok},{type:"cancel"}]},
+      id => { if (id === "ok") go(); });
+  } catch(e){
+    try { tg.showConfirm(msg, ok => { if (ok) go(); }); } catch(e2){ go(); }
+  }
 }
 
 function render(){
@@ -359,7 +381,7 @@ function render(){
     if (el.hasAttribute("data-html")) el.innerHTML = v; else el.textContent = v;
   });
   document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l===L));
-  $("#topic").placeholder = t.ph_topic; $("#contact").placeholder = t.ph_contact; $("#comment").placeholder = t.ph_comment;
+  $("#topic").placeholder = t.ph_topic; $("#sources").placeholder = t.ph_sources; $("#contact").placeholder = t.ph_contact; $("#comment").placeholder = t.ph_comment;
   $("#prices").innerHTML = Object.entries(t.pk).map(([k,[n,s]]) =>
     `<div class="price${k==='s20'?' pop':''}" data-k="${k}"><div><div class="n">${n}${k==='s20'?`<span class="tag">${t.pop}</span>`:''}</div><div class="s">${s}</div></div><div class="p">${fmt(PRICE[k])}</div></div>`).join("");
   document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
@@ -383,6 +405,7 @@ document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.datas
 document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { L = b.dataset.l; haptic(); render(); });
 $("#t_text").onclick = () => { st.text=!st.text; haptic(); renderForm(); };
 $("#t_notes").onclick = () => { st.notes=!st.notes; haptic(); renderForm(); };
+$("#t_srcfiles").onclick = () => { st.srcfiles=!st.srcfiles; haptic(); renderForm(); };
 $("#topic").oninput = updateButton;
 $("#fallbackBtn").onclick = submit;
 
