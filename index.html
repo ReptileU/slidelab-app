@@ -298,8 +298,8 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
 <script>
 const IMG = "https://d2ol7oe51mr4n9.cloudfront.net/user_3Kg776n2YVTxhk4uIcG7vcKL8Pt/";
-const PRICE = {s10:30000, s20:50000, s30:80000};
-const EXTRA = 10000, URGENT = 0.5;
+const PRICE = {s10:15000, s20:25000, s30:35000};
+const EXTRA = 5000, URGENT = 0.5;
 
 const T = {
 ru:{
@@ -310,7 +310,7 @@ ru:{
  h_price:"Прайс", h_works:"Работы", h_why:"Почему SlideLab",
  pk:{s10:["Мини","до 10 слайдов"], s20:["Стандарт","11–20 слайдов"], s30:["Большой","21–30 слайдов"]},
  pop:"Популярный",
- extras:"⚡ Срочно (до 20 слайдов): +50%<br>✍️ Текст под ключ: +10 000<br>📝 Конспект для выступления: +10 000<br>✏️ 2 правки бесплатно",
+ extras:"⚡ Срочно (до 20 слайдов): +50%<br>✍️ Текст под ключ: +5 000<br>📝 Конспект для выступления: +5 000<br>✏️ 2 правки бесплатно",
  works:[["Неон-журнал","Экономика Узбекистана 2026"],["Винтажный скрапбук","История, 1929–1939"],["Индустриальный","Экономика и милитаризация"]],
  feat:[["✏️","Всё редактируется","Каждый текст, график и таблица — не картинки"],["👀","Превью на старте","Обложка и стиль до основной работы"],["📚","Проверенные факты","Цифры с источниками"],["🔒","Конфиденциально","Портфолио — только с разрешения"]],
  cta:"📝 Оформить заказ",
@@ -320,7 +320,7 @@ ru:{
  urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
  ready:"<b>Заполните поля со звёздочкой * — и можно отправлять.</b> Всё, что ниже, — по желанию: доп. услуги, телефон, пожелания, источники.", opt_title:"⚙️ Дополнительно", opt_tag:"НЕОБЯЗАТЕЛЬНО", q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
  q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","ссылка (Google Slides, Canva, Figma…) или файл"]},
- q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +10 000", x_notes:"📝 Конспект для выступления · +10 000",
+ q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +5 000", x_notes:"📝 Конспект для выступления · +5 000",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Сохранять файлы на телефон не нужно: после заявки просто перешлите их боту из любого чата — группы, канала, лички. Подходят PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы и ссылки.",
@@ -333,10 +333,10 @@ ru:{
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
  promo_t:"💡 <span>Выгоднее пакетом</span>", promo_x:"Нужно несколько презентаций — на учёбу, работу, на весь семестр? В пакете каждая выходит дешевле, а остаток не сгорает.", promo_go:"Посмотреть пакеты →", promo_have:"📦 <span>У вас в пакете: {l} шт</span>", promo_have_x:"Этот заказ спишется из пакета — платить отдельно не нужно (кроме срочности и текста).", promo_empty:"📦 <span>Пакет закончился</span>", promo_empty_x:"Докупите пакет — и следующие презентации снова будут дешевле.", promo_go2:"Докупить пакет →", pc:"шт", h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
- plans:{week:["2 презентации","действует 14 дней",2,80000,"−20%",["40 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
-        month:["4 презентации","действует 30 дней",4,150000,"−25%",["37 500 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
-        vip:["VIP · 10 презентаций","действует 60 дней",10,350000,"−30%",["35 000 сум за презентацию*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
- plan_note:"* 21–30 слайдов списывают 2 презентации из пакета. Срочность и «текст под ключ» оплачиваются отдельно.<br>🔁 Новый пакет можно купить в любой момент — оставшиеся презентации не сгорают, а прибавляются к новым.",
+ plans:{week:["2 презентации","действует 14 дней",2,28000,"выгода 44%",["14 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
+        month:["4 презентации","действует 30 дней",4,52000,"выгода 48%",["13 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
+        vip:["VIP · 10 презентаций","действует 60 дней",10,120000,"выгода 52%",["12 000 сум за презентацию*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
+ plan_note:"Выгода — по сравнению с разовым заказом «Стандарт» (25 000 сум).<br>* 21–30 слайдов списывают 2 презентации из пакета. Срочность и «текст под ключ» оплачиваются отдельно.<br>🔁 Новый пакет можно купить в любой момент — оставшиеся презентации не сгорают, а прибавляются к новым.",
  plan_btn:"Купить пакет", per:" сум",
  sub_pop:"Отправим заявку на пакет «{p}». Мы напишем, как оплатить, — после оплаты пакет включится.", sub_pop_link:"Приложение закроется и откроется чат — там подтвердим пакет «{p}».",
  mysub:"📦 <b>Ваш пакет</b> · осталось <b>{l} из {t}</b> презентаций · до {e}", mysub0:"<br><b>Презентации закончились</b> — купите новый пакет ниже 👇", by_sub:"Из пакета · останется {l}", sub_extra:"доплата за срочность / текст: {x}",
@@ -361,7 +361,7 @@ uz:{
  h_price:"Narxlar", h_works:"Ishlar", h_why:"Nega SlideLab",
  pk:{s10:["Mini","10 slaydgacha"], s20:["Standart","11–20 slayd"], s30:["Katta","21–30 slayd"]},
  pop:"Ommabop",
- extras:"⚡ Shoshilinch (20 slaydgacha): +50%<br>✍️ Matnni yozib beramiz: +10 000<br>📝 Chiqish uchun konspekt: +10 000<br>✏️ 2 marta tuzatish bepul",
+ extras:"⚡ Shoshilinch (20 slaydgacha): +50%<br>✍️ Matnni yozib beramiz: +5 000<br>📝 Chiqish uchun konspekt: +5 000<br>✏️ 2 marta tuzatish bepul",
  works:[["Neon-jurnal","O‘zbekiston iqtisodiyoti 2026"],["Vintaj skrapbuk","Tarix, 1929–1939"],["Industrial","Iqtisodiyot va militarizatsiya"]],
  feat:[["✏️","Hammasi tahrirlanadi","Har bir matn, grafik va jadval — rasm emas"],["👀","Boshida prevyu","Muqova va uslub asosiy ishdan oldin"],["📚","Tekshirilgan faktlar","Manbali raqamlar"],["🔒","Maxfiy","Portfolioga — faqat ruxsat bilan"]],
  cta:"📝 Buyurtma berish",
@@ -371,7 +371,7 @@ uz:{
  urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
  ready:"<b>Yulduzchali * maydonlarni to‘ldiring — va yuborish mumkin.</b> Pastdagilar — ixtiyoriy: qo‘shimcha xizmatlar, telefon, istaklar, manbalar.", opt_title:"⚙️ Qo‘shimcha", opt_tag:"IXTIYORIY", q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
  q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","havola (Google Slides, Canva, Figma…) yoki fayl"]},
- q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +10 000", x_notes:"📝 Chiqish uchun konspekt · +10 000",
+ q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +5 000", x_notes:"📝 Chiqish uchun konspekt · +5 000",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni telefonga saqlash shart emas: arizadan so‘ng ularni istalgan chatdan — guruh, kanal, shaxsiy — botga forward qiling. PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv va havolalar mos.",
@@ -384,10 +384,10 @@ uz:{
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
  promo_t:"💡 <span>Paket bilan arzonroq</span>", promo_x:"Bir nechta taqdimot kerakmi — o‘qish, ish yoki butun semestr uchun? Paketda har biri arzonroq, qoldiq esa yonmaydi.", promo_go:"Paketlarni ko‘rish →", promo_have:"📦 <span>Paketingizda: {l} ta</span>", promo_have_x:"Bu buyurtma paketdan yechiladi — alohida to‘lash shart emas (shoshilinch va matndan tashqari).", promo_empty:"📦 <span>Paket tugadi</span>", promo_empty_x:"Paket oling — keyingi taqdimotlar yana arzonroq bo‘ladi.", promo_go2:"Paket olish →", pc:"ta", h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
- plans:{week:["2 ta taqdimot","14 kun amal qiladi",2,80000,"−20%",["30 slaydgacha taqdimot — 40 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
-        month:["4 ta taqdimot","30 kun amal qiladi",4,150000,"−25%",["30 slaydgacha taqdimot — 37 500 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
-        vip:["VIP · 10 ta taqdimot","60 kun amal qiladi",10,350000,"−30%",["taqdimot — 35 000 so‘m*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
- plan_note:"* 21–30 slayd paketdan 2 ta yechadi. Shoshilinch va «matn yozish» alohida to‘lanadi.<br>🔁 Yangi paketni istalgan vaqtda olish mumkin — qolgan taqdimotlar yonmaydi, yangilariga qo‘shiladi.",
+ plans:{week:["2 ta taqdimot","14 kun amal qiladi",2,28000,"44% foyda",["30 slaydgacha taqdimot — 14 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
+        month:["4 ta taqdimot","30 kun amal qiladi",4,52000,"48% foyda",["30 slaydgacha taqdimot — 13 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
+        vip:["VIP · 10 ta taqdimot","60 kun amal qiladi",10,120000,"52% foyda",["taqdimot — 12 000 so‘m*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
+ plan_note:"Foyda — bir martalik «Standart» buyurtmaga nisbatan (25 000 so‘m).<br>* 21–30 slayd paketdan 2 ta yechadi. Shoshilinch va «matn yozish» alohida to‘lanadi.<br>🔁 Yangi paketni istalgan vaqtda olish mumkin — qolgan taqdimotlar yonmaydi, yangilariga qo‘shiladi.",
  plan_btn:"Paket olish", per:" so‘m",
  sub_pop:"«{p}» paketiga ariza yuboramiz. To‘lovni qanday qilishni yozamiz — to‘lovdan so‘ng paket yoqiladi.", sub_pop_link:"Ilova yopiladi va chat ochiladi — u yerda «{p}» paketini tasdiqlaymiz.",
  mysub:"📦 <b>Paketingiz</b> · qoldi <b>{l} / {t}</b> taqdimot · {e} gacha", mysub0:"<br><b>Taqdimotlar tugadi</b> — quyida yangi paket oling 👇", by_sub:"Paketdan · qoladi {l}", sub_extra:"shoshilinch / matn uchun: {x}",
