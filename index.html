@@ -102,6 +102,18 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 #fallbackBtn{display:none}
 
 .orders{margin:6px 0 4px}
+.plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
+.plan.vip{background:var(--card2);border-color:var(--v3);box-shadow:inset 3px 0 0 var(--v3)}
+.plan .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.plan .n{font-weight:800;font-size:18px}
+.plan .p{font-weight:800;font-size:20px;color:var(--v3);white-space:nowrap}
+.plan .p small{font-size:12px;color:var(--muted);font-weight:600}
+.plan ul{margin:10px 0 12px;padding-left:18px;color:var(--soft);font-size:13.5px;line-height:1.6}
+.plan .save{display:inline-block;background:rgba(43,179,177,.18);color:var(--v2);font-size:11.5px;font-weight:800;padding:3px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.plan button{width:100%;border:0;background:var(--v);color:var(--on);font:800 14px Manrope,system-ui,sans-serif;padding:12px;border-radius:12px}
+.plan.vip button{background:var(--v3)}
+.mysub{background:var(--card2);border:1px solid var(--v3);border-radius:var(--r);padding:14px 16px;margin:6px 0 14px;font-size:14px;color:var(--soft)}
+.mysub b{color:#fff}
 .ord{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:10px}
 .ord .top{display:flex;justify-content:space-between;gap:10px;font-weight:700;font-size:15px}
 .ord .top span{color:var(--v3);white-space:nowrap}
@@ -158,6 +170,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
   <!-- ГЛАВНАЯ -->
   <section id="home">
+    <div id="mysub"></div>
     <div class="orders" id="orders"></div>
     <div class="band"></div>
     <h1 data-t="hero" data-html></h1>
@@ -169,6 +182,10 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <h2 data-t="h_price"></h2>
     <div id="prices"></div>
     <div class="extras" data-t="extras" data-html></div>
+
+    <h2 data-t="h_subs"></h2>
+    <p class="lead" data-t="subs_lead" style="margin-top:-4px"></p>
+    <div id="subs"></div>
 
     <h2 data-t="h_works"></h2>
     <div class="gallery" id="gallery"></div>
@@ -225,7 +242,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     </details>
 
     <div class="band"></div>
-    <div class="total"><span data-t="total"></span><b id="sum">—</b><div class="free"><i>💳</i><span data-t="free" data-html></span></div></div>
+    <div class="total"><span id="total_lbl" data-t="total"></span><b id="sum">—</b><div class="free"><i>💳</i><span data-t="free" data-html></span></div></div>
     <p class="note" data-t="note"></p>
     <button class="cta" id="fallbackBtn"></button>
   </section>
@@ -273,6 +290,14 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
+ h_subs:"⭐ Подписки", subs_lead:"Для тех, кому презентации нужны регулярно. Лимит — чтобы каждую мы делали качественно.",
+ plans:{week:["Неделя","7 дней",2,80000,"−20%",["2 презентации до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
+        month:["Месяц","30 дней",4,150000,"−25%",["4 презентации до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
+        vip:["VIP","30 дней",10,350000,"−30%",["до 10 презентаций*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
+ plan_note:"* 21–30 слайдов списывают 2 из лимита. Срочность и «текст под ключ» оплачиваются отдельно.",
+ plan_btn:"Оформить", per:" сум",
+ sub_pop:"Отправим заявку на подписку «{p}». Мы напишем, как оплатить, — после оплаты подписка включится.", sub_pop_link:"Приложение закроется и откроется чат — там подтвердим подписку «{p}».",
+ mysub:"⭐ <b>Подписка «{p}»</b> · осталось <b>{l} из {t}</b> · до {e}", by_sub:"По подписке · останется {l}", sub_extra:"доплата за срочность / текст: {x}",
  my_title:"📦 Мои заказы", st:{new:"🆕 Принят",cover:"🎨 Обложка готова",work:"🛠 В работе",edit:"✏️ Вносим правки",done:"✅ Готово",cancel:"✖️ Отменён"}, ed_btn:"✏️ Внести правки", ed_send:"📨 Отправить правки", ed_ph:"Что поменять? Например: слайд 3 — заменить график, слайд 5 — убрать текст", ed_note:"2 правки бесплатно. Скриншоты и файлы можно прислать в чат после отправки.", ed_pop:"Приложение закроется, правки уйдут менеджеру. Скриншоты пришлите в чат.", ed_pop_link:"Приложение закроется и откроется чат — там напишите правки или пришлите скриншоты.", ed_empty:"Опишите, что поменять",
  ph_search:"Поиск по вопросам…", nothing:"Похожих вопросов нет — спросите менеджера ниже 👇",
  ask_hint:"Не нашли ответ? Напишите вопрос — менеджер ответит в чате с ботом.", ph_q:"Ваш вопрос…", ask_btn:"💬 Спросить менеджера",
@@ -316,6 +341,14 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
+ h_subs:"⭐ Obunalar", subs_lead:"Taqdimot muntazam kerak bo‘lganlar uchun. Limit — har birini sifatli qilishimiz uchun.",
+ plans:{week:["Hafta","7 kun",2,80000,"−20%",["30 slaydgacha 2 ta taqdimot*","muqova bepul, har biriga 2 tuzatish"]],
+        month:["Oy","30 kun",4,150000,"−25%",["30 slaydgacha 4 ta taqdimot*","muqova bepul, har biriga 2 tuzatish"]],
+        vip:["VIP","30 kun",10,350000,"−30%",["10 tagacha taqdimot*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
+ plan_note:"* 21–30 slayd limitdan 2 ta yechadi. Shoshilinch va «matn yozish» alohida to‘lanadi.",
+ plan_btn:"Rasmiylashtirish", per:" so‘m",
+ sub_pop:"«{p}» obunasiga ariza yuboramiz. To‘lovni qanday qilishni yozamiz — to‘lovdan so‘ng obuna yoqiladi.", sub_pop_link:"Ilova yopiladi va chat ochiladi — u yerda «{p}» obunasini tasdiqlaymiz.",
+ mysub:"⭐ <b>«{p}» obunasi</b> · qoldi <b>{l} / {t}</b> · {e} gacha", by_sub:"Obuna bo‘yicha · qoladi {l}", sub_extra:"shoshilinch / matn uchun: {x}",
  my_title:"📦 Buyurtmalarim", st:{new:"🆕 Qabul qilindi",cover:"🎨 Muqova tayyor",work:"🛠 Ishlanmoqda",edit:"✏️ Tuzatilmoqda",done:"✅ Tayyor",cancel:"✖️ Bekor qilindi"}, ed_btn:"✏️ Tuzatish kiritish", ed_send:"📨 Tuzatishlarni yuborish", ed_ph:"Nimani o‘zgartirish kerak? Masalan: 3-slayd — grafikni almashtirish", ed_note:"2 marta tuzatish bepul. Skrinshot va fayllarni keyin chatga yuborish mumkin.", ed_pop:"Ilova yopiladi, tuzatishlar menejerga ketadi. Skrinshotlarni chatga yuboring.", ed_pop_link:"Ilova yopiladi va chat ochiladi — u yerda tuzatishlarni yozing yoki skrinshot yuboring.", ed_empty:"Nimani o‘zgartirishni yozing",
  ph_search:"Savollar bo‘yicha qidirish…", nothing:"O‘xshash savol yo‘q — pastda menejerdan so‘rang 👇",
  ask_hint:"Javob topmadingizmi? Savol yozing — menejer bot chatida javob beradi.", ph_q:"Savolingiz…", ask_btn:"💬 Menejerdan so‘rash",
@@ -342,6 +375,8 @@ const linkMode = !!(inTg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
 const BOT = "slidelab_order_bot";
 let ORDERS = [];
 try { const o = qs.get("o"); if (o){ const b = atob(o.replace(/-/g,"+").replace(/_/g,"/")); ORDERS = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); } } catch(e){ ORDERS = []; }
+let SUB = null;
+try { const v = qs.get("s"); if (v){ const [plan,left,lim,end] = v.split("."); SUB = {plan, left:+left, limit:+lim, end}; } } catch(e){ SUB = null; }
 const STEPS = ["new","cover","work","done"];
 const stepOf = x => x === "edit" ? 2 : STEPS.indexOf(x);
 const st = {srcfiles:false, slides:null, deadline:null, plang:null, design:null, text:false, notes:false};
@@ -360,8 +395,17 @@ function chips(el, dict, key, sub){
   }
 }
 
+function subCost(){ return st.slides === "s30" ? 2 : 1; }
+function bySub(){ return SUB && st.slides && SUB.left >= subCost(); }
 function price(){
   if (!st.slides) return null;
+  if (bySub()){
+    let x = 0;
+    if (st.deadline==="d1") x += Math.round(PRICE[st.slides]*URGENT);
+    if (st.text) x += EXTRA;
+    if (st.notes && SUB.plan !== "vip") x += EXTRA;
+    return x;
+  }
   let p = PRICE[st.slides];
   if (st.deadline==="d1") p = Math.round(p*(1+URGENT));
   if (st.text) p += EXTRA;
@@ -408,7 +452,8 @@ function renderForm(){
   $("#t_notes").classList.toggle("on", st.notes);
   $("#t_srcfiles").classList.toggle("on", st.srcfiles);
   const p = price();
-  $("#sum").textContent = p ? fmt(p)+t.sum : "—";
+  $("#sum").textContent = p === null ? "—" : (bySub() ? (p ? "+"+fmt(p)+t.sum : "0"+t.sum) : fmt(p)+t.sum);
+  $("#total_lbl").textContent = bySub() ? t.by_sub.replace("{l}", SUB.left - subCost()) : t.total;
   updateButton();
 }
 
@@ -479,6 +524,17 @@ function render(){
   $("#gallery").innerHTML = t.works.map(([a,b],i) =>
     `<div class="work"><img loading="lazy" src="${IMG+WORKS[i]}.png" alt="${a}" onerror="this.closest('.work').style.display='none'"><div>${a}<small>${b}</small></div></div>`).join("");
   $("#feat").innerHTML = t.feat.map(([i,b,s],n) => `<div class="${n===0?'hl':''}"><i>${i}</i><b>${b}</b><span>${s}</span></div>`).join("");
+  const pname = k => (t.plans[k] || [k])[0];
+  $("#mysub").innerHTML = SUB ? `<div class="mysub">${t.mysub.replace("{p}", pname(SUB.plan)).replace("{l}", SUB.left).replace("{t}", SUB.limit).replace("{e}", SUB.end.slice(8,10)+"."+SUB.end.slice(5,7))}</div>` : "";
+  $("#subs").innerHTML = Object.entries(t.plans).map(([k,[n,d,lim,pr,save,items]]) =>
+    `<div class="plan ${k==="vip"?"vip":""}"><div class="top"><div class="n">${n}<span class="save">${save}</span></div><div class="p">${fmt(pr)}${t.per}<br><small>${d}</small></div></div>
+     <ul>${items.map(i=>`<li>${i}</li>`).join("")}</ul><button data-plan="${k}">${t.plan_btn}</button></div>`).join("") + `<p class="note" style="text-align:left">${t.plan_note}</p>`;
+  document.querySelectorAll(".plan button").forEach(b => b.onclick = () => {
+    const k = b.dataset.plan; haptic();
+    if (!inTg){ alert(t.no_tg); return; }
+    if (linkMode){ tg.showConfirm(t.sub_pop_link.replace("{p}", pname(k)), ok => { if (ok){ tg.openTelegramLink(`https://t.me/${BOT}?start=sub_${k}`); setTimeout(() => tg.close(), 300); } }); return; }
+    tg.showConfirm(t.sub_pop.replace("{p}", pname(k)), ok => { if (ok) tg.sendData(JSON.stringify({type:"sub", plan:k, lang:L})); });
+  });
   $("#faqList").innerHTML = t.faq.map(([q,a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("") + `<p class="note" id="nothing" style="display:none">${t.nothing}</p>`;
   $("#qsearch").placeholder = t.ph_search; $("#qtext").placeholder = t.ph_q; filterFaq();
   const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
