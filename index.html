@@ -183,6 +183,15 @@ p.lead{color:var(--muted);font-size:15px;line-height:1.5;margin:0 0 16px}
 
 .gallery{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 6px;scrollbar-width:none}
 .gallery::-webkit-scrollbar{display:none}
+.gallery{scroll-behavior:smooth}
+.gwrap{position:relative}
+.gnav{position:absolute;top:calc(50% - 40px);width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:rgba(15,27,45,.85);color:#fff;
+  font:700 22px/32px Manrope,sans-serif;display:none;z-index:2;cursor:pointer}
+.gnav.prev{left:-6px}.gnav.next{right:-6px}
+.gdots{display:flex;justify-content:center;gap:6px;margin-top:10px}
+.gdots i{width:7px;height:7px;border-radius:4px;background:#2C405C;transition:width .25s,background .25s;cursor:pointer}
+.gdots i.on{width:20px;background:var(--v)}
+@media (hover:hover){ .gnav{display:block} }
 .work{flex:0 0 86%;scroll-snap-align:center;background:var(--card);border-radius:var(--r);overflow:hidden}
 .work img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#111}
 .work div{padding:12px 14px;font-weight:700;font-size:14px}
@@ -452,7 +461,9 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
 
     <h2 data-t="h_works" id="a_works"></h2>
-    <div class="gallery" id="gallery"></div>
+    <div class="gwrap"><div class="gallery" id="gallery"></div>
+      <button class="gnav prev" id="gPrev" aria-label="‹">‹</button><button class="gnav next" id="gNext" aria-label="›">›</button></div>
+    <div class="gdots" id="gDots"></div>
 
     <h2 data-t="h_why"></h2>
     <div class="feat" id="feat"></div>
@@ -832,6 +843,53 @@ function miniHtml(x, t){
   return `<div class="mini" style="background:${x.bg}">${deco}<span class="mt" style="color:${x.fg}">${nm}</span>
     <i class="ml" style="width:38%;background:${x.ac}"></i><i class="ml2" style="width:28%;background:${x.fg}"></i></div>`;
 }
+// ── карусель работ: листается сама, можно листать пальцем/мышью; при касании пауза ──
+let AUTO = null, AUTO_PAUSE = 0;
+function gItems(){ return [...document.querySelectorAll("#gallery .work")].filter(w => w.style.display !== "none"); }
+function gIndex(){
+  const g = $("#gallery"), items = gItems(); if (!items.length) return 0;
+  const c = g.scrollLeft + g.clientWidth / 2;
+  let best = 0, d = 1e9;
+  items.forEach((w, i) => { const m = w.offsetLeft + w.offsetWidth / 2 - g.offsetLeft; const k = Math.abs(m - c); if (k < d){ d = k; best = i; } });
+  return best;
+}
+function gGo(i){
+  const g = $("#gallery"), items = gItems(); if (!items.length) return;
+  i = (i + items.length) % items.length;
+  const w = items[i];
+  g.scrollTo({left: w.offsetLeft - g.offsetLeft - (g.clientWidth - w.offsetWidth) / 2, behavior: "smooth"});
+}
+function gDots(){
+  const items = gItems(), cur = gIndex();
+  $("#gDots").innerHTML = items.map((_, i) => `<i class="${i===cur?"on":""}" data-i="${i}"></i>`).join("");
+  document.querySelectorAll("#gDots i").forEach(d => d.onclick = () => { AUTO_PAUSE = Date.now() + 8000; gGo(+d.dataset.i); });
+}
+function stopAuto(){ if (AUTO){ clearInterval(AUTO); AUTO = null; } }
+function startAuto(){
+  stopAuto();
+  AUTO = setInterval(() => {
+    if (Date.now() < AUTO_PAUSE || TAB !== "home" || document.hidden) return;
+    const g = $("#gallery"); const r = g.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) return;           // не крутим, если галерея не на экране
+    gGo(gIndex() + 1);
+  }, 3500);
+}
+function initGallery(){
+  const g = $("#gallery");
+  const pause = () => { AUTO_PAUSE = Date.now() + 8000; };
+  ["touchstart","pointerdown","wheel"].forEach(ev => g.addEventListener(ev, pause, {passive:true}));
+  g.addEventListener("mouseenter", () => { AUTO_PAUSE = Date.now() + 600000; });
+  g.addEventListener("mouseleave", () => { AUTO_PAUSE = Date.now() + 1500; });
+  let tmr; g.addEventListener("scroll", () => { clearTimeout(tmr); tmr = setTimeout(gDots, 120); }, {passive:true});
+  $("#gPrev").onclick = () => { pause(); gGo(gIndex() - 1); };
+  $("#gNext").onclick = () => { pause(); gGo(gIndex() + 1); };
+  // мышью можно тянуть галерею (на компьютере)
+  let down = false, sx = 0, sl = 0;
+  g.addEventListener("mousedown", e => { down = true; sx = e.pageX; sl = g.scrollLeft; g.style.scrollSnapType = "none"; g.style.scrollBehavior = "auto"; });
+  window.addEventListener("mouseup", () => { if (!down) return; down = false; g.style.scrollSnapType = ""; g.style.scrollBehavior = ""; gGo(gIndex()); });
+  window.addEventListener("mousemove", e => { if (down){ e.preventDefault(); g.scrollLeft = sl - (e.pageX - sx); } });
+}
+
 function renderShowcase(t){
   const tags = ["all","study","business","dark","light"];
   $("#sfil").innerHTML = tags.map(k => `<button data-k="${k}" class="${k===SFIL?"on":""}">${t.stags[k]}</button>`).join("");
@@ -1005,6 +1063,7 @@ function render(){
     + `<div class="first">${FIRST ? t.first_you.replace("{p}", fmt(FIRST)) : t.first_all}</div>`;
   document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
   renderCmp();
+  stopAuto(); setTimeout(() => { if (typeof gDots === "function" && $("#gDots")){ gDots(); startAuto(); } }, 300);
   $("#gallery").innerHTML = t.works.map(([a,b],i) =>
     `<div class="work"><img loading="lazy" src="${IMG+WORKS[i]}.png" alt="${a}" onerror="this.closest('.work').style.display='none'"><div>${a}<small>${b}</small></div></div>`).join("");
   $("#feat").innerHTML = t.feat.map(([i,b,s],n) => `<div class="${n===0?'hl':''}"><i>${i}</i><b>${b}</b><span>${s}</span></div>`).join("");
@@ -1222,6 +1281,8 @@ if (inTg){
   tg.BackButton.onClick(() => { if ($("#sheet").classList.contains("on")){ closeSheet(); if (TAB==="home") tg.BackButton.hide(); return; } go(TAB==="faq" ? "me" : "home"); });
 }
 render();
+initGallery();
+setTimeout(() => { gDots(); startAuto(); }, 400);
 // Первый вход: просим выбрать язык (если его ещё не выбирали в приложении)
 function showLangPick(){
   const el = document.createElement("div");
