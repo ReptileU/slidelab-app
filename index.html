@@ -814,24 +814,25 @@ const GIFT_ON = new Date().toISOString().slice(0,10) <= GIFT_UNTIL;
 let SUB = null;
 try { const v = qs.get("s"); if (v){ const [plan,left,lim,end] = v.split("."); SUB = {plan, left:+left, limit:+lim, end}; } } catch(e){ SUB = null; }
 const STEPS = ["new","cover","work","done"];
-// Стили для витрины: 3 — наши реальные работы (с картинкой), остальные — схемы стиля
+// Стили для витрины: img — наши реальные работы, src — примеры обложек на реальные темы (папка ex/)
 const STYLES = [
   {k:"neon",   tags:["study","dark"],     img:0, bg:"linear-gradient(135deg,#2a0f3d,#7A3E9D)", fg:"#fff", ac:"#FF4FD8"},
   {k:"vintage",tags:["study","light"],    img:1, bg:"#E9DCC3", fg:"#3a2a10", ac:"#B3262E"},
   {k:"indust", tags:["business","dark"],  img:2, bg:"linear-gradient(135deg,#1c1c1c,#4a4a4a)", fg:"#F2A93B", ac:"#F2A93B"},
   {k:"artdeco",tags:["study","dark"],     img:3, bg:"linear-gradient(135deg,#0d0f14,#2a2414)", fg:"#C9A961", ac:"#C9A961"},
   {k:"gazeta", tags:["study","light"],    img:4, bg:"#EEE6D3", fg:"#111", ac:"#D7261E"},
-  {k:"minimal",tags:["business","light"], bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
-  {k:"corp",   tags:["business","light"], bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
-  {k:"samarkand",tags:["study","dark"],   bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
-  {k:"science",tags:["study","light"],    bg:"linear-gradient(135deg,#E8F4FF,#C9E3FF)", fg:"#0B3C7A", ac:"#4F6BD1", deco:"chart"},
-  {k:"premium",tags:["business","dark"],  bg:"linear-gradient(135deg,#0b0b0c,#22252b)", fg:"#D9A441", ac:"#D9A441", deco:"line"},
-  {k:"bright", tags:["study","light"],    bg:"linear-gradient(135deg,#FFE066,#FF7A59)", fg:"#2a1a00", ac:"#fff", deco:"blob"},
-  {k:"nature", tags:["study","light"],    bg:"linear-gradient(135deg,#DFF3E4,#9FD8B0)", fg:"#0F5132", ac:"#13A36B", deco:"leaf"},
+  {k:"minimal",src:"ex/minimal.jpg",tags:["business","light"], bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
+  {k:"corp",src:"ex/corp.jpg",   tags:["business","light"], bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
+  {k:"samarkand",src:"ex/samarkand.jpg",tags:["study","dark"],   bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
+  {k:"science",src:"ex/science.jpg",tags:["study","light"],    bg:"linear-gradient(135deg,#E8F4FF,#C9E3FF)", fg:"#0B3C7A", ac:"#4F6BD1", deco:"chart"},
+  {k:"premium",src:"ex/premium.jpg",tags:["business","dark"],  bg:"linear-gradient(135deg,#0b0b0c,#22252b)", fg:"#D9A441", ac:"#D9A441", deco:"line"},
+  {k:"bright",src:"ex/bright.jpg", tags:["study","light"],    bg:"linear-gradient(135deg,#FFE066,#FF7A59)", fg:"#2a1a00", ac:"#fff", deco:"blob"},
+  {k:"nature",src:"ex/nature.jpg", tags:["study","light"],    bg:"linear-gradient(135deg,#DFF3E4,#9FD8B0)", fg:"#0F5132", ac:"#13A36B", deco:"leaf"},
 ];
 let SFIL = "all";
 function miniHtml(x, t){
   const nm = t.styles[x.k][0];
+  if (x.src) return `<div class="mini" style="background:url('${x.src}') center/cover no-repeat, ${x.bg}"></div>`;
   if (x.img !== undefined) return `<div class="mini" style="background:url('${IMG + WORKS[x.img]}.png') center/cover no-repeat, ${x.bg}"><span class="mt" style="color:${x.fg};opacity:.35">${nm}</span><i class="real">${t.real}</i></div>`;
   const deco = {
     circle:`<i class="md" style="right:-12%;top:-20%;width:55%;aspect-ratio:1;border-radius:50%;background:${x.ac};opacity:.9"></i>`,
