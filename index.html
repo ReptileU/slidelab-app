@@ -77,6 +77,17 @@ details.shw[open]{padding-bottom:14px}
 .mini .ml{position:absolute;left:9%;top:58%;height:4px;border-radius:2px}
 .mini .ml2{position:absolute;left:9%;top:68%;height:4px;border-radius:2px;opacity:.6}
 .mini .md{position:absolute}
+.sc{cursor:pointer}
+.sc .mini:after{content:"🔍";position:absolute;left:6px;bottom:6px;font-size:11px;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:rgba(15,27,45,.8)}
+.sv h3{margin:8px 0 2px;font-size:20px;color:#fff}.sv p{margin:0 0 12px;color:var(--soft);font-size:13px;line-height:1.45}
+.svlbl{font-size:10.5px;font-weight:800;color:var(--on);background:var(--v3);padding:3px 8px;border-radius:6px}
+.svlist{display:flex;flex-direction:column;gap:10px;max-height:58vh;overflow-y:auto;border-radius:12px;-webkit-overflow-scrolling:touch}
+.svimg{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;display:block;background:#0b0f17}
+.svimg.full{aspect-ratio:auto;object-fit:contain}
+.svmini .mini{border-radius:12px}
+.svbtns{display:grid;grid-template-columns:1.4fr 1fr;gap:8px;margin-top:12px}
+.svb{border:1px solid var(--line);background:transparent;color:var(--text);border-radius:14px;padding:14px 10px;font:800 15px Manrope,system-ui,sans-serif;cursor:pointer}
+.svb.on{background:var(--v);border-color:var(--v);color:var(--on)}
 .mini.mcol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:3fr 1fr;gap:3px;padding:3px;background:#0b0f17}
 .mini.mcol img{width:100%;height:100%;object-fit:cover;border-radius:3px;display:block;min-height:0}
 .mini.mcol img.c{grid-column:1/-1;object-position:left center}
@@ -577,7 +588,7 @@ ru:{
  way1_pts:"🎨 цвета и шрифты под смысл темы<br>📷 реальные фото по смыслу темы — исторические снимки, места, люди, события<br>🤖 плюс уникальные картинки от нейросети там, где нужного фото нет<br>📊 графики и схемы по вашим данным", way_go:"Заказать →",
  way2_t:"По вашему шаблону", way2_x:"Есть шаблон кафедры, фирменный стиль или понравившийся пример? Пришлите ссылку или файл — сделаем точно в нём.",
  sh_t:"Нужна идея? Посмотрите примеры стилей", sh_x:"по желанию — можно выбрать готовое направление",
- stags:{all:"Все",study:"Учёба",business:"Бизнес",dark:"Тёмные",light:"Светлые"}, want:"Хочу такую", real:"наша работа", ex:"пример стиля",
+ stags:{all:"Все",study:"Учёба",business:"Бизнес",dark:"Тёмные",light:"Светлые"}, want:"Хочу такую", real:"наша работа", ex:"пример стиля", sv_x:"тему, тексты и картинки сделаем под вашу задачу", sv_close:"Закрыть",
  styles:{artdeco:["Ар-деко 1920-х","золото, история"],gazeta:["Газета 1929","газетный, история"],neon:["Неон-журнал","яркий, журнальный"],vintage:["Винтажный скрапбук","история, ретро"],indust:["Индустриальный","экономика, техника"],
    minimal:["Минимализм","чисто и стильно"],corp:["Корпоративный","отчёт, бизнес-план"],samarkand:["Самарканд","восточный узор"],
    science:["Научный","графики и схемы"],premium:["Премиум","чёрный с золотом"],bright:["Яркий","школа, творчество"],nature:["Эко","природа, биология"]},
@@ -650,7 +661,7 @@ en:{
  way1_pts:"🎨 colours and fonts that match the meaning<br>📷 real photos that fit the topic — historical shots, places, people, events<br>🤖 plus unique AI images where the right photo doesn't exist<br>📊 charts and diagrams from your data", way_go:"Order →",
  way2_t:"In your template", way2_x:"Have a department template, brand style or an example you like? Send a link or a file — we'll design exactly in it.",
  sh_t:"Need an idea? Browse style examples", sh_x:"optional — you can pick a ready direction",
- stags:{all:"All",study:"Study",business:"Business",dark:"Dark",light:"Light"}, want:"I want this", real:"our work", ex:"style example",
+ stags:{all:"All",study:"Study",business:"Business",dark:"Dark",light:"Light"}, want:"I want this", real:"our work", ex:"style example", sv_x:"we make the topic, texts and images for your task", sv_close:"Close",
  styles:{artdeco:["Art Deco 1920s","gold, history"],gazeta:["1929 Newspaper","newsprint, history"],neon:["Neon magazine","bright, editorial"],vintage:["Vintage scrapbook","history, retro"],indust:["Industrial","economy, tech"],
    minimal:["Minimal","clean and stylish"],corp:["Corporate","report, business plan"],samarkand:["Samarkand","oriental pattern"],
    science:["Science","charts and diagrams"],premium:["Premium","black and gold"],bright:["Bright","school, creative"],nature:["Eco","nature, biology"]},
@@ -723,7 +734,7 @@ uz:{
  way1_pts:"🎨 mavzu ma’nosiga mos ranglar va shriftlar<br>📷 mavzu ma’nosiga mos haqiqiy fotosuratlar — tarixiy suratlar, joylar, odamlar, voqealar<br>🤖 kerakli surat bo‘lmasa — neyrotarmoqning noyob rasmlari<br>📊 ma’lumotlaringiz bo‘yicha grafik va sxemalar", way_go:"Buyurtma berish →",
  way2_t:"Sizning shabloningiz bo‘yicha", way2_x:"Kafedra shabloni, firma uslubi yoki yoqqan namuna bormi? Havola yoki faylni yuboring — aynan shunda qilamiz.",
  sh_t:"G‘oya kerakmi? Uslub namunalarini ko‘ring", sh_x:"ixtiyoriy — tayyor yo‘nalishni tanlash mumkin",
- stags:{all:"Hammasi",study:"O‘qish",business:"Biznes",dark:"To‘q",light:"Yorug‘"}, want:"Shunaqasini xohlayman", real:"bizning ish", ex:"uslub namunasi",
+ stags:{all:"Hammasi",study:"O‘qish",business:"Biznes",dark:"To‘q",light:"Yorug‘"}, want:"Shunaqasini xohlayman", real:"bizning ish", ex:"uslub namunasi", sv_x:"mavzu, matn va rasmlarni vazifangizga moslab qilamiz", sv_close:"Yopish",
  styles:{artdeco:["Ar-deko 1920","oltin, tarix"],gazeta:["1929 gazetasi","gazeta uslubi, tarix"],neon:["Neon-jurnal","yorqin, jurnal uslubi"],vintage:["Vintaj skrapbuk","tarix, retro"],indust:["Industrial","iqtisod, texnika"],
    minimal:["Minimalizm","toza va zamonaviy"],corp:["Korporativ","hisobot, biznes-reja"],samarkand:["Samarqand","sharqona naqsh"],
    science:["Ilmiy","grafik va sxemalar"],premium:["Premium","qora va oltin"],bright:["Yorqin","maktab, ijod"],nature:["Eko","tabiat, biologiya"]},
@@ -933,7 +944,22 @@ function renderShowcase(t){
   document.querySelectorAll("#sfil button").forEach(b => b.onclick = () => { SFIL = b.dataset.k; haptic(); renderShowcase(T[L]); });
   const list = STYLES.filter(x => SFIL==="all" || x.tags.includes(SFIL));
   $("#sgrid").innerHTML = list.map(x => `<button class="sc" data-k="${x.k}">${miniHtml(x, t)}<div class="sb"><b>${t.styles[x.k][0]}</b><small>${t.styles[x.k][1]}</small><span class="want">${t.want}</span></div></button>`).join("");
-  document.querySelectorAll("#sgrid .sc").forEach(b => b.onclick = () => { haptic(); st.style = b.dataset.k; st.design = "ours"; go("order"); });
+  document.querySelectorAll("#sgrid .sc").forEach(b => b.onclick = () => { haptic(); openStyle(b.dataset.k); });
+  document.querySelectorAll("#sgrid .want").forEach(w => w.onclick = e => { e.stopPropagation(); haptic(); pickStyle(w.closest(".sc").dataset.k); });
+}
+function pickStyle(k){ closeSheet(); st.style = k; st.design = "ours"; go("order"); }
+// посмотреть стиль поближе: все слайды крупно, выбрать — по кнопке
+function openStyle(k){
+  const t = T[L], x = STYLES.find(y => y.k === k); if (!x) return;
+  const imgs = x.src ? [x.src, ...(x.more || [])] : (x.img !== undefined ? [WORKS[x.img]] : []);
+  const body = imgs.length ? imgs.map(m => `<img class="svimg${x.src ? "" : " full"}" src="${IMG + m}.png" alt="">`).join("") : `<div class="svmini">${miniHtml(x, t)}</div>`;
+  const lbl = x.src ? t.ex : (x.img !== undefined ? t.real : "");
+  openSheet(`<div class="sv">${lbl ? `<span class="svlbl">${lbl}</span>` : ""}
+    <h3>${t.styles[k][0]}</h3><p>${t.styles[k][1]} · ${t.sv_x}</p>
+    <div class="svlist">${body}</div>
+    <div class="svbtns"><button class="svb on" id="svPick">${t.want}</button><button class="svb" id="svClose">${t.sv_close}</button></div></div>`);
+  $("#svPick").onclick = () => { haptic(); pickStyle(k); };
+  $("#svClose").onclick = closeSheet;
 }
 function renderStyleTag(t){
   const x = STYLES.find(y => y.k === st.style);
