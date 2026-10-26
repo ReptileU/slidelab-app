@@ -574,7 +574,7 @@ ru:{
  way1_pts:"🎨 цвета и шрифты под смысл темы<br>📷 реальные фото по смыслу темы — исторические снимки, места, люди, события<br>🤖 плюс уникальные картинки от нейросети там, где нужного фото нет<br>📊 графики и схемы по вашим данным", way_go:"Заказать →",
  way2_t:"По вашему шаблону", way2_x:"Есть шаблон кафедры, фирменный стиль или понравившийся пример? Пришлите ссылку или файл — сделаем точно в нём.",
  sh_t:"Нужна идея? Посмотрите примеры стилей", sh_x:"по желанию — можно выбрать готовое направление",
- stags:{all:"Все",study:"Учёба",business:"Бизнес",dark:"Тёмные",light:"Светлые"}, want:"Хочу такую", real:"наша работа",
+ stags:{all:"Все",study:"Учёба",business:"Бизнес",dark:"Тёмные",light:"Светлые"}, want:"Хочу такую", real:"наша работа", ex:"пример стиля",
  styles:{artdeco:["Ар-деко 1920-х","золото, история"],gazeta:["Газета 1929","газетный, история"],neon:["Неон-журнал","яркий, журнальный"],vintage:["Винтажный скрапбук","история, ретро"],indust:["Индустриальный","экономика, техника"],
    minimal:["Минимализм","чисто и стильно"],corp:["Корпоративный","отчёт, бизнес-план"],samarkand:["Самарканд","восточный узор"],
    science:["Научный","графики и схемы"],premium:["Премиум","чёрный с золотом"],bright:["Яркий","школа, творчество"],nature:["Эко","природа, биология"]},
@@ -647,7 +647,7 @@ en:{
  way1_pts:"🎨 colours and fonts that match the meaning<br>📷 real photos that fit the topic — historical shots, places, people, events<br>🤖 plus unique AI images where the right photo doesn't exist<br>📊 charts and diagrams from your data", way_go:"Order →",
  way2_t:"In your template", way2_x:"Have a department template, brand style or an example you like? Send a link or a file — we'll design exactly in it.",
  sh_t:"Need an idea? Browse style examples", sh_x:"optional — you can pick a ready direction",
- stags:{all:"All",study:"Study",business:"Business",dark:"Dark",light:"Light"}, want:"I want this", real:"our work",
+ stags:{all:"All",study:"Study",business:"Business",dark:"Dark",light:"Light"}, want:"I want this", real:"our work", ex:"style example",
  styles:{artdeco:["Art Deco 1920s","gold, history"],gazeta:["1929 Newspaper","newsprint, history"],neon:["Neon magazine","bright, editorial"],vintage:["Vintage scrapbook","history, retro"],indust:["Industrial","economy, tech"],
    minimal:["Minimal","clean and stylish"],corp:["Corporate","report, business plan"],samarkand:["Samarkand","oriental pattern"],
    science:["Science","charts and diagrams"],premium:["Premium","black and gold"],bright:["Bright","school, creative"],nature:["Eco","nature, biology"]},
@@ -720,7 +720,7 @@ uz:{
  way1_pts:"🎨 mavzu ma’nosiga mos ranglar va shriftlar<br>📷 mavzu ma’nosiga mos haqiqiy fotosuratlar — tarixiy suratlar, joylar, odamlar, voqealar<br>🤖 kerakli surat bo‘lmasa — neyrotarmoqning noyob rasmlari<br>📊 ma’lumotlaringiz bo‘yicha grafik va sxemalar", way_go:"Buyurtma berish →",
  way2_t:"Sizning shabloningiz bo‘yicha", way2_x:"Kafedra shabloni, firma uslubi yoki yoqqan namuna bormi? Havola yoki faylni yuboring — aynan shunda qilamiz.",
  sh_t:"G‘oya kerakmi? Uslub namunalarini ko‘ring", sh_x:"ixtiyoriy — tayyor yo‘nalishni tanlash mumkin",
- stags:{all:"Hammasi",study:"O‘qish",business:"Biznes",dark:"To‘q",light:"Yorug‘"}, want:"Shunaqasini xohlayman", real:"bizning ish",
+ stags:{all:"Hammasi",study:"O‘qish",business:"Biznes",dark:"To‘q",light:"Yorug‘"}, want:"Shunaqasini xohlayman", real:"bizning ish", ex:"uslub namunasi",
  styles:{artdeco:["Ar-deko 1920","oltin, tarix"],gazeta:["1929 gazetasi","gazeta uslubi, tarix"],neon:["Neon-jurnal","yorqin, jurnal uslubi"],vintage:["Vintaj skrapbuk","tarix, retro"],indust:["Industrial","iqtisod, texnika"],
    minimal:["Minimalizm","toza va zamonaviy"],corp:["Korporativ","hisobot, biznes-reja"],samarkand:["Samarqand","sharqona naqsh"],
    science:["Ilmiy","grafik va sxemalar"],premium:["Premium","qora va oltin"],bright:["Yorqin","maktab, ijod"],nature:["Eko","tabiat, biologiya"]},
@@ -821,9 +821,9 @@ const STYLES = [
   {k:"indust", tags:["business","dark"],  img:2, bg:"linear-gradient(135deg,#1c1c1c,#4a4a4a)", fg:"#F2A93B", ac:"#F2A93B"},
   {k:"artdeco",tags:["study","dark"],     img:3, bg:"linear-gradient(135deg,#0d0f14,#2a2414)", fg:"#C9A961", ac:"#C9A961"},
   {k:"gazeta", tags:["study","light"],    img:4, bg:"#EEE6D3", fg:"#111", ac:"#D7261E"},
-  {k:"minimal",tags:["business","light"], bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
-  {k:"corp",   tags:["business","light"], bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
-  {k:"samarkand",tags:["study","dark"],   bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
+  {k:"minimal",tags:["business","light"], src:"8e592df2-5b66-4b76-adae-dd8fab34c814", bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
+  {k:"corp",   tags:["business","dark"], src:"3fbe9ffd-ced6-44f5-bfd4-4c483f37aa0b", bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
+  {k:"samarkand",tags:["study","dark"],   src:"e54f7a8a-6fe9-41ea-aeb8-bbee91e149b0", bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
   {k:"science",tags:["study","light"],    bg:"linear-gradient(135deg,#E8F4FF,#C9E3FF)", fg:"#0B3C7A", ac:"#4F6BD1", deco:"chart"},
   {k:"premium",tags:["business","dark"],  bg:"linear-gradient(135deg,#0b0b0c,#22252b)", fg:"#D9A441", ac:"#D9A441", deco:"line"},
   {k:"bright", tags:["study","light"],    bg:"linear-gradient(135deg,#FFE066,#FF7A59)", fg:"#2a1a00", ac:"#fff", deco:"blob"},
@@ -832,6 +832,7 @@ const STYLES = [
 let SFIL = "all";
 function miniHtml(x, t){
   const nm = t.styles[x.k][0];
+  if (x.src) return `<div class="mini" style="background:url('${IMG + x.src}.png') center/cover no-repeat, ${x.bg}"><i class="real ex">${t.ex}</i></div>`;
   if (x.img !== undefined) return `<div class="mini" style="background:url('${IMG + WORKS[x.img]}.png') center/cover no-repeat, ${x.bg}"><span class="mt" style="color:${x.fg};opacity:.35">${nm}</span><i class="real">${t.real}</i></div>`;
   const deco = {
     circle:`<i class="md" style="right:-12%;top:-20%;width:55%;aspect-ratio:1;border-radius:50%;background:${x.ac};opacity:.9"></i>`,
