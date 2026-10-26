@@ -211,7 +211,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <header>
     <div class="logo">SLIDE<b>LAB</b></div>
     <div class="hr">
-      <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button></div>
+      <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button><button data-l="en">EN</button></div>
       <button class="mebtn" id="meBtn" aria-label="Профиль"><span class="mav" id="mav"></span><i class="mdot" id="mdot"></i></button>
     </div>
   </header>
@@ -373,6 +373,57 @@ ru:{
       ["Больше 30 слайдов?","Напишите нам — обсудим объём и срок индивидуально."],
       ["Как внести правки?","Когда файл готов, откройте «📦 Мои заказы» (на главной или в меню бота) и нажмите «✏️ Внести правки» — опишите, что поменять, и пришлите скриншоты в чат. 2 правки бесплатно."],
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
+},
+en:{
+ tab_home:"Home", tab_order:"Order", tab_faq:"FAQ", tab_me:"Profile", me_faq:"Questions & help", me_faq_x:"Answers to common questions and contact with the manager",
+ hero:"Presentations you'll <em>want to show</em>",
+ lead:"A unique style for every topic, checked facts and an editable PPTX where every text and chart can be changed.",
+ b1:"✏️ Fully editable", b2:"🎁 Free cover", b3:"🌐 In Russian, Uzbek and English",
+ h_price:"Prices", first_all:"🎁 New clients: first «Mini» order — only 9 900 UZS", first_you:"🎁 Your first «Mini» order — only {p} UZS instead of 19 000", h_works:"Our work", h_why:"Why SlideLab",
+ pk:{s10:["Mini","up to 10 slides"], s20:["Standard","11–20 slides"], s30:["Large","21–30 slides"]},
+ pop:"Popular",
+ extras:"⚡ Urgent (up to 20 slides): +50%<br>✍️ Full text written for you: +5 000<br>📝 Speaker notes: +5 000<br>✏️ 2 rounds of edits free",
+ works:[["Neon magazine","Economy of Uzbekistan 2026"],["Vintage scrapbook","History, 1929–1939"],["Industrial","Economy and militarisation"]],
+ feat:[["✏️","Fully editable","Every text, chart and table — not pictures"],["👀","Preview first","Cover and style before the main work"],["📚","Checked facts","Figures with sources"],["🔒","Confidential","Portfolio only with your permission"]],
+ cta:"📝 Place an order",
+ q_topic:"Presentation topic", ph_topic:"E.g.: Japan's economy after 1990",
+ q_slides:"How many slides?", sl:{s10:"up to 10",s20:"11–20",s30:"21–30"},
+ q_deadline:"Deadline", dl:{d1:["⚡ Urgent","+50% to the price"],d2:["📅 Regular","we'll agree in the chat, no extra charge"],d3:["🐢 No rush","calm pace, no extra charge"]},
+ urgent_hint:"Urgent orders are up to 20 slides only — so quality doesn't suffer.",
+ ready:"<b>Fill in the fields marked * — and you can send.</b> Everything below is optional: extras, phone, wishes, sources.", opt_title:"⚙️ Additional", opt_tag:"OPTIONAL", q_plang:"Presentation language", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
+ q_design:"Design", ds:{ours:["✨ Create a design for me","we'll pick a style for the topic"],own:["📎 I have my own template / example","link (Google Slides, Canva, Figma…) or a file"]},
+ q_extras:"Extras", x_text:"✍️ Full text written for you · +5 000", x_notes:"📝 Speaker notes · +5 000",
+ q_contact:"Phone", ph_contact:"+998 __ ___ __ __", optional:"(optional — we'll message you in Telegram)", optional2:"(optional)",
+ q_comment:"Wishes", ph_comment:"Teacher's requirements, colours, examples…",
+ files_hint:"📎 No need to save files to your phone: after the request, just forward them to the bot from any chat — group, channel, DM. PDF, Word, PowerPoint, Excel, photos, video, audio, archives and links all work.",
+ ph_dlink:"Link: Google Slides, Canva, Figma…", own_hint:"🔓 Open link access («Anyone with the link» — viewer) so we can open the template. You can forward a file (PPTX, PDF, screenshots) to the bot chat after the request.",
+ q_sources:"📚 Where to take information from", src_hint:"Have a lecture, textbook or website the presentation should be based on? Share it — we'll take the facts and figures from there. If not, we'll find reliable sources ourselves.", ph_sources:"E.g.: a link to a lecture, article, website or video, a textbook title", x_srcfiles:"📎 I have files (lecture, handout) — will forward to the chat",
+ pop_title:"Sending your request", pop_ok:"Send", pop_msg:"The app will close and the chat with the bot will open.", pop_links:" Your sources will go along with the request.", pop_files:" Just forward files and links to the bot from any chat — no need to save them to your phone.",
+ total:"Estimated price", free:"<b>You don't pay anything now.</b> This is only an estimate. We'll message you, clarify the details and send a free cover — payment only after you approve it.", note:"We'll confirm the final price in the chat before starting.",
+ send:"Send request — no payment", send_chat:"Continue in chat — no payment", fill:"Fill in the fields marked *", left:"Choose: ", miss_topic:"topic", miss_slides:"slides", miss_deadline:"deadline", miss_plang:"language", miss_design:"design", sum:" UZS",
+ no_tg:"Open the app via the bot @slidelab_order_bot",
+ not_kb:"To send a request, open the app with the «✨ Order» button at the bottom of the bot chat.",
+ faq_more:"News and work — in our channel",
+ promo_t:"💡 <span>Cheaper with a pack</span>", promo_x:"Need several presentations — for studies, work, the whole semester? In a pack each one is cheaper, and the balance doesn't expire.", promo_go:"See packs →", promo_have:"📦 <span>In your pack: {l}</span>", promo_have_x:"This order will be deducted from your pack — no separate payment (except urgency and text).", promo_empty:"📦 <span>Your pack is used up</span>", promo_empty_x:"Top up your pack — and the next presentations will be cheaper again.", promo_go2:"Buy a pack →", pc:"pcs", gp_tag:"PROMO until {d}", cmp_t:"💡 One-off or a pack?", cmp_s:"Compare for a «Standard» presentation (11–20 slides)", cmp_n:"{n} pcs", cmp_one:"One-off · {n} × 29 000", cmp_pack:"Pack «{p}»", cmp_save:"You save {x} UZS", cmp_each:"{e} UZS each instead of 29 000", cmp_go:"Choose a pack →", gifts:{week:"🎁 + 🧸 teddy bear gift in Telegram", month:"🎁 + 🌹 rose gift in Telegram", vip:"🎁 + 🏆 trophy gift in Telegram"}, h_subs:"📦 Presentation packs", h_subs2:"📦 Buy another pack", h_hist:"📦 Order history", h_pres:"🎞 My presentations", guest:"Guest", no_orders:"No orders yet — place your first one in the «Order» tab 🙂", no_pres:"Your finished presentations will appear here.", open:"Open", in_chat:"file in the bot chat", go_chat:"To chat", teaser:"<span><b>👤 My profile</b><br>presentation packs, order history and finished work</span>", subs_lead:"Buy several presentations at once — it's cheaper. Used them up early? Just buy another pack.",
+ plans:{week:["2 presentations","valid 14 days",2,34000,"save 41%",["17 000 UZS per presentation up to 30 slides*","free cover, 2 rounds of edits each"]],
+        month:["4 presentations","valid 30 days",4,64000,"save 45%",["16 000 UZS per presentation up to 30 slides*","free cover, 2 rounds of edits each"]],
+        vip:["VIP · 10 presentations","valid 60 days",10,145000,"save 50%",["14 500 UZS per presentation*","speaker notes for each — free","priority in the queue","1 order in progress at a time"]]},
+ plan_note:"Savings compared to a one-off «Standard» order (29 000 UZS).<br>* 21–30 slides use 2 presentations from the pack. Urgency and full text are paid separately.<br>🔁 You can buy a new pack any time — the remaining presentations don't expire, they're added to the new ones.",
+ plan_btn:"Buy pack", per:" UZS",
+ sub_pop:"We'll send a request for the «{p}» pack. We'll tell you how to pay — the pack is activated after payment.", sub_pop_link:"The app will close and the chat will open — we'll confirm the «{p}» pack there.",
+ mysub:"📦 <b>Your pack</b> · <b>{l} of {t}</b> presentations left · until {e}", mysub0:"<br><b>No presentations left</b> — buy a new pack below 👇", by_sub:"From your pack · {l} will be left", sub_extra:"extra for urgency / text: {x}",
+ my_title:"📦 My orders", st:{new:"🆕 Received",cover:"🎨 Cover ready",work:"🛠 In progress",edit:"✏️ Making edits",done:"✅ Done",cancel:"✖️ Cancelled"}, ed_btn:"✏️ Request edits", ed_send:"📨 Send edits", ed_ph:"What to change? E.g.: slide 3 — replace the chart, slide 5 — remove text", ed_note:"2 rounds of edits free. You can send screenshots and files to the chat afterwards.", ed_pop:"The app will close and the edits will go to the manager. Send screenshots to the chat.", ed_pop_link:"The app will close and the chat will open — write your edits or send screenshots there.", ed_empty:"Describe what to change",
+ ph_search:"Search questions…", nothing:"No similar questions — ask the manager below 👇",
+ ask_hint:"Didn't find an answer? Write your question — the manager will reply in the bot chat.", ph_q:"Your question…", ask_btn:"💬 Ask the manager",
+ ask_pop:"The app will close and your question will go to the manager. The answer will come to the bot chat.", ask_pop_link:"The app will close and the bot chat will open — write your question there, the answer will come there too.", ask_empty:"Write your question",
+ faq:[["How fast?","We agree the deadline in the chat before starting and keep it — usually within a day. Need it very fast — «Urgent» (up to 20 slides), +50%."],
+      ["How to pay?","The cover is free. If you like it, you pay by Uzum Bank / Payme / Zoomrad card (the bot sends the details) or with Telegram Stars ⭐ in one tap."],
+      ["What if I don't like it?","First we make a free cover. Then 2 rounds of edits are free. If it still doesn't fit after the edits, we refund the payment."],
+      ["What format?","PPTX (PowerPoint, Google Slides) and PDF. Every text and chart can be edited."],
+      ["Have your own template?","Send it — we'll design in it. If not, we'll create a design for your topic."],
+      ["More than 30 slides?","Write to us — we'll discuss the volume and deadline individually."],
+      ["How to request edits?","When the file is ready, open «📦 My orders» (in your profile or the bot menu) and tap «✏️ Request edits» — describe what to change and send screenshots to the chat. 2 rounds of edits are free."],
+      ["Will my work be shown to others?","No, only with your permission."]]
 },
 uz:{
  tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil", me_faq:"Savollar va yordam", me_faq_x:"Ko‘p beriladigan savollar va menejer bilan aloqa",
@@ -542,7 +593,7 @@ function updateButton(){
 // Код заявки для /start (до 64 символов): o + выбор + тема в base64url
 function startCode(d){
   const code = "o" + {s10:1,s20:2,s30:3}[d.slides] + {d1:1,d2:2,d3:3}[d.deadline] +
-    {ru:"r",uz:"u",en:"e"}[d.plang] + (d.design==="own"?"w":"o") + (d.text?1:0) + (d.notes?1:0) + (d.lang==="uz"?"u":"r");
+    {ru:"r",uz:"u",en:"e"}[d.plang] + (d.design==="own"?"w":"o") + (d.text?1:0) + (d.notes?1:0) + ({uz:"u",en:"e"}[d.lang]||"r");
   let bytes = new TextEncoder().encode(d.topic), max = Math.floor((64 - code.length) * 6 / 8);
   if (bytes.length > max){ bytes = bytes.slice(0, max); while (bytes.length && (bytes[bytes.length-1] & 0xC0) === 0x80) bytes = bytes.slice(0,-1); if (bytes.length && bytes[bytes.length-1] >= 0xC0) bytes = bytes.slice(0,-1); }
   let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
