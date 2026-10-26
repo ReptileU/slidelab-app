@@ -845,51 +845,82 @@ function miniHtml(x, t){
   return `<div class="mini" style="background:${x.bg}">${deco}<span class="mt" style="color:${x.fg}">${nm}</span>
     <i class="ml" style="width:38%;background:${x.ac}"></i><i class="ml2" style="width:28%;background:${x.fg}"></i></div>`;
 }
-// ── карусель работ: листается сама, можно листать пальцем/мышью; при касании пауза ──
-let AUTO = null, AUTO_PAUSE = 0;
-function gItems(){ return [...document.querySelectorAll("#gallery .work")].filter(w => w.style.display !== "none"); }
-function gIndex(){
-  const g = $("#gallery"), items = gItems(); if (!items.length) return 0;
-  const c = g.scrollLeft + g.clientWidth / 2;
-  let best = 0, d = 1e9;
-  items.forEach((w, i) => { const m = w.offsetLeft + w.offsetWidth / 2 - g.offsetLeft; const k = Math.abs(m - c); if (k < d){ d = k; best = i; } });
-  return best;
+// ── карусель работ: бесконечная лента — едет сама, можно листать пальцем/мышью, по кругу без конца ──
+const G = {speed: 0.6, pause: 0, raf: 0, anim: null, set: 0, step: 0, n: 0, inited: false, last: 0};
+function gMeasure(){
+  const g = $("#gallery"), items = g.querySelectorAll(".work");
+  G.n = items.length / 3;
+  if (!G.n || !items[G.n]) return false;
+  G.set = items[G.n].offsetLeft - items[0].offsetLeft;            // ширина одного набора карточек
+  G.step = G.n > 1 ? items[1].offsetLeft - items[0].offsetLeft : G.set;
+  return G.set > 0;
 }
-function gGo(i){
-  const g = $("#gallery"), items = gItems(); if (!items.length) return;
-  i = (i + items.length) % items.length;
-  const w = items[i];
-  g.scrollTo({left: w.offsetLeft - g.offsetLeft - (g.clientWidth - w.offsetWidth) / 2, behavior: "smooth"});
+function gWrap(){
+  const g = $("#gallery");
+  if (!G.set) return;
+  if (g.scrollLeft < G.set * 0.5) g.scrollLeft += G.set;
+  else if (g.scrollLeft > G.set * 1.5) g.scrollLeft -= G.set;
+}
+function gReset(){ const g = $("#gallery"); if (!gMeasure()) return; g.scrollLeft = G.set; gDots(); }
+function gIndex(){
+  if (!G.step) return 0;
+  const g = $("#gallery"); const items = g.querySelectorAll(".work");
+  const rel = (g.scrollLeft + g.clientWidth / 2) - (items[0].offsetLeft - g.offsetLeft) - G.step / 2;
+  return ((Math.round(rel / G.step) % G.n) + G.n) % G.n;
 }
 function gDots(){
-  const items = gItems(), cur = gIndex();
-  $("#gDots").innerHTML = items.map((_, i) => `<i class="${i===cur?"on":""}" data-i="${i}"></i>`).join("");
-  document.querySelectorAll("#gDots i").forEach(d => d.onclick = () => { AUTO_PAUSE = Date.now() + 8000; gGo(+d.dataset.i); });
+  if (!G.n) return;
+  const cur = gIndex();
+  $("#gDots").innerHTML = Array.from({length: G.n}, (_, i) => `<i class="${i===cur?"on":""}" data-i="${i}"></i>`).join("");
+  document.querySelectorAll("#gDots i").forEach(d => d.onclick = () => { gPause(6000); gTo(+d.dataset.i - gIndex()); });
 }
-function stopAuto(){ if (AUTO){ clearInterval(AUTO); AUTO = null; } }
-function startAuto(){
-  stopAuto();
-  AUTO = setInterval(() => {
-    if (Date.now() < AUTO_PAUSE || TAB !== "home" || document.hidden) return;
-    const g = $("#gallery"); const r = g.getBoundingClientRect();
-    if (r.bottom < 0 || r.top > innerHeight) return;           // не крутим, если галерея не на экране
-    gGo(gIndex() + 1);
-  }, 3500);
+function gPause(ms){ G.pause = Math.max(G.pause, Date.now() + ms); }
+function gTo(delta){                                  // плавно сдвинуть на delta карточек (может быть отрицательным)
+  const g = $("#gallery"); if (!G.step) return;
+  const from = g.scrollLeft, dist = delta * G.step, t0 = performance.now(), dur = 450;
+  G.anim = now => {
+    const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    g.scrollLeft = from + dist * e;
+    if (k >= 1){ G.anim = null; gWrap(); gDots(); }
+  };
 }
-function initGallery(){
+function gTick(now){
   const g = $("#gallery");
-  const pause = () => { AUTO_PAUSE = Date.now() + 8000; };
-  ["touchstart","pointerdown","wheel"].forEach(ev => g.addEventListener(ev, pause, {passive:true}));
-  g.addEventListener("mouseenter", () => { AUTO_PAUSE = Date.now() + 600000; });
-  g.addEventListener("mouseleave", () => { AUTO_PAUSE = Date.now() + 1500; });
-  let tmr; g.addEventListener("scroll", () => { clearTimeout(tmr); tmr = setTimeout(gDots, 120); }, {passive:true});
-  $("#gPrev").onclick = () => { pause(); gGo(gIndex() - 1); };
-  $("#gNext").onclick = () => { pause(); gGo(gIndex() + 1); };
-  // мышью можно тянуть галерею (на компьютере)
+  if (G.anim) G.anim(now);
+  else if (Date.now() > G.pause && TAB === "home" && !document.hidden && G.set){
+    const r = g.getBoundingClientRect();
+    if (r.bottom > 0 && r.top < innerHeight){
+      const dt = G.last ? Math.min(50, now - G.last) : 16;
+      if (G.pos == null || Math.abs(G.pos - g.scrollLeft) > 2) G.pos = g.scrollLeft;   // браузер округляет scrollLeft — копим дробную часть сами
+      G.pos += G.speed * dt / 16;
+      if (G.pos > G.set * 1.5) G.pos -= G.set;
+      g.scrollLeft = G.pos;
+      if (now % 400 < 20) gDots();
+    }
+  }
+  G.last = now;
+  G.raf = requestAnimationFrame(gTick);
+}
+function stopAuto(){}
+function startAuto(){ if (!G.raf) G.raf = requestAnimationFrame(gTick); }
+function initGallery(){
+  if (G.inited) return; G.inited = true;
+  const g = $("#gallery");
+  g.style.scrollSnapType = "none"; g.style.scrollBehavior = "auto";
+  ["touchstart","pointerdown","wheel"].forEach(ev => g.addEventListener(ev, () => gPause(3000), {passive:true}));
+  g.addEventListener("touchend", () => gPause(2500), {passive:true});
+  g.addEventListener("mouseenter", () => gPause(600000));
+  g.addEventListener("mouseleave", () => { G.pause = Date.now() + 800; });
+  let tmr; g.addEventListener("scroll", () => { if (!G.anim) gWrap(); clearTimeout(tmr); tmr = setTimeout(gDots, 120); }, {passive:true});
+  $("#gPrev").onclick = () => { gPause(6000); gTo(-1); };
+  $("#gNext").onclick = () => { gPause(6000); gTo(1); };
+  // мышью можно тянуть ленту (на компьютере)
   let down = false, sx = 0, sl = 0;
-  g.addEventListener("mousedown", e => { down = true; sx = e.pageX; sl = g.scrollLeft; g.style.scrollSnapType = "none"; g.style.scrollBehavior = "auto"; });
-  window.addEventListener("mouseup", () => { if (!down) return; down = false; g.style.scrollSnapType = ""; g.style.scrollBehavior = ""; gGo(gIndex()); });
-  window.addEventListener("mousemove", e => { if (down){ e.preventDefault(); g.scrollLeft = sl - (e.pageX - sx); } });
+  g.addEventListener("mousedown", e => { down = true; sx = e.pageX; sl = g.scrollLeft; e.preventDefault(); });
+  window.addEventListener("mouseup", () => { if (down){ down = false; gWrap(); gDots(); } });
+  window.addEventListener("mousemove", e => { if (down){ g.scrollLeft = sl - (e.pageX - sx); if (g.scrollLeft < G.set * 0.5 || g.scrollLeft > G.set * 1.5){ const before = g.scrollLeft; gWrap(); sl += g.scrollLeft - before; } } });
+  window.addEventListener("resize", () => setTimeout(gReset, 100));
+  g.querySelectorAll("img").forEach(im => im.addEventListener("load", () => gMeasure(), {once:true}));
 }
 
 function renderShowcase(t){
@@ -1065,9 +1096,10 @@ function render(){
     + `<div class="first">${FIRST ? t.first_you.replace("{p}", fmt(FIRST)) : t.first_all}</div>`;
   document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
   renderCmp();
-  stopAuto(); setTimeout(() => { if (typeof gDots === "function" && $("#gDots")){ gDots(); startAuto(); } }, 300);
-  $("#gallery").innerHTML = t.works.map(([a,b],i) =>
-    `<div class="work"><img loading="lazy" src="${IMG+WORKS[i]}.png" alt="${a}" onerror="this.closest('.work').style.display='none'"><div>${a}<small>${b}</small></div></div>`).join("");
+  const one = t.works.map(([a,b],i) =>
+    `<div class="work" data-i="${i}"><img src="${IMG+WORKS[i]}.png" alt="${a}" draggable="false"><div>${a}<small>${b}</small></div></div>`).join("");
+  $("#gallery").innerHTML = one + one + one;
+  setTimeout(() => { if (typeof gReset === "function") gReset(); }, 60);
   $("#feat").innerHTML = t.feat.map(([i,b,s],n) => `<div class="${n===0?'hl':''}"><i>${i}</i><b>${b}</b><span>${s}</span></div>`).join("");
   const pname = k => (t.plans[k] || [k])[0];
   $("#mysub").innerHTML = SUB ? `<div class="mysub">${t.mysub.replace("{p}", pname(SUB.plan)).replace("{l}", SUB.left).replace("{t}", SUB.limit).replace("{e}", SUB.end.slice(8,10)+"."+SUB.end.slice(5,7))}${SUB.left<=0 ? t.mysub0 : ""}</div>` : "";
@@ -1284,7 +1316,7 @@ if (inTg){
 }
 render();
 initGallery();
-setTimeout(() => { gDots(); startAuto(); }, 400);
+setTimeout(() => { gReset(); startAuto(); }, 300);
 // Первый вход: просим выбрать язык (если его ещё не выбирали в приложении)
 function showLangPick(){
   const el = document.createElement("div");
