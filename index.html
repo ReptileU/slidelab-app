@@ -132,6 +132,9 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .promo button.go{width:100%;border:0;border-radius:12px;padding:11px;background:var(--v3);color:var(--on);font:800 14px Manrope,system-ui,sans-serif}
 .promo .x{position:absolute;top:8px;right:10px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:4px}
 .promo.ok{border-color:var(--v);box-shadow:none}.promo.ok .pt span{color:var(--v2)}
+.gp{position:relative;overflow:hidden;border-radius:var(--r);padding:14px 16px 14px 18px;margin:2px 0 12px;background:linear-gradient(120deg,#3a2a10 0%,#16263D 75%);border:1px dashed var(--v3)}
+.gp .tag{display:inline-block;background:var(--v3);color:var(--on);font:800 11px Manrope,system-ui,sans-serif;letter-spacing:.08em;padding:3px 8px;border-radius:6px;margin-bottom:6px}
+.gp b{color:#fff;font-size:15px;display:block;margin-bottom:4px}.gp span{color:var(--soft);font-size:13px;line-height:1.5}
 .plan{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
 .plan.vip{background:var(--card2);border-color:var(--v3);box-shadow:inset 3px 0 0 var(--v3)}
 .plan .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -286,6 +289,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div id="pres"></div>
     <h2 id="subs_h"></h2>
     <p class="lead" data-t="subs_lead" style="margin-top:-4px"></p>
+    <div id="giftpromo"></div>
     <div id="subs"></div>
   </section>
 
@@ -332,10 +336,10 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
- promo_t:"💡 <span>Выгоднее пакетом</span>", promo_x:"Нужно несколько презентаций — на учёбу, работу, на весь семестр? В пакете каждая выходит дешевле, остаток не сгорает, а к пакету — 🎁 подарок в Telegram.", promo_go:"Посмотреть пакеты →", promo_have:"📦 <span>У вас в пакете: {l} шт</span>", promo_have_x:"Этот заказ спишется из пакета — платить отдельно не нужно (кроме срочности и текста).", promo_empty:"📦 <span>Пакет закончился</span>", promo_empty_x:"Докупите пакет — и следующие презентации снова будут дешевле.", promo_go2:"Докупить пакет →", pc:"шт", h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
- plans:{week:["2 презентации","действует 14 дней",2,34000,"выгода 41%",["17 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой","🎁 подарок в Telegram — мишка 🧸"]],
-        month:["4 презентации","действует 30 дней",4,64000,"выгода 45%",["16 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой","🎁 подарок в Telegram — роза 🌹"]],
-        vip:["VIP · 10 презентаций","действует 60 дней",10,145000,"выгода 50%",["14 500 сум за презентацию*","🎁 подарок в Telegram — кубок 🏆","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
+ promo_t:"💡 <span>Выгоднее пакетом</span>", promo_x:"Нужно несколько презентаций — на учёбу, работу, на весь семестр? В пакете каждая выходит дешевле, а остаток не сгорает.", promo_go:"Посмотреть пакеты →", promo_have:"📦 <span>У вас в пакете: {l} шт</span>", promo_have_x:"Этот заказ спишется из пакета — платить отдельно не нужно (кроме срочности и текста).", promo_empty:"📦 <span>Пакет закончился</span>", promo_empty_x:"Докупите пакет — и следующие презентации снова будут дешевле.", promo_go2:"Докупить пакет →", pc:"шт", gp_tag:"АКЦИЯ до {d}", gp_t:"🎁 Подарок в Telegram за покупку пакета", gp_x:"«2 презентации» — 🧸 мишка · «4 презентации» — 🌹 роза · VIP — 🏆 кубок. Подарок появится в вашем профиле Telegram сразу после оплаты.", h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
+ plans:{week:["2 презентации","действует 14 дней",2,34000,"выгода 41%",["17 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
+        month:["4 презентации","действует 30 дней",4,64000,"выгода 45%",["16 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
+        vip:["VIP · 10 презентаций","действует 60 дней",10,145000,"выгода 50%",["14 500 сум за презентацию*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
  plan_note:"Выгода — по сравнению с разовым заказом «Стандарт» (29 000 сум).<br>* 21–30 слайдов списывают 2 презентации из пакета. Срочность и «текст под ключ» оплачиваются отдельно.<br>🔁 Новый пакет можно купить в любой момент — оставшиеся презентации не сгорают, а прибавляются к новым.",
  plan_btn:"Купить пакет", per:" сум",
  sub_pop:"Отправим заявку на пакет «{p}». Мы напишем, как оплатить, — после оплаты пакет включится.", sub_pop_link:"Приложение закроется и откроется чат — там подтвердим пакет «{p}».",
@@ -383,10 +387,10 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
- promo_t:"💡 <span>Paket bilan arzonroq</span>", promo_x:"Bir nechta taqdimot kerakmi — o‘qish, ish yoki butun semestr uchun? Paketda har biri arzonroq, qoldiq yonmaydi, paketga esa — 🎁 Telegram sovg‘asi.", promo_go:"Paketlarni ko‘rish →", promo_have:"📦 <span>Paketingizda: {l} ta</span>", promo_have_x:"Bu buyurtma paketdan yechiladi — alohida to‘lash shart emas (shoshilinch va matndan tashqari).", promo_empty:"📦 <span>Paket tugadi</span>", promo_empty_x:"Paket oling — keyingi taqdimotlar yana arzonroq bo‘ladi.", promo_go2:"Paket olish →", pc:"ta", h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
- plans:{week:["2 ta taqdimot","14 kun amal qiladi",2,34000,"41% foyda",["30 slaydgacha taqdimot — 17 000 so‘m*","muqova bepul, har biriga 2 tuzatish","🎁 Telegram sovg‘asi — ayiqcha 🧸"]],
-        month:["4 ta taqdimot","30 kun amal qiladi",4,64000,"45% foyda",["30 slaydgacha taqdimot — 16 000 so‘m*","muqova bepul, har biriga 2 tuzatish","🎁 Telegram sovg‘asi — atirgul 🌹"]],
-        vip:["VIP · 10 ta taqdimot","60 kun amal qiladi",10,145000,"50% foyda",["taqdimot — 14 500 so‘m*","🎁 Telegram sovg‘asi — kubok 🏆","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
+ promo_t:"💡 <span>Paket bilan arzonroq</span>", promo_x:"Bir nechta taqdimot kerakmi — o‘qish, ish yoki butun semestr uchun? Paketda har biri arzonroq, qoldiq esa yonmaydi.", promo_go:"Paketlarni ko‘rish →", promo_have:"📦 <span>Paketingizda: {l} ta</span>", promo_have_x:"Bu buyurtma paketdan yechiladi — alohida to‘lash shart emas (shoshilinch va matndan tashqari).", promo_empty:"📦 <span>Paket tugadi</span>", promo_empty_x:"Paket oling — keyingi taqdimotlar yana arzonroq bo‘ladi.", promo_go2:"Paket olish →", pc:"ta", gp_tag:"AKSIYA {d} gacha", gp_t:"🎁 Paket uchun Telegram sovg‘asi", gp_x:"«2 ta taqdimot» — 🧸 ayiqcha · «4 ta taqdimot» — 🌹 atirgul · VIP — 🏆 kubok. Sovg‘a to‘lovdan so‘ng darhol Telegram profilingizda paydo bo‘ladi.", h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
+ plans:{week:["2 ta taqdimot","14 kun amal qiladi",2,34000,"41% foyda",["30 slaydgacha taqdimot — 17 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
+        month:["4 ta taqdimot","30 kun amal qiladi",4,64000,"45% foyda",["30 slaydgacha taqdimot — 16 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
+        vip:["VIP · 10 ta taqdimot","60 kun amal qiladi",10,145000,"50% foyda",["taqdimot — 14 500 so‘m*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
  plan_note:"Foyda — bir martalik «Standart» buyurtmaga nisbatan (29 000 so‘m).<br>* 21–30 slayd paketdan 2 ta yechadi. Shoshilinch va «matn yozish» alohida to‘lanadi.<br>🔁 Yangi paketni istalgan vaqtda olish mumkin — qolgan taqdimotlar yonmaydi, yangilariga qo‘shiladi.",
  plan_btn:"Paket olish", per:" so‘m",
  sub_pop:"«{p}» paketiga ariza yuboramiz. To‘lovni qanday qilishni yozamiz — to‘lovdan so‘ng paket yoqiladi.", sub_pop_link:"Ilova yopiladi va chat ochiladi — u yerda «{p}» paketini tasdiqlaymiz.",
@@ -599,6 +603,9 @@ function render(){
   const nm = u ? [u.first_name, u.last_name].filter(Boolean).join(" ") : t.guest;
   $("#mehead").innerHTML = `<div class="av" style="${u && u.photo_url ? `background-image:url('${esc(u.photo_url)}')` : ""}">${u && u.photo_url ? "" : esc(nm[0] || "S")}</div><div><div class="nm">${esc(nm)}</div><div class="un">${u && u.username ? "@"+esc(u.username) : ""}</div></div>`;
   $("#subs_h").textContent = SUB ? t.h_subs2 : t.h_subs;
+  const GIFT_UNTIL = "2026-11-30";
+  $("#giftpromo").innerHTML = new Date().toISOString().slice(0,10) <= GIFT_UNTIL
+    ? `<div class="gp"><div class="tag">${t.gp_tag.replace("{d}", GIFT_UNTIL.slice(8,10)+"."+GIFT_UNTIL.slice(5,7))}</div><b>${t.gp_t}</b><span>${t.gp_x}</span></div>` : "";
   let hidePromo = false; try { hidePromo = sessionStorage.getItem("promo_x") === "1"; } catch(e){}
   if (SUB && SUB.left > 0){
     $("#promo").innerHTML = `<div class="promo ok"><div class="pt">${t.promo_have.replace("{l}", SUB.left)}</div><div class="px">${t.promo_have_x}</div></div>`;
