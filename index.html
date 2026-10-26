@@ -40,6 +40,32 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
   color:var(--on);font:800 34px/58px Manrope,system-ui,sans-serif;box-shadow:0 6px 22px rgba(43,179,177,.45),0 0 0 5px var(--bg)}
 body.noNav .bnav{display:none}
 .pt0{margin-top:10px}
+.trk{background:linear-gradient(160deg,#113A47,#16263D);border:1px solid var(--v);border-radius:var(--r);padding:14px 16px;margin:8px 0 4px}
+.trk .tt{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--v2);font-weight:800;letter-spacing:.06em}
+.trk h3{margin:4px 0 10px;font-size:16px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk .tl div{display:flex;gap:10px;align-items:center;padding:5px 0;font-size:13.5px;color:var(--muted);position:relative}
+.trk .tl b{flex:0 0 22px;height:22px;border-radius:50%;background:#233650;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center}
+.trk .tl .ok{color:#fff}.trk .tl .ok b{background:var(--v)}
+.trk .tl .now{color:var(--v3);font-weight:800}.trk .tl .now b{background:var(--v3);color:var(--on);box-shadow:0 0 0 4px rgba(217,164,65,.2)}
+.trk .hint{margin-top:8px;padding:10px 12px;border-radius:12px;background:rgba(15,27,45,.55);font-size:13px;color:var(--soft);line-height:1.4}
+.trk button{width:100%;margin-top:10px;border:0;border-radius:12px;padding:11px;background:var(--v);color:var(--on);font:800 14px Manrope,system-ui,sans-serif}
+.trk .more{background:none;color:var(--v2);border:1px solid rgba(79,209,197,.4);margin-top:8px}
+.sfil{display:flex;gap:6px;overflow-x:auto;margin:0 -16px 12px;padding:0 16px;scrollbar-width:none}.sfil::-webkit-scrollbar{display:none}
+.sfil button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 13px Manrope,system-ui,sans-serif;padding:8px 14px;border-radius:999px}
+.sfil button.on{background:var(--v);color:var(--on);border-color:var(--v)}
+.sgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sc{border:0;padding:0;background:var(--card);border-radius:16px;overflow:hidden;text-align:left;color:var(--text);font-family:Manrope,system-ui,sans-serif}
+.mini{aspect-ratio:16/10;position:relative;overflow:hidden;background-size:cover;background-position:center}
+.mini .mt{position:absolute;left:9%;top:22%;width:58%;font-weight:800;font-size:12px;line-height:1.1}
+.mini .ml{position:absolute;left:9%;top:58%;height:4px;border-radius:2px}
+.mini .ml2{position:absolute;left:9%;top:68%;height:4px;border-radius:2px;opacity:.6}
+.mini .md{position:absolute}
+.mini .real{position:absolute;right:6px;top:6px;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;background:rgba(15,27,45,.75);color:#fff}
+.sc .sb{padding:8px 10px 10px}.sc b{display:block;font-size:13px}.sc small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.sc .want{display:inline-block;margin-top:7px;font-size:11.5px;font-weight:800;color:var(--on);background:var(--v);padding:5px 10px;border-radius:999px}
+.stag{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--v);border-radius:14px;padding:10px 12px;margin:0 0 14px}
+.stag .mini{flex:0 0 64px;border-radius:8px}.stag div{flex:1;font-size:13px;color:var(--soft)}.stag b{color:#fff;display:block;font-size:14px}
+.stag button{border:0;background:none;color:var(--muted);font-size:20px}
 .qnew{width:100%;display:flex;align-items:center;gap:14px;border:0;border-radius:20px;padding:14px 16px;margin-bottom:10px;text-align:left;
   background:linear-gradient(120deg,#2BB3B1,#1B6F8A);color:#fff;font-family:Manrope,system-ui,sans-serif;box-shadow:0 8px 24px rgba(43,179,177,.25)}
 .qnew i{font-style:normal;flex:0 0 52px;height:52px;border-radius:50%;background:#fff;color:#1B6F8A;font:800 32px/52px Manrope,sans-serif;text-align:center}
@@ -298,6 +324,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 
   <!-- ГЛАВНАЯ -->
   <section id="home">
+    <div id="tracker"></div>
     <div class="band"></div>
     <h1 data-t="hero" data-html></h1>
     <p class="lead" data-t="lead"></p>
@@ -305,9 +332,12 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
       <span class="badge" data-t="b1"></span><span class="badge" data-t="b2"></span><span class="badge" data-t="b3"></span>
     </div>
 
-    <h2 data-t="qa_t"></h2>
     <button class="qnew" id="qnew"><i>+</i><div><b></b><span></span></div><em>›</em></button>
-    <div class="qa" id="qa"></div>
+
+    <h2 data-t="sh_t"></h2>
+    <p class="lead" data-t="sh_x" style="margin-top:-6px"></p>
+    <div class="sfil" id="sfil"></div>
+    <div class="sgrid" id="sgrid"></div>
     <div id="cont"></div>
 
     <h2 data-t="how_t"></h2>
@@ -346,6 +376,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <!-- ЗАКАЗ -->
   <section id="order">
     <h2 class="pt0" data-t="files_new"></h2>
+    <div id="styleTag"></div>
     <div id="promo"></div>
     <div class="q"><span data-t="q_topic"></span><span class="req">*</span></div>
     <textarea id="topic" rows="2" maxlength="300"></textarea>
@@ -425,13 +456,22 @@ const EXTRA = 5000, URGENT = 0.5;
 
 const T = {
 ru:{
- tab_files:"Мои файлы", tab_packs:"Пакеты", qa_t:"Что хотите сделать?",
+ sh_t:"🎨 Выберите стиль", sh_x:"Нажмите «Хочу такую» — сделаем вашу презентацию в этом стиле. Обложка бесплатно.",
+ stags:{all:"Все",study:"Учёба",business:"Бизнес",dark:"Тёмные",light:"Светлые"}, want:"Хочу такую", real:"наша работа",
+ styles:{neon:["Неон-журнал","яркий, журнальный"],vintage:["Винтажный скрапбук","история, ретро"],indust:["Индустриальный","экономика, техника"],
+   minimal:["Минимализм","чисто и стильно"],corp:["Корпоративный","отчёт, бизнес-план"],samarkand:["Самарканд","восточный узор"],
+   science:["Научный","графики и схемы"],premium:["Премиум","чёрный с золотом"],bright:["Яркий","школа, творчество"],nature:["Эко","природа, биология"]},
+ style_lbl:"Стиль", style_x:"Сделаем в этом стиле под вашу тему",
+ tr_t:"ГДЕ МОЯ ПРЕЗЕНТАЦИЯ", tr_steps:["Заказ принят","Бесплатная обложка","Делаем презентацию","Готово"], tr_chat:"Открыть чат", tr_all:"Все заказы ({n})",
+ tr_hint:{new:"🎨 Делаем бесплатную обложку — пришлём её в чат.",cover:"👀 Обложка готова — посмотрите в чате. Понравится — оплатите, и сразу начнём.",
+   work:"🛠 Делаем всю презентацию. Пришлём в чат — вы выберете формат.",edit:"✏️ Вносим ваши правки.",done:"🎉 Готово! Выберите формат в чате с ботом."},
+ tab_files:"Мои работы", tab_packs:"Пакеты", qa_t:"Что хотите сделать?",
  qa_new:["Новая презентация","Бесплатная обложка — оплата только если понравится"],
  qa:[["files","🎞","Мои","файлы"],["packs","📦","Пакеты","дешевле"],["price","💰","Прайс","цены"],["works","🖼","Примеры","работ"],["ask","💬","Задать","вопрос"],["channel","📢","Наш","канал"]],
  how_t:"Как это работает", how:[["📝","Оформляете заказ","тема, слайды, срок — 1 минута"],["🎨","Бесплатная обложка","смотрите стиль — пока без оплаты"],["💳","Оплата","картой или звёздами Telegram"],["🎉","Готовая презентация","в любом формате + 2 правки бесплатно"]],
- help_t:"ПОМОЩНИК", help_x:"Есть вопрос? Спросите — ответим в чате", cont_t:"Продолжить", show_all:"Все",
- files_t:"🎞 Мои файлы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате",
- set_packs:"Пакеты и оплата", set_files:"Мои файлы", set_faq:"Вопросы и помощь", set_review:"Оставить отзыв", set_lang:"Язык", set_channel:"Канал SlideLab", set_none:"нет",
+ help_t:"🟢 МЕНЕДЖЕР НА СВЯЗИ", help_x:"Ответит человек, а не бот — спросите", cont_t:"Продолжить", show_all:"Все",
+ files_t:"🎞 Мои работы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате",
+ set_packs:"Пакеты и оплата", set_files:"Мои работы", set_faq:"Вопросы и помощь", set_review:"Оставить отзыв", set_lang:"Язык", set_channel:"Канал SlideLab", set_none:"нет",
  rv_t:"⭐ Ваш отзыв", rv_x:"Что понравилось, что улучшить? Это очень помогает нам.", rv_ph:"Напишите пару слов…", rv_send:"Отправить отзыв", rv_pop:"Приложение закроется, отзыв уйдёт менеджеру. Спасибо!", rv_tag:"Отзыв",
  fwd_pop:"Откроется чат с ботом. Перешлите туда файл лекции или задания из любого чата — бот оформит заказ в 2 нажатия.",
  tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы", tab_me:"Профиль", me_faq:"Вопросы и помощь", me_faq_x:"Ответы на частые вопросы и связь с менеджером",
@@ -485,13 +525,22 @@ ru:{
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
 },
 en:{
- tab_files:"My files", tab_packs:"Packs", qa_t:"What would you like to do?",
+ sh_t:"🎨 Choose a style", sh_x:"Tap «I want this» — we'll make your presentation in this style. The cover is free.",
+ stags:{all:"All",study:"Study",business:"Business",dark:"Dark",light:"Light"}, want:"I want this", real:"our work",
+ styles:{neon:["Neon magazine","bright, editorial"],vintage:["Vintage scrapbook","history, retro"],indust:["Industrial","economy, tech"],
+   minimal:["Minimal","clean and stylish"],corp:["Corporate","report, business plan"],samarkand:["Samarkand","oriental pattern"],
+   science:["Science","charts and diagrams"],premium:["Premium","black and gold"],bright:["Bright","school, creative"],nature:["Eco","nature, biology"]},
+ style_lbl:"Style", style_x:"We'll make it in this style for your topic",
+ tr_t:"WHERE IS MY PRESENTATION", tr_steps:["Order received","Free cover","Making the presentation","Done"], tr_chat:"Open chat", tr_all:"All orders ({n})",
+ tr_hint:{new:"🎨 We're making the free cover — we'll send it to the chat.",cover:"👀 The cover is ready — check it in the chat. If you like it, pay and we start right away.",
+   work:"🛠 We're making the full presentation. We'll send it to the chat — you'll choose the format.",edit:"✏️ We're making your edits.",done:"🎉 Done! Choose the format in the bot chat."},
+ tab_files:"My work", tab_packs:"Packs", qa_t:"What would you like to do?",
  qa_new:["New presentation","Free cover — pay only if you like it"],
  qa:[["files","🎞","My","files"],["packs","📦","Packs","cheaper"],["price","💰","Prices","list"],["works","🖼","Our","work"],["ask","💬","Ask a","question"],["channel","📢","Our","channel"]],
  how_t:"How it works", how:[["📝","You place an order","topic, slides, deadline — 1 minute"],["🎨","Free cover","see the style — no payment yet"],["💳","Payment","by card or Telegram Stars"],["🎉","Finished presentation","in any format + 2 rounds of edits free"]],
- help_t:"HELPER", help_x:"Have a question? Ask — we'll reply in the chat", cont_t:"Continue", show_all:"All",
- files_t:"🎞 My files", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat",
- set_packs:"Packs & payment", set_files:"My files", set_faq:"Questions & help", set_review:"Leave a review", set_lang:"Language", set_channel:"SlideLab channel", set_none:"none",
+ help_t:"🟢 MANAGER ONLINE", help_x:"A real person replies, not a bot — ask", cont_t:"Continue", show_all:"All",
+ files_t:"🎞 My work", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat",
+ set_packs:"Packs & payment", set_files:"My work", set_faq:"Questions & help", set_review:"Leave a review", set_lang:"Language", set_channel:"SlideLab channel", set_none:"none",
  rv_t:"⭐ Your review", rv_x:"What did you like, what can we improve? It really helps us.", rv_ph:"Write a few words…", rv_send:"Send review", rv_pop:"The app will close and your review will go to the manager. Thank you!", rv_tag:"Review",
  fwd_pop:"The bot chat will open. Forward a lecture or assignment file there from any chat — the bot will place the order in 2 taps.",
  tab_home:"Home", tab_order:"Order", tab_faq:"FAQ", tab_me:"Profile", me_faq:"Questions & help", me_faq_x:"Answers to common questions and contact with the manager",
@@ -545,13 +594,22 @@ en:{
       ["Will my work be shown to others?","No, only with your permission."]]
 },
 uz:{
- tab_files:"Fayllarim", tab_packs:"Paketlar", qa_t:"Nima qilmoqchisiz?",
+ sh_t:"🎨 Uslubni tanlang", sh_x:"«Shunaqasini xohlayman» ni bosing — taqdimotingizni shu uslubda qilamiz. Muqova bepul.",
+ stags:{all:"Hammasi",study:"O‘qish",business:"Biznes",dark:"To‘q",light:"Yorug‘"}, want:"Shunaqasini xohlayman", real:"bizning ish",
+ styles:{neon:["Neon-jurnal","yorqin, jurnal uslubi"],vintage:["Vintaj skrapbuk","tarix, retro"],indust:["Industrial","iqtisod, texnika"],
+   minimal:["Minimalizm","toza va zamonaviy"],corp:["Korporativ","hisobot, biznes-reja"],samarkand:["Samarqand","sharqona naqsh"],
+   science:["Ilmiy","grafik va sxemalar"],premium:["Premium","qora va oltin"],bright:["Yorqin","maktab, ijod"],nature:["Eko","tabiat, biologiya"]},
+ style_lbl:"Uslub", style_x:"Mavzuingizga shu uslubda qilamiz",
+ tr_t:"TAQDIMOTIM QAYERDA", tr_steps:["Buyurtma qabul qilindi","Bepul muqova","Taqdimot tayyorlanmoqda","Tayyor"], tr_chat:"Chatni ochish", tr_all:"Barcha buyurtmalar ({n})",
+ tr_hint:{new:"🎨 Bepul muqova tayyorlayapmiz — chatga yuboramiz.",cover:"👀 Muqova tayyor — chatda ko‘ring. Yoqsa — to‘lang, darhol boshlaymiz.",
+   work:"🛠 Butun taqdimotni tayyorlayapmiz. Chatga yuboramiz — formatni tanlaysiz.",edit:"✏️ Tuzatishlaringizni kiritmoqdamiz.",done:"🎉 Tayyor! Bot chatida formatni tanlang."},
+ tab_files:"Ishlarim", tab_packs:"Paketlar", qa_t:"Nima qilmoqchisiz?",
  qa_new:["Yangi taqdimot","Muqova bepul — yoqsagina to‘laysiz"],
  qa:[["files","🎞","Mening","fayllarim"],["packs","📦","Paketlar","arzonroq"],["price","💰","Narxlar","ro‘yxati"],["works","🖼","Ishlar","namunasi"],["ask","💬","Savol","berish"],["channel","📢","Bizning","kanal"]],
  how_t:"Bu qanday ishlaydi", how:[["📝","Buyurtma berasiz","mavzu, slaydlar, muddat — 1 daqiqa"],["🎨","Bepul muqova","uslubni ko‘rasiz — hali to‘lovsiz"],["💳","To‘lov","karta yoki Telegram yulduzlari"],["🎉","Tayyor taqdimot","istalgan formatda + 2 tuzatish bepul"]],
- help_t:"YORDAMCHI", help_x:"Savol bormi? So‘rang — chatda javob beramiz", cont_t:"Davom ettirish", show_all:"Hammasi",
- files_t:"🎞 Fayllarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish",
- set_packs:"Paketlar va to‘lov", set_files:"Fayllarim", set_faq:"Savollar va yordam", set_review:"Fikr qoldirish", set_lang:"Til", set_channel:"SlideLab kanali", set_none:"yo‘q",
+ help_t:"🟢 MENEJER ALOQADA", help_x:"Bot emas, odam javob beradi — so‘rang", cont_t:"Davom ettirish", show_all:"Hammasi",
+ files_t:"🎞 Ishlarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish",
+ set_packs:"Paketlar va to‘lov", set_files:"Ishlarim", set_faq:"Savollar va yordam", set_review:"Fikr qoldirish", set_lang:"Til", set_channel:"SlideLab kanali", set_none:"yo‘q",
  rv_t:"⭐ Fikringiz", rv_x:"Nima yoqdi, nimani yaxshilash kerak? Bu bizga juda yordam beradi.", rv_ph:"Bir-ikki so‘z yozing…", rv_send:"Fikrni yuborish", rv_pop:"Ilova yopiladi, fikringiz menejerga ketadi. Rahmat!", rv_tag:"Fikr",
  fwd_pop:"Bot bilan chat ochiladi. U yerga istalgan chatdan ma’ruza yoki topshiriq faylini forward qiling — bot 2 bosishda buyurtma qiladi.",
  tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil", me_faq:"Savollar va yordam", me_faq_x:"Ko‘p beriladigan savollar va menejer bilan aloqa",
@@ -631,8 +689,64 @@ const GIFT_ON = new Date().toISOString().slice(0,10) <= GIFT_UNTIL;
 let SUB = null;
 try { const v = qs.get("s"); if (v){ const [plan,left,lim,end] = v.split("."); SUB = {plan, left:+left, limit:+lim, end}; } } catch(e){ SUB = null; }
 const STEPS = ["new","cover","work","done"];
+// Стили для витрины: 3 — наши реальные работы (с картинкой), остальные — схемы стиля
+const STYLES = [
+  {k:"neon",   tags:["study","dark"],     img:0, bg:"linear-gradient(135deg,#2a0f3d,#7A3E9D)", fg:"#fff", ac:"#FF4FD8"},
+  {k:"vintage",tags:["study","light"],    img:1, bg:"#E9DCC3", fg:"#3a2a10", ac:"#B3262E"},
+  {k:"indust", tags:["business","dark"],  img:2, bg:"linear-gradient(135deg,#1c1c1c,#4a4a4a)", fg:"#F2A93B", ac:"#F2A93B"},
+  {k:"minimal",tags:["business","light"], bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
+  {k:"corp",   tags:["business","light"], bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
+  {k:"samarkand",tags:["study","dark"],   bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
+  {k:"science",tags:["study","light"],    bg:"linear-gradient(135deg,#E8F4FF,#C9E3FF)", fg:"#0B3C7A", ac:"#4F6BD1", deco:"chart"},
+  {k:"premium",tags:["business","dark"],  bg:"linear-gradient(135deg,#0b0b0c,#22252b)", fg:"#D9A441", ac:"#D9A441", deco:"line"},
+  {k:"bright", tags:["study","light"],    bg:"linear-gradient(135deg,#FFE066,#FF7A59)", fg:"#2a1a00", ac:"#fff", deco:"blob"},
+  {k:"nature", tags:["study","light"],    bg:"linear-gradient(135deg,#DFF3E4,#9FD8B0)", fg:"#0F5132", ac:"#13A36B", deco:"leaf"},
+];
+let SFIL = "all";
+function miniHtml(x, t){
+  const nm = t.styles[x.k][0];
+  if (x.img !== undefined) return `<div class="mini" style="background:url('${IMG + WORKS[x.img]}.png') center/cover no-repeat, ${x.bg}"><span class="mt" style="color:${x.fg};opacity:.35">${nm}</span><i class="real">${t.real}</i></div>`;
+  const deco = {
+    circle:`<i class="md" style="right:-12%;top:-20%;width:55%;aspect-ratio:1;border-radius:50%;background:${x.ac};opacity:.9"></i>`,
+    bars:`<i class="md" style="right:7%;bottom:18%;width:22%;height:40%;background:repeating-linear-gradient(90deg,${x.ac} 0 6px,transparent 6px 10px)"></i>`,
+    orn:`<i class="md" style="left:0;right:0;bottom:12%;height:9px;background:var(--orn);background-size:18px 9px"></i>`,
+    chart:`<i class="md" style="right:8%;bottom:16%;width:30%;height:42%;background:linear-gradient(to top,${x.ac} 40%,transparent 40%) 0 100%/22% 100% no-repeat,linear-gradient(to top,${x.ac} 70%,transparent 70%) 40% 100%/22% 100% no-repeat,linear-gradient(to top,${x.ac} 100%,transparent 0) 80% 100%/22% 100% no-repeat;opacity:.85"></i>`,
+    line:`<i class="md" style="left:9%;right:9%;bottom:18%;height:1px;background:${x.ac}"></i>`,
+    blob:`<i class="md" style="right:-8%;bottom:-25%;width:55%;aspect-ratio:1;border-radius:42% 58% 50% 50%;background:${x.ac};opacity:.55"></i>`,
+    leaf:`<i class="md" style="right:6%;top:12%;width:30%;aspect-ratio:1;border-radius:0 70% 0 70%;background:${x.ac};opacity:.7"></i>`,
+  }[x.deco] || "";
+  return `<div class="mini" style="background:${x.bg}">${deco}<span class="mt" style="color:${x.fg}">${nm}</span>
+    <i class="ml" style="width:38%;background:${x.ac}"></i><i class="ml2" style="width:28%;background:${x.fg}"></i></div>`;
+}
+function renderShowcase(t){
+  const tags = ["all","study","business","dark","light"];
+  $("#sfil").innerHTML = tags.map(k => `<button data-k="${k}" class="${k===SFIL?"on":""}">${t.stags[k]}</button>`).join("");
+  document.querySelectorAll("#sfil button").forEach(b => b.onclick = () => { SFIL = b.dataset.k; haptic(); renderShowcase(T[L]); });
+  const list = STYLES.filter(x => SFIL==="all" || x.tags.includes(SFIL));
+  $("#sgrid").innerHTML = list.map(x => `<button class="sc" data-k="${x.k}">${miniHtml(x, t)}<div class="sb"><b>${t.styles[x.k][0]}</b><small>${t.styles[x.k][1]}</small><span class="want">${t.want}</span></div></button>`).join("");
+  document.querySelectorAll("#sgrid .sc").forEach(b => b.onclick = () => { haptic(); st.style = b.dataset.k; st.design = "ours"; go("order"); });
+}
+function renderStyleTag(t){
+  const x = STYLES.find(y => y.k === st.style);
+  $("#styleTag").innerHTML = x ? `<div class="stag">${miniHtml(x, t)}<div><b>${t.style_lbl}: ${t.styles[x.k][0]}</b>${t.style_x}</div><button id="styleX" aria-label="×">×</button></div>` : "";
+  const bx = $("#styleX"); if (bx) bx.onclick = () => { st.style = null; renderForm(); };
+}
+function renderTracker(t){
+  const o = ORDERS.find(x => !["cancel"].includes(x[3]) && !(x[3]==="done" && (x[5] || x[6])));
+  if (!o){ $("#tracker").innerHTML = ""; return; }
+  const [id, topic, , status] = o;
+  const n = stepOf(status);
+  const labels = t.tr_steps;
+  $("#tracker").innerHTML = `<div class="trk"><div class="tt"><span>${t.tr_t}</span><span>#${id}</span></div>
+    <h3>${String(topic).replace(/[&<>"]/g, "")}</h3>
+    <div class="tl">${labels.map((lb,i) => `<div class="${i<n||status==="done"?"ok":(i===n?"now":"")}"><b>${i<n||status==="done"?"✓":i+1}</b>${lb}</div>`).join("")}</div>
+    <div class="hint">${t.tr_hint[status] || ""}</div>
+    <button id="trChat">💬 ${t.tr_chat}</button>${ORDERS.length > 1 ? `<button class="more" data-go="files">${t.tr_all.replace("{n}", ORDERS.length)}</button>` : ""}</div>`;
+  $("#trChat").onclick = toChat;
+  const m = document.querySelector("#tracker .more"); if (m) m.onclick = () => go("files");
+}
 const stepOf = x => x === "edit" ? 2 : STEPS.indexOf(x);
-const st = {srcfiles:false, slides:null, deadline:null, plang:null, design:null, text:false, notes:false};
+const st = {style:null, srcfiles:false, slides:null, deadline:null, plang:null, design:null, text:false, notes:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
 const haptic = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} };
@@ -687,6 +801,7 @@ function showMissing(){
 
 function renderForm(){
   const t = T[L];
+  renderStyleTag(t);
   if (st.slides==="s30" && st.deadline==="d1") st.deadline=null;
   if (st.slides) $("#slides").classList.remove("need");
   if (st.deadline) $("#deadline").classList.remove("need");
@@ -742,7 +857,7 @@ function submit(){
   const data = {v:1, lang:L, topic:$("#topic").value.trim().slice(0,300), slides:st.slides, deadline:st.deadline,
     plang:st.plang, design:st.design, text:st.text, notes:st.notes,
     contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400),
-    sources:$("#sources").value.trim().slice(0,1500), srcfiles:st.srcfiles, dlink: st.design==="own" ? $("#dlink").value.trim().slice(0,500) : ""};
+    sources:$("#sources").value.trim().slice(0,1500), srcfiles:st.srcfiles, style: st.style ? T.ru.styles[st.style][0] : "", dlink: st.design==="own" ? $("#dlink").value.trim().slice(0,500) : ""};
   if (!inTg){ alert(t.no_tg); return; }
   // Предупреждаем: приложение закроется, файлы-источники присылают в чат
   let msg = t.pop_msg + (data.sources && !linkMode ? t.pop_links : "") + (data.srcfiles || linkMode ? t.pop_files : "");
@@ -832,7 +947,7 @@ function renderFiles(t, esc){
   const cards = ORDERS.map(o => fileCard(o, t, esc)).join("");
   const add = `<button class="fcard fnew" data-new="1"><div class="fthumb">+</div><b>${t.files_new}</b><small>${t.files_new_x}</small></button>`;
   $("#fgrid").innerHTML = add + cards + (ORDERS.length ? "" : `<p class="note" style="grid-column:1/-1">${t.files_empty}</p>`);
-  $("#cont").innerHTML = ORDERS.length ? `<div class="rowh"><h2>${t.cont_t}</h2><button data-go="files">${t.show_all}</button></div>
+  $("#cont").innerHTML = ORDERS.length > 1 ? `<div class="rowh"><h2>${t.cont_t}</h2><button data-go="files">${t.show_all}</button></div>
     <div class="hscroll">${ORDERS.slice(0,4).map(o => fileCard(o, t, esc)).join("")}</div>` : "";
   document.querySelectorAll(".fcard").forEach(c => c.onclick = () => { haptic(); c.dataset.new ? go("order") : openFile(+c.dataset.id); });
   document.querySelectorAll("#cont [data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
@@ -868,6 +983,7 @@ function openFile(id){
 }
 function toChat(){ if (tg){ tg.openTelegramLink(`https://t.me/${BOT}`); setTimeout(() => tg.close(), 300); } }
 function renderHome(t){
+  renderShowcase(t); renderTracker(t);
   const jump = id => window.scrollTo({top: $(id).getBoundingClientRect().top + window.scrollY - 70, behavior:"smooth"});
   const acts = {
     files: () => go("files"),
@@ -880,7 +996,7 @@ function renderHome(t){
   $("#qnew b").textContent = t.qa_new[0]; $("#qnew span").textContent = t.qa_new[1];
   $("#qnew").onclick = () => { haptic(); go("order"); };
   const bg = ["#2BB3B1","#7A5AF8","#E2553F","#D9A441","#4F6BD1","#13A36B"];
-  $("#qa").innerHTML = t.qa.map(([k,ic,lb,sub],i) => `<button data-k="${k}"><i style="background:${bg[i%bg.length]}">${ic}</i>${lb}${sub?`<small>${sub}</small>`:""}</button>`).join("");
+  if ($("#qa")) $("#qa").innerHTML = t.qa.map(([k,ic,lb,sub],i) => `<button data-k="${k}"><i style="background:${bg[i%bg.length]}">${ic}</i>${lb}${sub?`<small>${sub}</small>`:""}</button>`).join("");
   document.querySelectorAll("#qa button").forEach(b => b.onclick = () => { haptic(); acts[b.dataset.k](); });
   $("#how").innerHTML = t.how.map(([ic,b,sp],i) => `<div><i>${ic}<em>${i+1}</em></i><p style="margin:0"><b>${b}</b><span>${sp}</span></p></div>`).join("");
 }
