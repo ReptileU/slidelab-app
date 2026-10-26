@@ -77,6 +77,9 @@ details.shw[open]{padding-bottom:14px}
 .mini .ml{position:absolute;left:9%;top:58%;height:4px;border-radius:2px}
 .mini .ml2{position:absolute;left:9%;top:68%;height:4px;border-radius:2px;opacity:.6}
 .mini .md{position:absolute}
+.mini.mcol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:3fr 1fr;gap:3px;padding:3px;background:#0b0f17}
+.mini.mcol img{width:100%;height:100%;object-fit:cover;border-radius:3px;display:block;min-height:0}
+.mini.mcol img.c{grid-column:1/-1;object-position:left center}
 .mini .real{position:absolute;right:6px;top:6px;font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;background:rgba(15,27,45,.75);color:#fff}
 .sc .sb{padding:8px 10px 10px}.sc b{display:block;font-size:13px}.sc small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
 .sc .want{display:inline-block;margin-top:7px;font-size:11.5px;font-weight:800;color:var(--on);background:var(--v);padding:5px 10px;border-radius:999px}
@@ -821,18 +824,18 @@ const STYLES = [
   {k:"indust", tags:["business","dark"],  img:2, bg:"linear-gradient(135deg,#1c1c1c,#4a4a4a)", fg:"#F2A93B", ac:"#F2A93B"},
   {k:"artdeco",tags:["study","dark"],     img:3, bg:"linear-gradient(135deg,#0d0f14,#2a2414)", fg:"#C9A961", ac:"#C9A961"},
   {k:"gazeta", tags:["study","light"],    img:4, bg:"#EEE6D3", fg:"#111", ac:"#D7261E"},
-  {k:"minimal",tags:["business","light"], src:"8e592df2-5b66-4b76-adae-dd8fab34c814", bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
-  {k:"corp",   tags:["business","dark"], src:"3fbe9ffd-ced6-44f5-bfd4-4c483f37aa0b", bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
-  {k:"samarkand",tags:["study","dark"],   src:"e54f7a8a-6fe9-41ea-aeb8-bbee91e149b0", bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
-  {k:"science",tags:["study","light"],    src:"d586cb20-86b5-43f6-a570-b4f493244981", bg:"linear-gradient(135deg,#E8F4FF,#C9E3FF)", fg:"#0B3C7A", ac:"#4F6BD1", deco:"chart"},
-  {k:"premium",tags:["business","dark"],  src:"fc6ca4f9-c7df-4dc5-a72d-225a0f714e84", bg:"linear-gradient(135deg,#0b0b0c,#22252b)", fg:"#D9A441", ac:"#D9A441", deco:"line"},
-  {k:"bright", tags:["study","dark"],     src:"8afc2e28-14be-4a99-9a37-434df053c537", bg:"linear-gradient(135deg,#FFE066,#FF7A59)", fg:"#2a1a00", ac:"#fff", deco:"blob"},
-  {k:"nature", tags:["study","dark"],     src:"d149a968-ae8e-4ded-a7e0-b978a796e0e3", bg:"linear-gradient(135deg,#DFF3E4,#9FD8B0)", fg:"#0F5132", ac:"#13A36B", deco:"leaf"},
+  {k:"minimal",tags:["business","light"], src:"8e592df2-5b66-4b76-adae-dd8fab34c814", more:["79a48454-94cb-4f6b-8015-f97a5e4da385", "69359d38-aa90-4287-929a-624077ee2a4f", "c47e1924-ff57-43e6-bf3b-54e99317082d"], bg:"#F5F5F2", fg:"#111", ac:"#2BB3B1", deco:"circle"},
+  {k:"corp",   tags:["business","dark"], src:"3fbe9ffd-ced6-44f5-bfd4-4c483f37aa0b", more:["17cd005d-9083-49a4-be7a-ea8167c187b0", "92ade563-2524-4126-a787-8cc8f3b7370a", "4f2a775e-6649-461a-8d6c-ac15832a85cd"], bg:"linear-gradient(90deg,#fff 62%,#1B4F72 62%)", fg:"#1B4F72", ac:"#D9A441", deco:"bars"},
+  {k:"samarkand",tags:["study","dark"],   src:"e54f7a8a-6fe9-41ea-aeb8-bbee91e149b0", more:["0cd83f5d-fa56-43c9-8dab-4c5db6e508cf", "770a67b8-5bda-486c-bb36-326859fcaea4", "2b08dbe4-fb18-4f68-bfab-e79e98a539c2"], bg:"#0F1B2D", fg:"#F4EFE6", ac:"#2BB3B1", deco:"orn"},
+  {k:"science",tags:["study","light"],    src:"d586cb20-86b5-43f6-a570-b4f493244981", more:["a0752cee-897a-423c-a03d-2260ee69ce63", "70370cee-6850-4188-b8ae-d38c68e3daf6", "6a5df941-9ec6-4ac7-928d-39e87d33feac"], bg:"linear-gradient(135deg,#E8F4FF,#C9E3FF)", fg:"#0B3C7A", ac:"#4F6BD1", deco:"chart"},
+  {k:"premium",tags:["business","dark"],  src:"fc6ca4f9-c7df-4dc5-a72d-225a0f714e84", more:["bd50cd4b-367a-49a3-9793-93bb8888baef", "7764f6d3-cfaa-483d-8380-e63ac9f15187", "5af07449-7abe-42ec-8246-4f1764dd610d"], bg:"linear-gradient(135deg,#0b0b0c,#22252b)", fg:"#D9A441", ac:"#D9A441", deco:"line"},
+  {k:"bright", tags:["study","dark"],     src:"8afc2e28-14be-4a99-9a37-434df053c537", more:["12ae5d16-6f80-4247-a312-d72f928c0bae", "de4531fd-531f-4200-a315-2c12afad512b", "982571db-7901-401c-8a86-a80d75faf098"], bg:"linear-gradient(135deg,#FFE066,#FF7A59)", fg:"#2a1a00", ac:"#fff", deco:"blob"},
+  {k:"nature", tags:["study","dark"],     src:"d149a968-ae8e-4ded-a7e0-b978a796e0e3", more:["4af15a49-4de6-4710-9314-69ca3619c7ec", "b2770f45-c86b-4329-9297-d426247e0f49", "56774dfb-822a-4da4-a98d-a9cf80c77a21"], bg:"linear-gradient(135deg,#DFF3E4,#9FD8B0)", fg:"#0F5132", ac:"#13A36B", deco:"leaf"},
 ];
 let SFIL = "all";
 function miniHtml(x, t){
   const nm = t.styles[x.k][0];
-  if (x.src) return `<div class="mini" style="background:url('${IMG + x.src}.png') center/cover no-repeat, ${x.bg}"><i class="real ex">${t.ex}</i></div>`;
+  if (x.src) return `<div class="mini mcol"><img class="c" src="${IMG + x.src}.png" alt="" loading="lazy">${(x.more||[]).map(m => `<img src="${IMG + m}.png" alt="" loading="lazy">`).join("")}<i class="real ex">${t.ex}</i></div>`;
   if (x.img !== undefined) return `<div class="mini" style="background:url('${IMG + WORKS[x.img]}.png') center/cover no-repeat, ${x.bg}"><span class="mt" style="color:${x.fg};opacity:.35">${nm}</span><i class="real">${t.real}</i></div>`;
   const deco = {
     circle:`<i class="md" style="right:-12%;top:-20%;width:55%;aspect-ratio:1;border-radius:50%;background:${x.ac};opacity:.9"></i>`,
