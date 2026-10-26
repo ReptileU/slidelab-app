@@ -17,7 +17,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{overscroll-behavior:none;margin:0;background:var(--bg) radial-gradient(120% 60% at 50% -10%,rgba(43,179,177,.14),transparent 60%) no-repeat;color:var(--text);font-family:Manrope,system-ui,-apple-system,sans-serif}
-body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 :root{--top:calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px))}
 .wrap{max-width:560px;margin:0 auto;padding:var(--top) 16px 0}
 header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px}
@@ -27,6 +27,73 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .lang button{border:0;background:none;color:var(--muted);font:600 13px Manrope,system-ui,sans-serif;padding:6px 12px;border-radius:999px}
 .lang button.on{background:var(--v);color:var(--on)}
 
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:flex-end;justify-content:space-around;
+  background:rgba(15,27,45,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.bnav button{flex:1;border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px;
+  font:700 11px Manrope,system-ui,sans-serif;padding:4px 0;position:relative}
+.bnav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bnav button.on{color:var(--v2)}
+.bnav button.on:before{content:"";position:absolute;top:-9px;left:30%;right:30%;height:3px;border-radius:0 0 3px 3px;background:var(--v2)}
+.bnav .plus{flex:0 0 74px}
+.bnav .plus i{font-style:normal;width:58px;height:58px;margin-top:-26px;border-radius:50%;background:linear-gradient(135deg,var(--v2),var(--v));
+  color:var(--on);font:800 34px/58px Manrope,system-ui,sans-serif;box-shadow:0 6px 22px rgba(43,179,177,.45),0 0 0 5px var(--bg)}
+body.noNav .bnav{display:none}
+.pt0{margin-top:10px}
+.qa{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qa button{border:0;background:var(--card);border-radius:18px;padding:14px 6px 12px;color:var(--soft);font:700 12.5px Manrope,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:8px;line-height:1.25}
+.qa button i{font-style:normal;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
+.qa button small{display:block;color:var(--muted);font-weight:500;font-size:11px;margin-top:-4px}
+.how{display:flex;flex-direction:column;gap:0;background:var(--card);border-radius:var(--r);padding:6px 16px}
+.how div{display:flex;gap:14px;align-items:center;padding:12px 0;position:relative}
+.how div+div{border-top:1px solid var(--line)}
+.how i{font-style:normal;flex:0 0 40px;height:40px;border-radius:12px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:20px;position:relative}
+.how i em{position:absolute;top:-6px;left:-6px;width:20px;height:20px;border-radius:50%;background:var(--v3);color:var(--on);font:800 11px/20px Manrope,sans-serif;font-style:normal;text-align:center}
+.how b{display:block;font-size:14.5px;color:#fff}.how span{font-size:12.5px;color:var(--muted)}
+.helper{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;max-width:536px;margin:0 auto;display:flex;align-items:center;gap:10px;
+  background:#F4EFE6;color:#0F1B2D;border-radius:16px;padding:10px 12px 10px 14px;box-shadow:0 8px 28px rgba(0,0,0,.35);cursor:pointer}
+.helper div{flex:1}.helper em{display:block;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;color:#1B6F8A}
+.helper span{font-size:13px;font-weight:700}.helper b{font-size:24px}
+body:not(.onHome) .helper,body.scrolled .helper{opacity:0;pointer-events:none;transform:translateY(12px)}
+.helper{transition:opacity .25s,transform .25s}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fcard{min-width:0}
+.fcard{background:none;border:0;padding:0;text-align:left;color:var(--text);font-family:Manrope,system-ui,sans-serif}
+.fthumb{aspect-ratio:16/10;border-radius:14px;padding:10px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;
+  font-weight:800;font-size:12.5px;line-height:1.2;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.fthumb:after{content:"";position:absolute;left:10px;top:10px;width:34%;height:4px;border-radius:2px;background:rgba(255,255,255,.55)}
+.fthumb span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.fchip{position:absolute;right:8px;top:8px;font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:999px;background:rgba(15,27,45,.75);color:#fff}
+.fcard b{display:block;font-size:13.5px;margin:8px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fcard small{display:block;color:var(--muted);font-size:11.5px;margin:2px 2px 0}
+.fnew .fthumb{background:var(--card);border:1.5px dashed #2C405C;box-shadow:none;align-items:center;justify-content:center;color:var(--v2);font-size:34px}
+.fnew .fthumb:after{display:none}
+.hscroll{display:flex;gap:12px;overflow-x:auto;margin:0 -16px;padding:2px 16px 4px;scrollbar-width:none}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll .fcard{flex:0 0 44%}
+.rowh{display:flex;justify-content:space-between;align-items:baseline}
+.rowh button{border:0;background:none;color:var(--v2);font:700 13px Manrope,system-ui,sans-serif}
+.slist{background:var(--card);border-radius:var(--r);overflow:hidden}
+.slist button{width:100%;display:flex;align-items:center;gap:14px;border:0;background:none;color:var(--text);padding:14px 16px;font:700 15px Manrope,system-ui,sans-serif;text-align:left}
+.slist button+button{border-top:1px solid var(--line)}
+.slist i{font-style:normal;flex:0 0 40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;background:var(--card2)}
+.slist span{flex:1}.slist em{font-style:normal;color:var(--muted);font-weight:600;font-size:13.5px}
+.slist button:after{content:"›";color:var(--muted);font-size:22px;margin-left:4px}
+.sheet{position:fixed;inset:0;z-index:40;display:none}
+.sheet.on{display:block}
+.sh-bg{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .2s}
+.sh-in{position:absolute;left:0;right:0;bottom:0;max-width:560px;margin:0 auto;max-height:86vh;overflow:auto;background:var(--bg);border-radius:22px 22px 0 0;
+  padding:8px 16px calc(20px + env(safe-area-inset-bottom));border-top:1px solid var(--line);animation:up .25s ease}
+.sh-grip{width:42px;height:5px;border-radius:3px;background:#2C405C;margin:4px auto 12px}
+@keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}}
+.sh-in h3{margin:4px 0 12px;font-size:19px}
+.opt-list button{width:100%;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);background:var(--card);color:#fff;border-radius:14px;
+  padding:14px 16px;margin-bottom:8px;font:700 15px Manrope,system-ui,sans-serif}
+.opt-list button.on{border-color:var(--v);background:var(--card2)}
+.opt-list button.on:after{content:"✓";color:var(--v2)}
+.dbtn{width:100%;border:1px solid var(--v);background:transparent;color:var(--v2);font:700 14px Manrope,system-ui,sans-serif;padding:12px;border-radius:12px;margin-top:8px}
 nav.tabs{position:sticky;top:var(--top);z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
 nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 14px Manrope,system-ui,sans-serif;padding:11px 6px;border-radius:14px;white-space:nowrap}
 nav.tabs button.on{background:var(--card2);border-color:var(--v);color:#fff}
@@ -211,14 +278,9 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <header>
     <div class="logo">SLIDE<b>LAB</b></div>
     <div class="hr">
-      <div class="lang"><button data-l="ru">RU</button><button data-l="uz">UZ</button><button data-l="en">EN</button></div>
       <button class="mebtn" id="meBtn" aria-label="Профиль"><span class="mav" id="mav"></span><i class="mdot" id="mdot"></i></button>
     </div>
   </header>
-  <nav class="tabs">
-    <button data-tab="home" data-t="tab_home"></button>
-    <button data-tab="order" data-t="tab_order"></button>
-  </nav>
 
   <!-- ГЛАВНАЯ -->
   <section id="home">
@@ -228,6 +290,13 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div class="badges">
       <span class="badge" data-t="b1"></span><span class="badge" data-t="b2"></span><span class="badge" data-t="b3"></span>
     </div>
+
+    <h2 data-t="qa_t"></h2>
+    <div class="qa" id="qa"></div>
+    <div id="cont"></div>
+
+    <h2 data-t="how_t"></h2>
+    <div class="how" id="how"></div>
 
     <h2 data-t="h_price"></h2>
     <div id="prices"></div>
@@ -242,10 +311,26 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div class="feat" id="feat"></div>
 
     <button class="cta" data-go="order" data-t="cta"></button>
+    <div class="helper" data-go="faq"><div><em data-t="help_t"></em><span data-t="help_x"></span></div><b>💬</b></div>
+  </section>
+
+  <!-- МОИ ФАЙЛЫ -->
+  <section id="files">
+    <h2 class="pt0" data-t="files_t"></h2>
+    <div class="fgrid" id="fgrid"></div>
+  </section>
+
+  <!-- ПАКЕТЫ -->
+  <section id="packs">
+    <h2 class="pt0" id="subs_h"></h2>
+    <div id="mysub"></div>
+    <p class="lead" data-t="subs_lead"></p>
+    <div id="subs"></div>
   </section>
 
   <!-- ЗАКАЗ -->
   <section id="order">
+    <h2 class="pt0" data-t="files_new"></h2>
     <div id="promo"></div>
     <div class="q"><span data-t="q_topic"></span><span class="req">*</span></div>
     <textarea id="topic" rows="2" maxlength="300"></textarea>
@@ -299,15 +384,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <!-- ВОПРОСЫ -->
   <section id="me">
     <div class="mehead" id="mehead"></div>
-    <div id="mysub"></div>
-    <div class="melink" data-go="faq"><span class="ic">❓</span><div><b data-t="me_faq"></b><small data-t="me_faq_x"></small></div><i>›</i></div>
-    <h2 data-t="h_hist"></h2>
-    <div class="orders" id="orders"></div>
-    <h2 data-t="h_pres"></h2>
-    <div id="pres"></div>
-    <h2 id="subs_h"></h2>
-    <p class="lead" data-t="subs_lead" style="margin-top:-4px"></p>
-    <div id="subs"></div>
+    <div class="slist" id="slist"></div>
   </section>
 
   <section id="faq">
@@ -317,6 +394,15 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div class="ask"><p data-t="ask_hint"></p><textarea id="qtext" rows="3" maxlength="1000"></textarea><button class="cta" id="askBtn" data-t="ask_btn"></button></div><p class="note"><span data-t="faq_more"></span> <a class="contact" href="https://t.me/slidelab_uz">@slidelab_uz</a></p></section>
 </div>
 
+<nav class="bnav" id="bnav">
+  <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-t="tab_home"></span></button>
+  <button data-tab="files"><svg viewBox="0 0 24 24"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M8.5 13h7M8.5 17h5"/></svg><span data-t="tab_files"></span></button>
+  <button data-tab="order" class="plus" aria-label="+"><i>+</i></button>
+  <button data-tab="packs"><svg viewBox="0 0 24 24"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg><span data-t="tab_packs"></span></button>
+  <button data-tab="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-t="tab_me"></span></button>
+</nav>
+<div class="sheet" id="sheet"><div class="sh-bg" id="shBg"></div><div class="sh-in"><div class="sh-grip"></div><div id="shBody"></div></div></div>
+
 <script>
 const IMG = "https://d2ol7oe51mr4n9.cloudfront.net/user_3Kg776n2YVTxhk4uIcG7vcKL8Pt/";
 const PRICE = {s10:19000, s20:29000, s30:39000};
@@ -324,6 +410,14 @@ const EXTRA = 5000, URGENT = 0.5;
 
 const T = {
 ru:{
+ tab_files:"Мои файлы", tab_packs:"Пакеты", qa_t:"Что хотите сделать?",
+ qa:[["new","➕","Новая","презентация"],["fwd","📎","Переслать","лекцию боту"],["own","🎨","Свой","шаблон"],["packs","📦","Пакеты","дешевле"],["files","🎞","Мои","файлы"],["ask","💬","Задать","вопрос"]],
+ how_t:"Как это работает", how:[["📝","Оформляете заказ","тема, слайды, срок — 1 минута"],["🎨","Бесплатная обложка","смотрите стиль — пока без оплаты"],["💳","Оплата","картой или звёздами Telegram"],["🎉","Готовая презентация","в любом формате + 2 правки бесплатно"]],
+ help_t:"ПОМОЩНИК", help_x:"Есть вопрос? Спросите — ответим в чате", cont_t:"Продолжить", show_all:"Все",
+ files_t:"🎞 Мои файлы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате",
+ set_packs:"Пакеты и оплата", set_files:"Мои файлы", set_faq:"Вопросы и помощь", set_review:"Оставить отзыв", set_lang:"Язык", set_channel:"Канал SlideLab", set_none:"нет",
+ rv_t:"⭐ Ваш отзыв", rv_x:"Что понравилось, что улучшить? Это очень помогает нам.", rv_ph:"Напишите пару слов…", rv_send:"Отправить отзыв", rv_pop:"Приложение закроется, отзыв уйдёт менеджеру. Спасибо!", rv_tag:"Отзыв",
+ fwd_pop:"Откроется чат с ботом. Перешлите туда файл лекции или задания из любого чата — бот оформит заказ в 2 нажатия.",
  tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы", tab_me:"Профиль", me_faq:"Вопросы и помощь", me_faq_x:"Ответы на частые вопросы и связь с менеджером",
  hero:"Презентации, которые <em>хочется показывать</em>",
  lead:"Свой стиль под каждую тему, проверенные факты и живой PPTX, где меняется каждый текст и график.",
@@ -375,6 +469,14 @@ ru:{
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
 },
 en:{
+ tab_files:"My files", tab_packs:"Packs", qa_t:"What would you like to do?",
+ qa:[["new","➕","New","presentation"],["fwd","📎","Forward a","lecture to the bot"],["own","🎨","My own","template"],["packs","📦","Packs","cheaper"],["files","🎞","My","files"],["ask","💬","Ask a","question"]],
+ how_t:"How it works", how:[["📝","You place an order","topic, slides, deadline — 1 minute"],["🎨","Free cover","see the style — no payment yet"],["💳","Payment","by card or Telegram Stars"],["🎉","Finished presentation","in any format + 2 rounds of edits free"]],
+ help_t:"HELPER", help_x:"Have a question? Ask — we'll reply in the chat", cont_t:"Continue", show_all:"All",
+ files_t:"🎞 My files", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat",
+ set_packs:"Packs & payment", set_files:"My files", set_faq:"Questions & help", set_review:"Leave a review", set_lang:"Language", set_channel:"SlideLab channel", set_none:"none",
+ rv_t:"⭐ Your review", rv_x:"What did you like, what can we improve? It really helps us.", rv_ph:"Write a few words…", rv_send:"Send review", rv_pop:"The app will close and your review will go to the manager. Thank you!", rv_tag:"Review",
+ fwd_pop:"The bot chat will open. Forward a lecture or assignment file there from any chat — the bot will place the order in 2 taps.",
  tab_home:"Home", tab_order:"Order", tab_faq:"FAQ", tab_me:"Profile", me_faq:"Questions & help", me_faq_x:"Answers to common questions and contact with the manager",
  hero:"Presentations you'll <em>want to show</em>",
  lead:"A unique style for every topic, checked facts and an editable PPTX where every text and chart can be changed.",
@@ -426,6 +528,14 @@ en:{
       ["Will my work be shown to others?","No, only with your permission."]]
 },
 uz:{
+ tab_files:"Fayllarim", tab_packs:"Paketlar", qa_t:"Nima qilmoqchisiz?",
+ qa:[["new","➕","Yangi","taqdimot"],["fwd","📎","Ma’ruzani","botga yuborish"],["own","🎨","O‘z","shablonim"],["packs","📦","Paketlar","arzonroq"],["files","🎞","Mening","fayllarim"],["ask","💬","Savol","berish"]],
+ how_t:"Bu qanday ishlaydi", how:[["📝","Buyurtma berasiz","mavzu, slaydlar, muddat — 1 daqiqa"],["🎨","Bepul muqova","uslubni ko‘rasiz — hali to‘lovsiz"],["💳","To‘lov","karta yoki Telegram yulduzlari"],["🎉","Tayyor taqdimot","istalgan formatda + 2 tuzatish bepul"]],
+ help_t:"YORDAMCHI", help_x:"Savol bormi? So‘rang — chatda javob beramiz", cont_t:"Davom ettirish", show_all:"Hammasi",
+ files_t:"🎞 Fayllarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish",
+ set_packs:"Paketlar va to‘lov", set_files:"Fayllarim", set_faq:"Savollar va yordam", set_review:"Fikr qoldirish", set_lang:"Til", set_channel:"SlideLab kanali", set_none:"yo‘q",
+ rv_t:"⭐ Fikringiz", rv_x:"Nima yoqdi, nimani yaxshilash kerak? Bu bizga juda yordam beradi.", rv_ph:"Bir-ikki so‘z yozing…", rv_send:"Fikrni yuborish", rv_pop:"Ilova yopiladi, fikringiz menejerga ketadi. Rahmat!", rv_tag:"Fikr",
+ fwd_pop:"Bot bilan chat ochiladi. U yerga istalgan chatdan ma’ruza yoki topshiriq faylini forward qiling — bot 2 bosishda buyurtma qiladi.",
  tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil", me_faq:"Savollar va yordam", me_faq_x:"Ko‘p beriladigan savollar va menejer bilan aloqa",
  hero:"Ko‘rsatgingiz keladigan <em>taqdimotlar</em>",
  lead:"Har bir mavzuga o‘z uslubi, tekshirilgan faktlar va har bir matn hamda grafik o‘zgaradigan jonli PPTX.",
@@ -658,21 +768,7 @@ function render(){
   $("#faqList").innerHTML = t.faq.map(([q,a]) => `<details><summary>${q}</summary><p>${a}</p></details>`).join("") + `<p class="note" id="nothing" style="display:none">${t.nothing}</p>`;
   $("#qsearch").placeholder = t.ph_search; $("#qtext").placeholder = t.ph_q; filterFaq();
   const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  $("#orders").innerHTML = !ORDERS.length ? `<div class="empty">${t.no_orders}</div>` : ORDERS.map(([id,topic,sl,status,price]) => {
-      const n = stepOf(status);
-      return `<div class="ord"><div class="top">#${id} · ${esc(topic)}<span>${fmt(price)}${t.sum}</span></div>
-        <div class="meta">${t.sl[sl] || ""}</div>
-        ${status==="cancel" ? "" : `<div class="steps">${STEPS.map((x,i)=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`}
-        <div class="st">${t.st[status] || status}</div>
-        ${["done","edit"].includes(status) ? `<div class="edit" data-id="${id}"><button>${t.ed_btn}</button><textarea rows="3" maxlength="1500" placeholder="${t.ed_ph}"></textarea><small>${t.ed_note}</small></div>` : ""}</div>`; }).join("");
-  const done = ORDERS.filter(o => ["done","edit"].includes(o[3]) || o[5] || o[6]);
-  $("#pres").innerHTML = !done.length ? `<div class="empty">${t.no_pres}</div>` : done.map(([id,topic,sl,status,price,link]) =>
-    `<div class="pres"><span class="ic">🎞</span><div class="tx">#${id} · ${esc(topic)}<small>${link ? esc(link.replace(/^https?:\/\//,"").slice(0,42)) : t.in_chat}</small></div><button data-link="${link ? esc(link) : ""}">${link ? t.open : t.go_chat}</button></div>`).join("");
-  document.querySelectorAll(".pres button").forEach(b => b.onclick = () => {
-    haptic(); const l = b.dataset.link;
-    if (l && /^https:\/\//.test(l)) { tg ? tg.openLink(l) : window.open(l); }
-    else if (tg) { tg.openTelegramLink(`https://t.me/${BOT}`); setTimeout(() => tg.close(), 300); }
-  });
+  renderFiles(t, esc);
   const u = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) || null;
   const nm = u ? [u.first_name, u.last_name].filter(Boolean).join(" ") : t.guest;
   $("#mehead").innerHTML = `<div class="av" style="${u && u.photo_url ? `background-image:url('${esc(u.photo_url)}')` : ""}">${u && u.photo_url ? "" : esc(nm[0] || "S")}</div><div><div class="nm">${esc(nm)}</div><div class="un">${u && u.username ? "@"+esc(u.username) : ""}</div></div>`;
@@ -687,25 +783,107 @@ function render(){
     $("#promo").innerHTML = `<div class="promo"><button class="x" aria-label="×">×</button><div class="pt">${t.promo_t}</div><div class="px">${t.promo_x}</div>
       <div class="pr">${Object.values(t.plans).map(([n,d,lim,pr]) => `<i>${lim} ${t.pc} — <b>${fmt(Math.round(pr/lim))}</b>${t.per}</i>`).join("")}</div><button class="go">${t.promo_go}</button></div>`;
   } else $("#promo").innerHTML = "";
-  const pg = $("#promo .go"); if (pg) pg.onclick = () => { haptic(); go("me"); setTimeout(() => window.scrollTo({top: $("#subs_h").getBoundingClientRect().top + window.scrollY - 90, behavior:"smooth"}), 80); };
+  const pg = $("#promo .go"); if (pg) pg.onclick = () => { haptic(); go("packs"); };
   const px = $("#promo .x"); if (px) px.onclick = () => { try { sessionStorage.setItem("promo_x","1"); } catch(e){} $("#promo").innerHTML = ""; };
   $("#mav").style.backgroundImage = u && u.photo_url ? `url('${esc(u.photo_url)}')` : "";
   $("#mav").textContent = u && u.photo_url ? "" : (u ? (nm[0] || "S") : "👤");
   $("#mdot").textContent = SUB && SUB.left > 0 ? SUB.left : (ORDERS.some(o => ["done","edit"].includes(o[3])) ? "✓" : "");
   $("#mdot").style.display = $("#mdot").textContent ? "" : "none";
-  document.querySelectorAll(".ord .edit").forEach(box => {
+  renderHome(t);
+  renderSettings(t, nm);
+  renderForm();
+}
+
+const THUMBS = ["linear-gradient(135deg,#1B6F8A,#2BB3B1)","linear-gradient(135deg,#7A3E9D,#E2553F)","linear-gradient(135deg,#D9A441,#B3262E)",
+  "linear-gradient(135deg,#1E2042,#4F6BD1)","linear-gradient(135deg,#0F5132,#4FD1C5)","linear-gradient(135deg,#3a2a10,#D9A441)"];
+const ST_SHORT = {new:"🆕", cover:"🎨", work:"🛠", edit:"✏️", done:"✅", cancel:"✖️"};
+function fileCard(o, t, esc){
+  const [id, topic, sl, status] = o;
+  return `<button class="fcard" data-id="${id}"><div class="fthumb" style="background:${THUMBS[id % THUMBS.length]}"><i class="fchip">${ST_SHORT[status]||""} ${esc((t.st[status]||"").replace(/^\S+\s/,""))}</i><span>${esc(topic)}</span></div>
+    <b>#${id} · ${esc(topic)}</b><small>${t.sl[sl] || ""}</small></button>`;
+}
+function renderFiles(t, esc){
+  const cards = ORDERS.map(o => fileCard(o, t, esc)).join("");
+  const add = `<button class="fcard fnew" data-new="1"><div class="fthumb">+</div><b>${t.files_new}</b><small>${t.files_new_x}</small></button>`;
+  $("#fgrid").innerHTML = add + cards + (ORDERS.length ? "" : `<p class="note" style="grid-column:1/-1">${t.files_empty}</p>`);
+  $("#cont").innerHTML = ORDERS.length ? `<div class="rowh"><h2>${t.cont_t}</h2><button data-go="files">${t.show_all}</button></div>
+    <div class="hscroll">${ORDERS.slice(0,4).map(o => fileCard(o, t, esc)).join("")}</div>` : "";
+  document.querySelectorAll(".fcard").forEach(c => c.onclick = () => { haptic(); c.dataset.new ? go("order") : openFile(+c.dataset.id); });
+  document.querySelectorAll("#cont [data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+}
+function openFile(id){
+  const t = T[L], o = ORDERS.find(x => x[0] === id); if (!o) return;
+  const [, topic, sl, status, price, link] = o, n = stepOf(status);
+  const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const ready = ["done","edit"].includes(status);
+  openSheet(`<div class="fthumb" style="background:${THUMBS[id % THUMBS.length]};aspect-ratio:16/8;font-size:17px"><span>${esc(topic)}</span></div>
+    <h3 style="margin-top:14px">#${id} · ${esc(topic)}</h3>
+    <div class="ord" style="margin:0"><div class="meta" style="margin-top:0">${t.sl[sl] || ""} · ${fmt(price)}${t.sum}</div>
+    ${status==="cancel" ? "" : `<div class="steps">${STEPS.map((x,i)=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`}
+    <div class="st">${t.st[status] || status}</div>
+    ${ready ? `<div class="edit" data-id="${id}"><button>${t.ed_btn}</button><textarea rows="3" maxlength="1500" placeholder="${t.ed_ph}"></textarea><small>${t.ed_note}</small></div>` : ""}</div>
+    ${link && /^https:\/\//.test(link) ? `<button class="dbtn" id="dOpen">🔗 ${t.open}</button>` : ""}
+    <button class="dbtn" id="dChat">💬 ${ready ? t.d_files : t.go_chat}</button>`);
+  const box = document.querySelector("#shBody .edit");
+  if (box){
     const btn = box.querySelector("button"), ta = box.querySelector("textarea");
     btn.onclick = () => {
       haptic();
-      if (linkMode){ tg.showConfirm(t.ed_pop_link, ok => { if (ok){ tg.openTelegramLink(`https://t.me/${BOT}?start=edit_${box.dataset.id}`); setTimeout(() => tg.close(), 300); } }); return; }
+      if (linkMode){ tg.showConfirm(t.ed_pop_link, ok => { if (ok){ tg.openTelegramLink(`https://t.me/${BOT}?start=edit_${id}`); setTimeout(() => tg.close(), 300); } }); return; }
       if (!box.classList.contains("open")){ box.classList.add("open"); btn.textContent = t.ed_send; ta.focus(); return; }
       const text = ta.value.trim();
       if (!text){ tg ? tg.showAlert(t.ed_empty) : alert(t.ed_empty); return; }
       if (!inTg){ alert(t.no_tg); return; }
-      tg.showConfirm(t.ed_pop, ok => { if (ok) tg.sendData(JSON.stringify({type:"edit", lang:L, id:+box.dataset.id, text:text.slice(0,1500)})); });
+      tg.showConfirm(t.ed_pop, ok => { if (ok) tg.sendData(JSON.stringify({type:"edit", lang:L, id, text:text.slice(0,1500)})); });
     };
+  }
+  const op = $("#dOpen"); if (op) op.onclick = () => { tg ? tg.openLink(link) : window.open(link); };
+  $("#dChat").onclick = toChat;
+}
+function toChat(){ if (tg){ tg.openTelegramLink(`https://t.me/${BOT}`); setTimeout(() => tg.close(), 300); } }
+function renderHome(t){
+  const acts = {
+    new: () => go("order"),
+    fwd: () => { const go2 = () => toChat(); inTg ? tg.showConfirm(t.fwd_pop, ok => ok && go2()) : go2(); },
+    own: () => { st.design = "own"; go("order"); },
+    packs: () => go("packs"),
+    files: () => go("files"),
+    ask: () => go("faq"),
+  };
+  const bg = ["#2BB3B1","#7A5AF8","#E2553F","#D9A441","#4F6BD1","#13A36B"];
+  $("#qa").innerHTML = t.qa.map(([k,ic,lb,sub],i) => `<button data-k="${k}"><i style="background:${bg[i%bg.length]}">${ic}</i>${lb}${sub?`<small>${sub}</small>`:""}</button>`).join("");
+  document.querySelectorAll("#qa button").forEach(b => b.onclick = () => { haptic(); acts[b.dataset.k](); });
+  $("#how").innerHTML = t.how.map(([ic,b,sp],i) => `<div><i>${ic}<em>${i+1}</em></i><p style="margin:0"><b>${b}</b><span>${sp}</span></p></div>`).join("");
+}
+function renderSettings(t, nm){
+  const LN = {ru:"Русский", uz:"O‘zbekcha", en:"English"};
+  const packVal = SUB ? `${SUB.left} / ${SUB.limit}` : t.set_none;
+  const rows = [["packs","📦",t.set_packs,packVal],["files","🎞",t.set_files,String(ORDERS.length)],["faq","❓",t.set_faq,""],
+                ["review","⭐",t.set_review,""],["lang","🌐",t.set_lang,LN[L]],["channel","📢",t.set_channel,"@slidelab_uz"]];
+  $("#slist").innerHTML = rows.map(([k,ic,lb,v]) => `<button data-k="${k}"><i>${ic}</i><span>${lb}</span><em>${v}</em></button>`).join("");
+  document.querySelectorAll("#slist button").forEach(b => b.onclick = () => {
+    haptic(); const k = b.dataset.k;
+    if (k==="packs" || k==="files" || k==="faq") return go(k);
+    if (k==="channel") return tg ? tg.openTelegramLink("https://t.me/slidelab_uz") : window.open("https://t.me/slidelab_uz");
+    if (k==="lang"){
+      openSheet(`<h3>${t.set_lang}</h3><div class="opt-list">${Object.entries(LN).map(([c,n]) => `<button data-l="${c}" class="${c===L?"on":""}">${n}</button>`).join("")}</div>`);
+      document.querySelectorAll("#shBody [data-l]").forEach(x => x.onclick = () => { L = x.dataset.l; haptic(); closeSheet(); render(); });
+      return;
+    }
+    if (k==="review"){
+      openSheet(`<h3>${t.rv_t}</h3><p class="lead">${t.rv_x}</p><div class="opt-list" id="stars" style="display:flex;gap:6px">${[1,2,3,4,5].map(n=>`<button data-n="${n}" style="justify-content:center;margin:0">⭐</button>`).join("")}</div>
+        <textarea id="rvText" rows="4" maxlength="1000" placeholder="${t.rv_ph}" style="margin-top:10px"></textarea><button class="cta" id="rvSend">${t.rv_send}</button>`);
+      let stars = 5;
+      const paint = () => document.querySelectorAll("#stars button").forEach(x => x.style.opacity = +x.dataset.n <= stars ? 1 : .3);
+      document.querySelectorAll("#stars button").forEach(x => x.onclick = () => { stars = +x.dataset.n; haptic(); paint(); }); paint();
+      $("#rvSend").onclick = () => {
+        const text = $("#rvText").value.trim();
+        if (!inTg){ alert(t.no_tg); return; }
+        if (linkMode){ tg.showConfirm(t.ask_pop_link, ok => { if (ok){ tg.openTelegramLink(`https://t.me/${BOT}?start=ask`); setTimeout(() => tg.close(), 300); } }); return; }
+        tg.showConfirm(t.rv_pop, ok => { if (ok) tg.sendData(JSON.stringify({type:"q", lang:L, text:("⭐".repeat(stars) + " " + t.rv_tag + (text ? ": " + text : "")).slice(0,1000)})); });
+      };
+    }
   });
-  renderForm();
 }
 
 function filterFaq(){
@@ -742,18 +920,26 @@ function renderCmp(){
     ${GIFT_ON ? `<div class="gift">${t.gifts[CMP]} · ${t.gp_tag.replace("{d}", GIFT_UNTIL.slice(8,10)+"."+GIFT_UNTIL.slice(5,7))}</div>` : ""}
     <button class="go">${t.cmp_go}</button></div>`;
   document.querySelectorAll(".cmp .seg button").forEach(b => b.onclick = () => { CMP = b.dataset.k; haptic(); renderCmp(); });
-  $(".cmp .go").onclick = () => { haptic(); go("me"); setTimeout(() => window.scrollTo({top: $("#subs_h").getBoundingClientRect().top + window.scrollY - 90, behavior:"smooth"}), 80); };
+  $(".cmp .go").onclick = () => { haptic(); go("packs"); };
 }
+let TAB = "home";
 function go(tab){
+  TAB = tab; closeSheet();
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id===tab));
-  document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
+  document.querySelectorAll(".bnav button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab || (tab==="faq" && b.dataset.tab==="me")));
   $("#meBtn").classList.toggle("on", tab==="me" || tab==="faq");
+  document.body.classList.toggle("noNav", tab==="order");
+  document.body.classList.toggle("onHome", tab==="home");
   window.scrollTo({top:0});
   if (inTg){ tab==="home" ? tg.BackButton.hide() : tg.BackButton.show(); }
   renderForm();
 }
+function openSheet(html){ $("#shBody").innerHTML = html; $("#sheet").classList.add("on"); if (inTg) tg.BackButton.show(); }
+function closeSheet(){ $("#sheet").classList.remove("on"); }
+$("#shBg").onclick = closeSheet;
+window.addEventListener("scroll", () => document.body.classList.toggle("scrolled", window.scrollY > 160), {passive:true});
 
-document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { haptic(); go(b.dataset.tab); });
+document.querySelectorAll(".bnav button").forEach(b => b.onclick = () => { haptic(); go(b.dataset.tab); });
 $("#meBtn").onclick = () => { haptic(); go("me"); };
 document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { L = b.dataset.l; haptic(); render(); });
@@ -774,7 +960,7 @@ if (inTg){
   try { tg.isVersionAtLeast && tg.isVersionAtLeast("7.7") || tg.enableClosingConfirmation && tg.enableClosingConfirmation(); } catch(e){}
   try { tg.setHeaderColor("#0F1B2D"); tg.setBackgroundColor("#0F1B2D"); tg.setBottomBarColor && tg.setBottomBarColor("#0F1B2D"); } catch(e){}
   tg.MainButton.onClick(submit);
-  tg.BackButton.onClick(() => go(document.querySelector("section#faq.on") ? "me" : "home"));
+  tg.BackButton.onClick(() => { if ($("#sheet").classList.contains("on")){ closeSheet(); if (TAB==="home") tg.BackButton.hide(); return; } go(TAB==="faq" ? "me" : "home"); });
 }
 render();
 go(qs.get("tab")==="order" ? "order" : "home");
