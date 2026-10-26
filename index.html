@@ -40,6 +40,22 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
   color:var(--on);font:800 34px/58px Manrope,system-ui,sans-serif;box-shadow:0 6px 22px rgba(43,179,177,.45),0 0 0 5px var(--bg)}
 body.noNav .bnav{display:none}
 .pt0{margin-top:10px}
+.way{position:relative;width:100%;display:block;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:var(--r);
+  padding:16px 16px 14px 70px;margin-bottom:10px;font-family:Manrope,system-ui,sans-serif}
+.way>i{position:absolute;left:14px;top:16px;font-style:normal;width:44px;height:44px;border-radius:14px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:22px}
+.way b{display:block;font-size:16.5px;line-height:1.25;color:#fff;padding-right:6px}
+.way .wx{display:block;font-size:13px;line-height:1.45;color:var(--soft);margin-top:5px}
+.way em{display:inline-block;margin-top:10px;font-style:normal;font-weight:800;font-size:13px;color:var(--v2)}
+.way.main{background:linear-gradient(150deg,#113A47 0%,#16263D 75%);border:1.5px solid var(--v);box-shadow:0 10px 30px rgba(43,179,177,.18);padding-top:34px}
+.way.main>i{top:34px;background:linear-gradient(135deg,var(--v2),var(--v))}
+.way.main em{background:var(--v);color:var(--on);padding:9px 14px;border-radius:12px}
+.wtag{position:absolute;left:14px;top:10px;font-size:10.5px;font-weight:800;letter-spacing:.07em;color:var(--on);background:var(--v3);padding:3px 8px;border-radius:6px}
+.wpts{display:block;margin-top:8px;font-size:12.5px;color:var(--soft);line-height:1.7}
+.wlogos{display:block;margin-top:8px;font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+details.shw{background:transparent;border:1px dashed #2C405C;border-radius:var(--r);padding:0 14px;margin:4px 0 6px}
+details.shw>summary{padding:14px 0;align-items:center}
+details.shw>summary span{font-size:14.5px;color:#fff}details.shw>summary small{display:block;color:var(--muted);font-size:12px;font-weight:500;margin-top:2px}
+details.shw[open]{padding-bottom:14px}
 .trk{background:linear-gradient(160deg,#113A47,#16263D);border:1px solid var(--v);border-radius:var(--r);padding:14px 16px;margin:8px 0 4px}
 .trk .tt{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--v2);font-weight:800;letter-spacing:.06em}
 .trk h3{margin:4px 0 10px;font-size:16px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -332,12 +348,15 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
       <span class="badge" data-t="b1"></span><span class="badge" data-t="b2"></span><span class="badge" data-t="b3"></span>
     </div>
 
-    <button class="qnew" id="qnew"><i>+</i><div><b></b><span></span></div><em>›</em></button>
-
-    <h2 data-t="sh_t"></h2>
-    <p class="lead" data-t="sh_x" style="margin-top:-6px"></p>
-    <div class="sfil" id="sfil"></div>
-    <div class="sgrid" id="sgrid"></div>
+    <h2 data-t="way_t"></h2>
+    <button class="way main" id="wayOurs"><span class="wtag" data-t="way1_tag"></span><i>✨</i><b data-t="way1_t"></b><span class="wx" data-t="way1_x"></span>
+      <span class="wpts" data-t="way1_pts" data-html></span><em data-t="way_go"></em></button>
+    <button class="way" id="wayOwn"><i>📎</i><b data-t="way2_t"></b><span class="wx" data-t="way2_x"></span>
+      <span class="wlogos">Canva · Google Slides · PowerPoint · Figma · PDF</span><em data-t="way_go"></em></button>
+    <details class="shw" id="shw"><summary><span>🎨 <b data-t="sh_t"></b><small data-t="sh_x"></small></span></summary>
+      <div class="sfil" id="sfil"></div>
+      <div class="sgrid" id="sgrid"></div>
+    </details>
     <div id="cont"></div>
 
     <h2 data-t="how_t"></h2>
@@ -456,7 +475,11 @@ const EXTRA = 5000, URGENT = 0.5;
 
 const T = {
 ru:{
- sh_t:"🎨 Выберите стиль", sh_x:"Нажмите «Хочу такую» — сделаем вашу презентацию в этом стиле. Обложка бесплатно.",
+ way_t:"Как сделаем дизайн?", way1_tag:"ГЛАВНОЕ В SLIDELAB", way1_t:"Уникальный дизайн под вашу тему",
+ way1_x:"Не берём готовый шаблон, как все. Придумываем стиль специально для вашей темы и задачи — его не будет больше ни у кого.",
+ way1_pts:"🎨 цвета и шрифты под смысл темы<br>🤖 картинки, которые нейросеть рисует именно под вашу тему — их нет в интернете и у других<br>📊 графики и схемы по вашим данным", way_go:"Заказать →",
+ way2_t:"По вашему шаблону", way2_x:"Есть шаблон кафедры, фирменный стиль или понравившийся пример? Пришлите ссылку или файл — сделаем точно в нём.",
+ sh_t:"Нужна идея? Посмотрите примеры стилей", sh_x:"по желанию — можно выбрать готовое направление",
  stags:{all:"Все",study:"Учёба",business:"Бизнес",dark:"Тёмные",light:"Светлые"}, want:"Хочу такую", real:"наша работа",
  styles:{neon:["Неон-журнал","яркий, журнальный"],vintage:["Винтажный скрапбук","история, ретро"],indust:["Индустриальный","экономика, техника"],
    minimal:["Минимализм","чисто и стильно"],corp:["Корпоративный","отчёт, бизнес-план"],samarkand:["Самарканд","восточный узор"],
@@ -476,7 +499,7 @@ ru:{
  fwd_pop:"Откроется чат с ботом. Перешлите туда файл лекции или задания из любого чата — бот оформит заказ в 2 нажатия.",
  tab_home:"Главная", tab_order:"Заказать", tab_faq:"Вопросы", tab_me:"Профиль", me_faq:"Вопросы и помощь", me_faq_x:"Ответы на частые вопросы и связь с менеджером",
  hero:"Презентации, которые <em>хочется показывать</em>",
- lead:"Свой стиль под каждую тему, проверенные факты и живой PPTX, где меняется каждый текст и график.",
+ lead:"Придумываем дизайн под вашу тему, а не берём готовый шаблон. Или делаем точно в вашем шаблоне. Факты проверены, каждый текст и график редактируется.",
  b1:"✏️ Всё редактируется", b2:"🎁 Обложка бесплатно", b3:"🌐 На русском, узбекском и английском",
  h_price:"Прайс", first_all:"🎁 Новым клиентам: первый заказ «Мини» — всего 9 900 сум", first_you:"🎁 Ваш первый заказ «Мини» — всего {p} сум вместо 19 000", h_works:"Работы", h_why:"Почему SlideLab",
  pk:{s10:["Мини","до 10 слайдов"], s20:["Стандарт","11–20 слайдов"], s30:["Большой","21–30 слайдов"]},
@@ -490,12 +513,12 @@ ru:{
  q_deadline:"Срок", dl:{d1:["⚡ Срочно","+50% к цене"],d2:["📅 Обычно","срок обсудим в чате, без доплат"],d3:["🐢 Не спешу","делаем спокойно, без доплат"]},
  urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
  ready:"<b>Заполните поля со звёздочкой * — и можно отправлять.</b> Всё, что ниже, — по желанию: доп. услуги, телефон, пожелания, источники.", opt_title:"⚙️ Дополнительно", opt_tag:"НЕОБЯЗАТЕЛЬНО", q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
- q_design:"Дизайн", ds:{ours:["✨ Сделайте дизайн сами","подберём стиль под тему"],own:["📎 Есть свой шаблон / пример","ссылка (Google Slides, Canva, Figma…) или файл"]},
+ q_design:"Дизайн", ds:{ours:["✨ Уникальный дизайн под мою тему","придумаем стиль специально для вас"],own:["📎 По моему шаблону","ссылка Canva, Google Slides, Figma — откуда угодно, или файл"]},
  q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +5 000", x_notes:"📝 Конспект для выступления · +5 000",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Сохранять файлы на телефон не нужно: после заявки просто перешлите их боту из любого чата — группы, канала, лички. Подходят PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы и ссылки.",
- ph_dlink:"Ссылка: Google Slides, Canva, Figma…", own_hint:"🔓 Откройте доступ по ссылке («Все, у кого есть ссылка» — просмотр), чтобы мы могли открыть шаблон. Файл (PPTX, PDF, скриншоты) можно переслать в чат с ботом после заявки.",
+ ph_dlink:"Ссылка на шаблон: Canva, Google Slides, Figma, Диск — откуда угодно", own_hint:"🔓 Откройте доступ по ссылке («Все, у кого есть ссылка» — просмотр), чтобы мы могли открыть шаблон. Файл (PPTX, PDF, скриншоты) можно переслать в чат с ботом после заявки.",
  q_sources:"📚 Откуда брать информацию", src_hint:"Есть лекция, учебник или сайт, по которым нужна презентация? Дайте их — факты и цифры возьмём именно оттуда. Нет — найдём проверенные источники сами.", ph_sources:"Например: ссылка на лекцию, статью, сайт или видео, название учебника", x_srcfiles:"📎 Есть файлы (лекция, методичка) — перешлю в чат",
  pop_title:"Отправляем заявку", pop_ok:"Отправить", pop_msg:"Приложение закроется и откроется чат с ботом.", pop_links:" Ваши источники уйдут вместе с заявкой.", pop_files:" Файлы и ссылки просто перешлите боту из любого чата — сохранять на телефон не нужно.",
  total:"Примерная стоимость", free:"<b>Сейчас вы ничего не платите.</b> Это только ориентир цены. Мы напишем вам, уточним детали и пришлём бесплатную обложку — оплата только после согласования.", note:"Итоговую цену подтвердим в чате до начала работы.",
@@ -525,7 +548,11 @@ ru:{
       ["Мою работу покажут другим?","Нет, только с вашего разрешения."]]
 },
 en:{
- sh_t:"🎨 Choose a style", sh_x:"Tap «I want this» — we'll make your presentation in this style. The cover is free.",
+ way_t:"How shall we design it?", way1_tag:"THE HEART OF SLIDELAB", way1_t:"A unique design for your topic",
+ way1_x:"We don't grab a ready template like everyone else. We create a style specifically for your topic and goal — no one else will have it.",
+ way1_pts:"🎨 colours and fonts that match the meaning<br>🤖 images an AI draws specifically for your topic — not found online or anywhere else<br>📊 charts and diagrams from your data", way_go:"Order →",
+ way2_t:"In your template", way2_x:"Have a department template, brand style or an example you like? Send a link or a file — we'll design exactly in it.",
+ sh_t:"Need an idea? Browse style examples", sh_x:"optional — you can pick a ready direction",
  stags:{all:"All",study:"Study",business:"Business",dark:"Dark",light:"Light"}, want:"I want this", real:"our work",
  styles:{neon:["Neon magazine","bright, editorial"],vintage:["Vintage scrapbook","history, retro"],indust:["Industrial","economy, tech"],
    minimal:["Minimal","clean and stylish"],corp:["Corporate","report, business plan"],samarkand:["Samarkand","oriental pattern"],
@@ -545,7 +572,7 @@ en:{
  fwd_pop:"The bot chat will open. Forward a lecture or assignment file there from any chat — the bot will place the order in 2 taps.",
  tab_home:"Home", tab_order:"Order", tab_faq:"FAQ", tab_me:"Profile", me_faq:"Questions & help", me_faq_x:"Answers to common questions and contact with the manager",
  hero:"Presentations you'll <em>want to show</em>",
- lead:"A unique style for every topic, checked facts and an editable PPTX where every text and chart can be changed.",
+ lead:"We create a design for your topic instead of grabbing a ready template. Or we design exactly in your template. Checked facts, every text and chart editable.",
  b1:"✏️ Fully editable", b2:"🎁 Free cover", b3:"🌐 In Russian, Uzbek and English",
  h_price:"Prices", first_all:"🎁 New clients: first «Mini» order — only 9 900 UZS", first_you:"🎁 Your first «Mini» order — only {p} UZS instead of 19 000", h_works:"Our work", h_why:"Why SlideLab",
  pk:{s10:["Mini","up to 10 slides"], s20:["Standard","11–20 slides"], s30:["Large","21–30 slides"]},
@@ -559,12 +586,12 @@ en:{
  q_deadline:"Deadline", dl:{d1:["⚡ Urgent","+50% to the price"],d2:["📅 Regular","we'll agree in the chat, no extra charge"],d3:["🐢 No rush","calm pace, no extra charge"]},
  urgent_hint:"Urgent orders are up to 20 slides only — so quality doesn't suffer.",
  ready:"<b>Fill in the fields marked * — and you can send.</b> Everything below is optional: extras, phone, wishes, sources.", opt_title:"⚙️ Additional", opt_tag:"OPTIONAL", q_plang:"Presentation language", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
- q_design:"Design", ds:{ours:["✨ Create a design for me","we'll pick a style for the topic"],own:["📎 I have my own template / example","link (Google Slides, Canva, Figma…) or a file"]},
+ q_design:"Design", ds:{ours:["✨ A unique design for my topic","we'll create a style just for you"],own:["📎 In my template","a Canva, Google Slides, Figma link — from anywhere — or a file"]},
  q_extras:"Extras", x_text:"✍️ Full text written for you · +5 000", x_notes:"📝 Speaker notes · +5 000",
  q_contact:"Phone", ph_contact:"+998 __ ___ __ __", optional:"(optional — we'll message you in Telegram)", optional2:"(optional)",
  q_comment:"Wishes", ph_comment:"Teacher's requirements, colours, examples…",
  files_hint:"📎 No need to save files to your phone: after the request, just forward them to the bot from any chat — group, channel, DM. PDF, Word, PowerPoint, Excel, photos, video, audio, archives and links all work.",
- ph_dlink:"Link: Google Slides, Canva, Figma…", own_hint:"🔓 Open link access («Anyone with the link» — viewer) so we can open the template. You can forward a file (PPTX, PDF, screenshots) to the bot chat after the request.",
+ ph_dlink:"Template link: Canva, Google Slides, Figma, Drive — from anywhere", own_hint:"🔓 Open link access («Anyone with the link» — viewer) so we can open the template. You can forward a file (PPTX, PDF, screenshots) to the bot chat after the request.",
  q_sources:"📚 Where to take information from", src_hint:"Have a lecture, textbook or website the presentation should be based on? Share it — we'll take the facts and figures from there. If not, we'll find reliable sources ourselves.", ph_sources:"E.g.: a link to a lecture, article, website or video, a textbook title", x_srcfiles:"📎 I have files (lecture, handout) — will forward to the chat",
  pop_title:"Sending your request", pop_ok:"Send", pop_msg:"The app will close and the chat with the bot will open.", pop_links:" Your sources will go along with the request.", pop_files:" Just forward files and links to the bot from any chat — no need to save them to your phone.",
  total:"Estimated price", free:"<b>You don't pay anything now.</b> This is only an estimate. We'll message you, clarify the details and send a free cover — payment only after you approve it.", note:"We'll confirm the final price in the chat before starting.",
@@ -594,7 +621,11 @@ en:{
       ["Will my work be shown to others?","No, only with your permission."]]
 },
 uz:{
- sh_t:"🎨 Uslubni tanlang", sh_x:"«Shunaqasini xohlayman» ni bosing — taqdimotingizni shu uslubda qilamiz. Muqova bepul.",
+ way_t:"Dizaynni qanday qilamiz?", way1_tag:"SLIDELAB DA ASOSIYSI", way1_t:"Mavzuingizga noyob dizayn",
+ way1_x:"Hammaga o‘xshab tayyor shablon olmaymiz. Uslubni aynan sizning mavzu va vazifangiz uchun o‘ylab topamiz — bunday dizayn boshqa hech kimda bo‘lmaydi.",
+ way1_pts:"🎨 mavzu ma’nosiga mos ranglar va shriftlar<br>🤖 neyrotarmoq aynan mavzuingizga chizgan rasmlar — ular internetda ham, boshqalarda ham yo‘q<br>📊 ma’lumotlaringiz bo‘yicha grafik va sxemalar", way_go:"Buyurtma berish →",
+ way2_t:"Sizning shabloningiz bo‘yicha", way2_x:"Kafedra shabloni, firma uslubi yoki yoqqan namuna bormi? Havola yoki faylni yuboring — aynan shunda qilamiz.",
+ sh_t:"G‘oya kerakmi? Uslub namunalarini ko‘ring", sh_x:"ixtiyoriy — tayyor yo‘nalishni tanlash mumkin",
  stags:{all:"Hammasi",study:"O‘qish",business:"Biznes",dark:"To‘q",light:"Yorug‘"}, want:"Shunaqasini xohlayman", real:"bizning ish",
  styles:{neon:["Neon-jurnal","yorqin, jurnal uslubi"],vintage:["Vintaj skrapbuk","tarix, retro"],indust:["Industrial","iqtisod, texnika"],
    minimal:["Minimalizm","toza va zamonaviy"],corp:["Korporativ","hisobot, biznes-reja"],samarkand:["Samarqand","sharqona naqsh"],
@@ -614,7 +645,7 @@ uz:{
  fwd_pop:"Bot bilan chat ochiladi. U yerga istalgan chatdan ma’ruza yoki topshiriq faylini forward qiling — bot 2 bosishda buyurtma qiladi.",
  tab_home:"Asosiy", tab_order:"Buyurtma", tab_faq:"Savollar", tab_me:"Profil", me_faq:"Savollar va yordam", me_faq_x:"Ko‘p beriladigan savollar va menejer bilan aloqa",
  hero:"Ko‘rsatgingiz keladigan <em>taqdimotlar</em>",
- lead:"Har bir mavzuga o‘z uslubi, tekshirilgan faktlar va har bir matn hamda grafik o‘zgaradigan jonli PPTX.",
+ lead:"Tayyor shablon emas — mavzuingizga dizaynni o‘ylab topamiz. Yoki aynan sizning shabloningizda qilamiz. Faktlar tekshirilgan, har bir matn va grafik tahrirlanadi.",
  b1:"✏️ Hammasi tahrirlanadi", b2:"🎁 Muqova bepul", b3:"🌐 Rus, o‘zbek va ingliz tilida",
  h_price:"Narxlar", first_all:"🎁 Yangi mijozlarga: birinchi «Mini» buyurtma — atigi 9 900 so‘m", first_you:"🎁 Birinchi «Mini» buyurtmangiz — 19 000 o‘rniga atigi {p} so‘m", h_works:"Ishlar", h_why:"Nega SlideLab",
  pk:{s10:["Mini","10 slaydgacha"], s20:["Standart","11–20 slayd"], s30:["Katta","21–30 slayd"]},
@@ -628,12 +659,12 @@ uz:{
  q_deadline:"Muddat", dl:{d1:["⚡ Shoshilinch","narxga +50%"],d2:["📅 Odatiy","muddatni chatda kelishamiz, qo‘shimchasiz"],d3:["🐢 Shoshilmayman","xotirjam, qo‘shimchasiz"]},
  urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
  ready:"<b>Yulduzchali * maydonlarni to‘ldiring — va yuborish mumkin.</b> Pastdagilar — ixtiyoriy: qo‘shimcha xizmatlar, telefon, istaklar, manbalar.", opt_title:"⚙️ Qo‘shimcha", opt_tag:"IXTIYORIY", q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
- q_design:"Dizayn", ds:{ours:["✨ Dizaynni o‘zingiz qiling","mavzuga mos uslub tanlaymiz"],own:["📎 O‘z shablonim / namunam bor","havola (Google Slides, Canva, Figma…) yoki fayl"]},
+ q_design:"Dizayn", ds:{ours:["✨ Mavzuimga noyob dizayn","uslubni aynan siz uchun o‘ylab topamiz"],own:["📎 Mening shablonim bo‘yicha","Canva, Google Slides, Figma havolasi — istalgan joydan, yoki fayl"]},
  q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +5 000", x_notes:"📝 Chiqish uchun konspekt · +5 000",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni telefonga saqlash shart emas: arizadan so‘ng ularni istalgan chatdan — guruh, kanal, shaxsiy — botga forward qiling. PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv va havolalar mos.",
- ph_dlink:"Havola: Google Slides, Canva, Figma…", own_hint:"🔓 Havola orqali kirishni oching («Havolaga ega barcha» — ko‘rish), shunda shablonni ocha olamiz. Faylni (PPTX, PDF, skrinshot) arizadan so‘ng bot chatiga forward qilish mumkin.",
+ ph_dlink:"Shablon havolasi: Canva, Google Slides, Figma, Disk — istalgan joydan", own_hint:"🔓 Havola orqali kirishni oching («Havolaga ega barcha» — ko‘rish), shunda shablonni ocha olamiz. Faylni (PPTX, PDF, skrinshot) arizadan so‘ng bot chatiga forward qilish mumkin.",
  q_sources:"📚 Ma’lumot qayerdan olinsin", src_hint:"Taqdimot qaysi ma’ruza, darslik yoki sayt asosida bo‘lishi kerak? Bering — fakt va raqamlarni aynan shulardan olamiz. Yo‘q bo‘lsa — ishonchli manbalarni o‘zimiz topamiz.", ph_sources:"Masalan: ma’ruza, maqola, sayt yoki video havolasi, darslik nomi", x_srcfiles:"📎 Fayllar bor (ma’ruza, qo‘llanma) — chatga forward qilaman",
  pop_title:"Arizani yuboramiz", pop_ok:"Yuborish", pop_msg:"Ilova yopiladi va bot chati ochiladi.", pop_links:" Manbalaringiz ariza bilan birga ketadi.", pop_files:" Fayl va havolalarni istalgan chatdan botga forward qiling — telefonga saqlash shart emas.",
  total:"Taxminiy narx", free:"<b>Hozir hech narsa to‘lamaysiz.</b> Bu faqat taxminiy narx. Biz sizga yozamiz, tafsilotlarni aniqlaymiz va bepul muqova yuboramiz — to‘lov faqat kelishuvdan keyin.", note:"Yakuniy narxni ish boshlanishidan oldin chatda tasdiqlaymiz.",
@@ -993,8 +1024,8 @@ function renderHome(t){
     ask: () => go("faq"),
     channel: () => tg ? tg.openTelegramLink("https://t.me/slidelab_uz") : window.open("https://t.me/slidelab_uz"),
   };
-  $("#qnew b").textContent = t.qa_new[0]; $("#qnew span").textContent = t.qa_new[1];
-  $("#qnew").onclick = () => { haptic(); go("order"); };
+  $("#wayOurs").onclick = () => { haptic(); st.style = null; st.design = "ours"; go("order"); };
+  $("#wayOwn").onclick = () => { haptic(); st.style = null; st.design = "own"; go("order"); setTimeout(() => { const d = $("#dlink"); if (d && !linkMode){ d.scrollIntoView({block:"center"}); } }, 120); };
   const bg = ["#2BB3B1","#7A5AF8","#E2553F","#D9A441","#4F6BD1","#13A36B"];
   if ($("#qa")) $("#qa").innerHTML = t.qa.map(([k,ic,lb,sub],i) => `<button data-k="${k}"><i style="background:${bg[i%bg.length]}">${ic}</i>${lb}${sub?`<small>${sub}</small>`:""}</button>`).join("");
   document.querySelectorAll("#qa button").forEach(b => b.onclick = () => { haptic(); acts[b.dataset.k](); });
