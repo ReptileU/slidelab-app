@@ -52,6 +52,8 @@ p.lead{color:var(--muted);font-size:15px;line-height:1.5;margin:0 0 16px}
 .price .n{font-weight:800;font-size:18px}
 .price .s{color:var(--muted);font-size:13px;margin-top:4px}
 .price .p{font-weight:800;font-size:22px;color:var(--v3);white-space:nowrap}
+.price .p s{font-size:14px;color:var(--muted);font-weight:600;margin-right:4px}
+.first{margin:-2px 0 12px;padding:10px 14px;border-radius:12px;border:1px dashed var(--v3);background:rgba(217,164,65,.1);color:#fff;font-size:13.5px;font-weight:700}
 .tag{display:inline-block;background:var(--v3);color:var(--on);font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
 .extras{color:var(--soft);font-size:14px;line-height:1.8;background:var(--card);border-radius:var(--r);padding:14px 18px}
 
@@ -326,7 +328,7 @@ ru:{
  hero:"Презентации, которые <em>хочется показывать</em>",
  lead:"Свой стиль под каждую тему, проверенные факты и живой PPTX, где меняется каждый текст и график.",
  b1:"✏️ Всё редактируется", b2:"🎁 Обложка бесплатно", b3:"🇷🇺 🇺🇿 🇬🇧",
- h_price:"Прайс", h_works:"Работы", h_why:"Почему SlideLab",
+ h_price:"Прайс", first_all:"🎁 Новым клиентам: первый заказ «Мини» — всего 9 900 сум", first_you:"🎁 Ваш первый заказ «Мини» — всего {p} сум вместо 19 000", h_works:"Работы", h_why:"Почему SlideLab",
  pk:{s10:["Мини","до 10 слайдов"], s20:["Стандарт","11–20 слайдов"], s30:["Большой","21–30 слайдов"]},
  pop:"Популярный",
  extras:"⚡ Срочно (до 20 слайдов): +50%<br>✍️ Текст под ключ: +5 000<br>📝 Конспект для выступления: +5 000<br>✏️ 2 правки бесплатно",
@@ -377,7 +379,7 @@ uz:{
  hero:"Ko‘rsatgingiz keladigan <em>taqdimotlar</em>",
  lead:"Har bir mavzuga o‘z uslubi, tekshirilgan faktlar va har bir matn hamda grafik o‘zgaradigan jonli PPTX.",
  b1:"✏️ Hammasi tahrirlanadi", b2:"🎁 Muqova bepul", b3:"🇷🇺 🇺🇿 🇬🇧",
- h_price:"Narxlar", h_works:"Ishlar", h_why:"Nega SlideLab",
+ h_price:"Narxlar", first_all:"🎁 Yangi mijozlarga: birinchi «Mini» buyurtma — atigi 9 900 so‘m", first_you:"🎁 Birinchi «Mini» buyurtmangiz — 19 000 o‘rniga atigi {p} so‘m", h_works:"Ishlar", h_why:"Nega SlideLab",
  pk:{s10:["Mini","10 slaydgacha"], s20:["Standart","11–20 slayd"], s30:["Katta","21–30 slayd"]},
  pop:"Ommabop",
  extras:"⚡ Shoshilinch (20 slaydgacha): +50%<br>✍️ Matnni yozib beramiz: +5 000<br>📝 Chiqish uchun konspekt: +5 000<br>✏️ 2 marta tuzatish bepul",
@@ -434,6 +436,7 @@ if (!T[L]) L = "ru";
 // sendData там не работает, поэтому заявку передаём через ссылку /start в чат с ботом.
 const linkMode = !!(inTg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
 const BOT = "slidelab_order_bot";
+const FIRST = +(qs.get("n") || 0);   // бот передаёт цену первого заказа, если клиент новый
 let ORDERS = [];
 try { const o = qs.get("o"); if (o){ const b = atob(o.replace(/-/g,"+").replace(/_/g,"/")); ORDERS = JSON.parse(new TextDecoder().decode(Uint8Array.from(b, c => c.charCodeAt(0)))); } } catch(e){ ORDERS = []; }
 const GIFT_UNTIL = "2026-11-30";   // акция «подарок за пакет» — до этой даты включительно
@@ -469,7 +472,7 @@ function price(){
     if (st.notes && SUB.plan !== "vip") x += EXTRA;
     return x;
   }
-  let p = PRICE[st.slides];
+  let p = (FIRST && st.slides==="s10") ? FIRST : PRICE[st.slides];
   if (st.deadline==="d1") p = Math.round(p*(1+URGENT));
   if (st.text) p += EXTRA;
   if (st.notes) p += EXTRA;
@@ -582,7 +585,8 @@ function render(){
   document.querySelectorAll(".lang button").forEach(b => b.classList.toggle("on", b.dataset.l===L));
   $("#topic").placeholder = t.ph_topic; $("#dlink").placeholder = t.ph_dlink; $("#sources").placeholder = t.ph_sources; $("#contact").placeholder = t.ph_contact; $("#comment").placeholder = t.ph_comment;
   $("#prices").innerHTML = Object.entries(t.pk).map(([k,[n,s]]) =>
-    `<div class="price${k==='s20'?' pop':''}" data-k="${k}"><div><div class="n">${n}${k==='s20'?`<span class="tag">${t.pop}</span>`:''}</div><div class="s">${s}</div></div><div class="p">${fmt(PRICE[k])}</div></div>`).join("");
+    `<div class="price${k==='s20'?' pop':''}" data-k="${k}"><div><div class="n">${n}${k==='s20'?`<span class="tag">${t.pop}</span>`:''}</div><div class="s">${s}</div></div><div class="p">${k==="s10" && FIRST ? `<s>${fmt(PRICE[k])}</s> ${fmt(FIRST)}` : fmt(PRICE[k])}</div></div>`).join("")
+    + `<div class="first">${FIRST ? t.first_you.replace("{p}", fmt(FIRST)) : t.first_all}</div>`;
   document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
   renderCmp();
   $("#gallery").innerHTML = t.works.map(([a,b],i) =>
