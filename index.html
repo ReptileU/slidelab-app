@@ -16,7 +16,7 @@
   --r:20px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{overscroll-behavior:none;margin:0;background:var(--bg) radial-gradient(120% 60% at 50% -10%,rgba(43,179,177,.14),transparent 60%) no-repeat;color:var(--text);font-family:Manrope,system-ui,-apple-system,sans-serif}
+html,body{overflow-x:hidden;overscroll-behavior:none;margin:0;background:var(--bg) radial-gradient(120% 60% at 50% -10%,rgba(43,179,177,.14),transparent 60%) no-repeat;color:var(--text);font-family:Manrope,system-ui,-apple-system,sans-serif}
 body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 :root{--top:calc(var(--tg-safe-area-inset-top,0px) + var(--tg-content-safe-area-inset-top,0px))}
 .wrap{max-width:560px;margin:0 auto;padding:var(--top) 16px 0}
@@ -327,6 +327,81 @@ summary:after{content:"+";color:var(--v2);font-size:20px;line-height:1}
 details[open] summary:after{content:"–"}
 details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
 .contact{color:var(--v2);font-weight:700;text-decoration:none}
+
+/* ═════════ АДАПТИВ: 4 типа устройств ═════════ */
+.cmp-h{display:none}
+/* 1) маленькие телефоны (до 359px: iPhone SE, старые Android) */
+@media (max-width:359px){
+  .wrap{padding-left:12px;padding-right:12px}
+  .gallery,.hscroll,.sfil{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}
+  h1{font-size:27px} h2{font-size:18px;margin:22px 0 10px}
+  p.lead{font-size:14px}
+  .badge{font-size:12px;padding:6px 10px}
+  .way{padding:14px 12px 12px 60px}.way>i{left:10px;width:38px;height:38px;font-size:19px}.way b{font-size:15px}
+  .way.main{padding-top:32px}.way.main>i{top:32px}
+  .sgrid,.fgrid{gap:8px}.sc b{font-size:12px}.sc .want{font-size:10.5px;padding:4px 8px}
+  .price{padding:14px}.price .n{font-size:16px}.price .p{font-size:18px}
+  .c3{grid-template-columns:repeat(3,minmax(0,1fr))}.chip{padding:11px 6px;font-size:13px}
+  .bnav button{font-size:10px}.bnav svg{width:22px;height:22px}
+  .bnav .plus{flex:0 0 62px}.bnav .plus i{width:52px;height:52px;font-size:30px;line-height:52px;margin-top:-22px}
+  .helper{display:none}
+  .slist button{padding:12px;font-size:14px}.slist i{flex-basis:34px;height:34px}
+}
+/* 2) большие телефоны (360–599px) — базовые стили выше */
+
+/* 3) маленькие ноутбуки и планшеты (600–1023px) */
+@media (min-width:600px){
+  .wrap{max-width:920px;padding-left:28px;padding-right:28px}
+  h1{font-size:44px} h2{font-size:22px}
+  p.lead{font-size:16px;max-width:640px}
+  .ways{display:grid;grid-template-columns:1.25fr 1fr;gap:12px;align-items:stretch}.ways .way{margin:0}
+  .sgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .fgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .hscroll .fcard{flex-basis:30%}
+  .feat{grid-template-columns:repeat(4,1fr)}
+  .work{flex-basis:48%}
+  .how{display:grid;grid-template-columns:repeat(4,1fr);padding:14px}
+  .how div{flex-direction:column;align-items:flex-start;padding:6px 8px}.how div+div{border-top:0;border-left:1px solid var(--line)}
+  #subs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}#subs .plan{margin:0}#subs .note{grid-column:1/-1}
+  section#order,section#faq{max-width:680px;margin-left:auto;margin-right:auto}
+  .slist,.mehead{max-width:680px}
+  .bnav{left:50%;right:auto;transform:translateX(-50%);width:min(640px,100%);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0}
+  .helper{left:auto;right:24px;max-width:380px}
+  .sh-in{max-width:640px}
+  .trk{max-width:680px}
+  .helper{padding:8px 10px 8px 14px}.helper span{display:none}.helper b{font-size:20px}
+}
+/* 4) большие мониторы (от 1024px) — боковое меню слева, контент в колонках */
+@media (min-width:1024px){
+  body{padding-bottom:40px}
+  .wrap{max-width:1240px;padding-left:132px;padding-right:40px}
+  h1{font-size:54px}
+  .htop{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+  .ht-r h2{margin-top:14px}
+  .ways{grid-template-columns:1fr}
+  .pc2{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+  .pc2 #cmp .cmp{margin-top:0}.cmp-h{display:block}
+  .sgrid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .fgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .hscroll .fcard{flex-basis:23%}
+  .work{flex-basis:32%}
+  #subs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .bnav{top:0;bottom:0;left:0;right:auto;transform:none;width:96px;flex-direction:column;justify-content:center;gap:18px;
+    border:0;border-right:1px solid var(--line);border-radius:0;padding:calc(var(--top) + 20px) 0 20px}
+  .bnav button{flex:0 0 auto;width:100%}
+  .bnav button.on:before{top:6px;bottom:6px;left:0;right:auto;width:3px;height:auto;border-radius:0 3px 3px 0}
+  .bnav .plus{order:-1;flex:0 0 auto;margin-bottom:14px}.bnav .plus i{margin-top:0;box-shadow:0 6px 22px rgba(43,179,177,.45)}
+  body.noNav .bnav{display:flex}
+  .helper{right:32px;bottom:28px}
+  .sh-in{top:50%;bottom:auto;transform:translateY(-50%);border-radius:22px;border:1px solid var(--line);max-height:84vh;animation:none}
+  .sh-grip{display:none}
+  .sheet .sh-in{left:96px}
+  header{padding-top:22px}
+  .trk{max-width:none;display:grid;grid-template-columns:1.1fr 1fr;column-gap:24px}
+  .trk .tt,.trk h3{grid-column:1/-1}
+  .trk .tl{grid-row:3/6}
+  .trk .hint{margin-top:0}
+}
 </style>
 </head>
 <body>
@@ -341,18 +416,21 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <!-- ГЛАВНАЯ -->
   <section id="home">
     <div id="tracker"></div>
+    <div class="htop"><div class="ht-l">
     <div class="band"></div>
     <h1 data-t="hero" data-html></h1>
     <p class="lead" data-t="lead"></p>
     <div class="badges">
       <span class="badge" data-t="b1"></span><span class="badge" data-t="b2"></span><span class="badge" data-t="b3"></span>
     </div>
+    </div><div class="ht-r">
 
     <h2 data-t="way_t"></h2>
-    <button class="way main" id="wayOurs"><span class="wtag" data-t="way1_tag"></span><i>✨</i><b data-t="way1_t"></b><span class="wx" data-t="way1_x"></span>
+    <div class="ways"><button class="way main" id="wayOurs"><span class="wtag" data-t="way1_tag"></span><i>✨</i><b data-t="way1_t"></b><span class="wx" data-t="way1_x"></span>
       <span class="wpts" data-t="way1_pts" data-html></span><em data-t="way_go"></em></button>
     <button class="way" id="wayOwn"><i>📎</i><b data-t="way2_t"></b><span class="wx" data-t="way2_x"></span>
-      <span class="wlogos">Canva · Google Slides · PowerPoint · Figma · PDF</span><em data-t="way_go"></em></button>
+      <span class="wlogos">Canva · Google Slides · PowerPoint · Figma · PDF</span><em data-t="way_go"></em></button></div>
+    </div></div>
     <details class="shw" id="shw"><summary><span>🎨 <b data-t="sh_t"></b><small data-t="sh_x"></small></span></summary>
       <div class="sfil" id="sfil"></div>
       <div class="sgrid" id="sgrid"></div>
@@ -362,10 +440,14 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <h2 data-t="how_t"></h2>
     <div class="how" id="how"></div>
 
+    <div class="pc2"><div>
     <h2 data-t="h_price" id="a_price"></h2>
     <div id="prices"></div>
     <div class="extras" data-t="extras" data-html></div>
+    </div><div>
+    <h2 class="cmp-h">&nbsp;</h2>
     <div id="cmp"></div>
+    </div></div>
 
 
     <h2 data-t="h_works" id="a_works"></h2>
@@ -1132,7 +1214,7 @@ if (inTg){
   // не закрывать приложение свайпом вниз — только крестиком (Telegram 7.7+)
   try { tg.disableVerticalSwipes && tg.disableVerticalSwipes(); } catch(e){}
   // во весь экран, как у Student App (Telegram 8.0+); на телефонах — да, на компьютере — нет
-  try { if (tg.isVersionAtLeast && tg.isVersionAtLeast("8.0") && ["ios","android"].includes(tg.platform)) tg.requestFullscreen(); } catch(e){}
+  try { if (tg.isVersionAtLeast && tg.isVersionAtLeast("8.0") && tg.platform !== "unknown") tg.requestFullscreen(); } catch(e){}
   try { tg.isVersionAtLeast && tg.isVersionAtLeast("7.7") || tg.enableClosingConfirmation && tg.enableClosingConfirmation(); } catch(e){}
   try { tg.setHeaderColor("#0F1B2D"); tg.setBackgroundColor("#0F1B2D"); tg.setBottomBarColor && tg.setBottomBarColor("#0F1B2D"); } catch(e){}
   tg.MainButton.onClick(submit);
