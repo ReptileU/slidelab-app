@@ -132,6 +132,19 @@ textarea::placeholder,input::placeholder{color:#6C7C93}
 .promo button.go{width:100%;border:0;border-radius:12px;padding:11px;background:var(--v3);color:var(--on);font:800 14px Manrope,system-ui,sans-serif}
 .promo .x{position:absolute;top:8px;right:10px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;padding:4px}
 .promo.ok{border-color:var(--v);box-shadow:none}.promo.ok .pt span{color:var(--v2)}
+.cmp{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 14px;margin:6px 0 14px}
+.cmp h3{margin:0 0 4px;font-size:17px;color:#fff}.cmp .sub{color:var(--muted);font-size:13px;margin-bottom:12px}
+.cmp .seg{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:14px}
+.cmp .seg button{flex:1;border:0;background:none;color:var(--muted);font:700 13px Manrope,system-ui,sans-serif;padding:8px 4px;border-radius:9px}
+.cmp .seg button.on{background:var(--card2);color:#fff;box-shadow:inset 0 0 0 1px var(--v)}
+.cmp .row{margin-bottom:10px}.cmp .lbl{display:flex;justify-content:space-between;font-size:13px;color:var(--soft);margin-bottom:5px}
+.cmp .lbl b{color:#fff;font-size:15px}.cmp .lbl s{color:var(--muted)}
+.cmp .bar{height:12px;border-radius:6px;background:#2A3B55;overflow:hidden}.cmp .bar i{display:block;height:100%;border-radius:6px;transition:width .35s ease}
+.cmp .one i{background:#5B6B84}.cmp .pack i{background:linear-gradient(90deg,var(--v),var(--v2))}
+.cmp .win{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(43,179,177,.12);border:1px solid rgba(43,179,177,.4)}
+.cmp .win b{color:var(--v2);font-size:17px;white-space:nowrap}.cmp .win span{font-size:12.5px;color:var(--soft)}
+.cmp .gift{margin-top:8px;font-size:12.5px;color:var(--v3);font-weight:700}
+.cmp button.go{width:100%;margin-top:12px;border:0;border-radius:12px;padding:11px;background:var(--v);color:var(--on);font:800 14px Manrope,system-ui,sans-serif}
 .pgift{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 0;padding:8px 10px;border-radius:10px;border:1px dashed var(--v3);background:linear-gradient(120deg,rgba(217,164,65,.18),rgba(217,164,65,.04));font-size:13px;font-weight:700;color:#fff}
 .pgift i{font-style:normal;background:var(--v3);color:var(--on);font:800 10.5px Manrope,system-ui,sans-serif;letter-spacing:.06em;padding:3px 7px;border-radius:6px}
 .gp{position:relative;overflow:hidden;border-radius:var(--r);padding:14px 16px 14px 18px;margin:2px 0 12px;background:linear-gradient(120deg,#3a2a10 0%,#16263D 75%);border:1px dashed var(--v3)}
@@ -217,6 +230,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <h2 data-t="h_price"></h2>
     <div id="prices"></div>
     <div class="extras" data-t="extras" data-html></div>
+    <div id="cmp"></div>
 
 
     <h2 data-t="h_works"></h2>
@@ -337,7 +351,7 @@ ru:{
  no_tg:"Откройте приложение через бота @slidelab_order_bot",
  not_kb:"Чтобы отправить заявку, откройте приложение кнопкой «✨ Заказать» внизу чата с ботом.",
  faq_more:"Новости и работы — в канале",
- promo_t:"💡 <span>Выгоднее пакетом</span>", promo_x:"Нужно несколько презентаций — на учёбу, работу, на весь семестр? В пакете каждая выходит дешевле, а остаток не сгорает.", promo_go:"Посмотреть пакеты →", promo_have:"📦 <span>У вас в пакете: {l} шт</span>", promo_have_x:"Этот заказ спишется из пакета — платить отдельно не нужно (кроме срочности и текста).", promo_empty:"📦 <span>Пакет закончился</span>", promo_empty_x:"Докупите пакет — и следующие презентации снова будут дешевле.", promo_go2:"Докупить пакет →", pc:"шт", gp_tag:"АКЦИЯ до {d}", gifts:{week:"🎁 + 🧸 мишка в подарок в Telegram", month:"🎁 + 🌹 роза в подарок в Telegram", vip:"🎁 + 🏆 кубок в подарок в Telegram"}, h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
+ promo_t:"💡 <span>Выгоднее пакетом</span>", promo_x:"Нужно несколько презентаций — на учёбу, работу, на весь семестр? В пакете каждая выходит дешевле, а остаток не сгорает.", promo_go:"Посмотреть пакеты →", promo_have:"📦 <span>У вас в пакете: {l} шт</span>", promo_have_x:"Этот заказ спишется из пакета — платить отдельно не нужно (кроме срочности и текста).", promo_empty:"📦 <span>Пакет закончился</span>", promo_empty_x:"Докупите пакет — и следующие презентации снова будут дешевле.", promo_go2:"Докупить пакет →", pc:"шт", gp_tag:"АКЦИЯ до {d}", cmp_t:"💡 Разово или пакетом?", cmp_s:"Сравните для презентации «Стандарт» (11–20 слайдов)", cmp_n:"{n} шт", cmp_one:"Разово · {n} × 29 000", cmp_pack:"Пакет «{p}»", cmp_save:"Экономия {x} сум", cmp_each:"по {e} сум за штуку вместо 29 000", cmp_go:"Выбрать пакет →", gifts:{week:"🎁 + 🧸 мишка в подарок в Telegram", month:"🎁 + 🌹 роза в подарок в Telegram", vip:"🎁 + 🏆 кубок в подарок в Telegram"}, h_subs:"📦 Пакеты презентаций", h_subs2:"📦 Докупить пакет", h_hist:"📦 История заказов", h_pres:"🎞 Мои презентации", guest:"Гость", no_orders:"Заказов пока нет — оформите первый во вкладке «Заказать» 🙂", no_pres:"Здесь появятся ваши готовые презентации.", open:"Открыть", in_chat:"файл в чате с ботом", go_chat:"В чат", teaser:"<span><b>👤 Мой профиль</b><br>пакеты презентаций, история заказов и готовые работы</span>", subs_lead:"Берёте сразу несколько презентаций — выходит дешевле. Закончились раньше срока? Просто купите ещё один пакет.",
  plans:{week:["2 презентации","действует 14 дней",2,34000,"выгода 41%",["17 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
         month:["4 презентации","действует 30 дней",4,64000,"выгода 45%",["16 000 сум за презентацию до 30 слайдов*","обложка бесплатно, 2 правки к каждой"]],
         vip:["VIP · 10 презентаций","действует 60 дней",10,145000,"выгода 50%",["14 500 сум за презентацию*","конспект к каждой — бесплатно","приоритет в очереди","в работе одновременно — 1 заказ"]]},
@@ -388,7 +402,7 @@ uz:{
  no_tg:"Ilovani @slidelab_order_bot orqali oching",
  not_kb:"Arizani yuborish uchun ilovani bot chatidagi pastki «✨ Buyurtma» tugmasi orqali oching.",
  faq_more:"Yangiliklar va ishlar — kanalda",
- promo_t:"💡 <span>Paket bilan arzonroq</span>", promo_x:"Bir nechta taqdimot kerakmi — o‘qish, ish yoki butun semestr uchun? Paketda har biri arzonroq, qoldiq esa yonmaydi.", promo_go:"Paketlarni ko‘rish →", promo_have:"📦 <span>Paketingizda: {l} ta</span>", promo_have_x:"Bu buyurtma paketdan yechiladi — alohida to‘lash shart emas (shoshilinch va matndan tashqari).", promo_empty:"📦 <span>Paket tugadi</span>", promo_empty_x:"Paket oling — keyingi taqdimotlar yana arzonroq bo‘ladi.", promo_go2:"Paket olish →", pc:"ta", gp_tag:"AKSIYA {d} gacha", gifts:{week:"🎁 + Telegramda 🧸 ayiqcha sovg‘a", month:"🎁 + Telegramda 🌹 atirgul sovg‘a", vip:"🎁 + Telegramda 🏆 kubok sovg‘a"}, h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
+ promo_t:"💡 <span>Paket bilan arzonroq</span>", promo_x:"Bir nechta taqdimot kerakmi — o‘qish, ish yoki butun semestr uchun? Paketda har biri arzonroq, qoldiq esa yonmaydi.", promo_go:"Paketlarni ko‘rish →", promo_have:"📦 <span>Paketingizda: {l} ta</span>", promo_have_x:"Bu buyurtma paketdan yechiladi — alohida to‘lash shart emas (shoshilinch va matndan tashqari).", promo_empty:"📦 <span>Paket tugadi</span>", promo_empty_x:"Paket oling — keyingi taqdimotlar yana arzonroq bo‘ladi.", promo_go2:"Paket olish →", pc:"ta", gp_tag:"AKSIYA {d} gacha", cmp_t:"💡 Bittadanmi yoki paketmi?", cmp_s:"«Standart» taqdimot (11–20 slayd) uchun solishtiring", cmp_n:"{n} ta", cmp_one:"Bittadan · {n} × 29 000", cmp_pack:"«{p}» paketi", cmp_save:"Tejash {x} so‘m", cmp_each:"29 000 o‘rniga har biri {e} so‘m", cmp_go:"Paketni tanlash →", gifts:{week:"🎁 + Telegramda 🧸 ayiqcha sovg‘a", month:"🎁 + Telegramda 🌹 atirgul sovg‘a", vip:"🎁 + Telegramda 🏆 kubok sovg‘a"}, h_subs:"📦 Taqdimot paketlari", h_subs2:"📦 Yana paket olish", h_hist:"📦 Buyurtmalar tarixi", h_pres:"🎞 Taqdimotlarim", guest:"Mehmon", no_orders:"Hali buyurtma yo‘q — «Buyurtma» bo‘limida birinchisini bering 🙂", no_pres:"Tayyor taqdimotlaringiz shu yerda chiqadi.", open:"Ochish", in_chat:"fayl bot chatida", go_chat:"Chatga", teaser:"<span><b>👤 Profilim</b><br>paketlar, buyurtmalar tarixi va tayyor ishlar</span>", subs_lead:"Bir nechta taqdimotni birdan olsangiz — arzonroq. Muddatdan oldin tugadimi? Yana bitta paket oling.",
  plans:{week:["2 ta taqdimot","14 kun amal qiladi",2,34000,"41% foyda",["30 slaydgacha taqdimot — 17 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
         month:["4 ta taqdimot","30 kun amal qiladi",4,64000,"45% foyda",["30 slaydgacha taqdimot — 16 000 so‘m*","muqova bepul, har biriga 2 tuzatish"]],
         vip:["VIP · 10 ta taqdimot","60 kun amal qiladi",10,145000,"50% foyda",["taqdimot — 14 500 so‘m*","har biriga konspekt — bepul","navbatda ustuvorlik","bir vaqtda ishda — 1 buyurtma"]]},
@@ -570,6 +584,7 @@ function render(){
   $("#prices").innerHTML = Object.entries(t.pk).map(([k,[n,s]]) =>
     `<div class="price${k==='s20'?' pop':''}" data-k="${k}"><div><div class="n">${n}${k==='s20'?`<span class="tag">${t.pop}</span>`:''}</div><div class="s">${s}</div></div><div class="p">${fmt(PRICE[k])}</div></div>`).join("");
   document.querySelectorAll(".price").forEach(el => el.onclick = () => { st.slides = el.dataset.k; haptic(); go("order"); });
+  renderCmp();
   $("#gallery").innerHTML = t.works.map(([a,b],i) =>
     `<div class="work"><img loading="lazy" src="${IMG+WORKS[i]}.png" alt="${a}" onerror="this.closest('.work').style.display='none'"><div>${a}<small>${b}</small></div></div>`).join("");
   $("#feat").innerHTML = t.feat.map(([i,b,s],n) => `<div class="${n===0?'hl':''}"><i>${i}</i><b>${b}</b><span>${s}</span></div>`).join("");
@@ -661,6 +676,19 @@ function ask(){
   tg.showConfirm(t.ask_pop, ok => { if (ok) tg.sendData(JSON.stringify({type:"q", lang:L, text:text.slice(0,1000)})); });
 }
 
+let CMP = "month";
+function renderCmp(){
+  const t = T[L], [pn,,lim,pr] = t.plans[CMP], one = PRICE.s20 * lim, save = one - pr;
+  $("#cmp").innerHTML = `<div class="cmp"><h3>${t.cmp_t}</h3><div class="sub">${t.cmp_s}</div>
+    <div class="seg">${Object.entries(t.plans).map(([k,[,,n]]) => `<button data-k="${k}" class="${k===CMP?"on":""}">${t.cmp_n.replace("{n}", n)}</button>`).join("")}</div>
+    <div class="row one"><div class="lbl"><span>${t.cmp_one.replace("{n}", lim)}</span><s>${fmt(one)}${t.per}</s></div><div class="bar"><i style="width:100%"></i></div></div>
+    <div class="row pack"><div class="lbl"><span>${t.cmp_pack.replace("{p}", pn)}</span><b>${fmt(pr)}${t.per}</b></div><div class="bar"><i style="width:${Math.round(pr/one*100)}%"></i></div></div>
+    <div class="win"><b>${t.cmp_save.replace("{x}", fmt(save))}</b><span>${t.cmp_each.replace("{e}", fmt(Math.round(pr/lim)))}</span></div>
+    ${GIFT_ON ? `<div class="gift">${t.gifts[CMP]} · ${t.gp_tag.replace("{d}", GIFT_UNTIL.slice(8,10)+"."+GIFT_UNTIL.slice(5,7))}</div>` : ""}
+    <button class="go">${t.cmp_go}</button></div>`;
+  document.querySelectorAll(".cmp .seg button").forEach(b => b.onclick = () => { CMP = b.dataset.k; haptic(); renderCmp(); });
+  $(".cmp .go").onclick = () => { haptic(); go("me"); setTimeout(() => window.scrollTo({top: $("#subs_h").getBoundingClientRect().top + window.scrollY - 90, behavior:"smooth"}), 80); };
+}
 function go(tab){
   document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id===tab));
   document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab===tab));
