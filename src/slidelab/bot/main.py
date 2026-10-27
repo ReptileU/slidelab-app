@@ -134,6 +134,11 @@ def build_dispatcher(
 
 async def set_profile(bot: Bot, settings: Settings) -> None:
     """Команды, описание и кнопка меню — то, что клиент видит до первого сообщения."""
+    # Кнопка меню — первой: описания Telegram часто притормаживает лимитом, она не должна ждать их
+    if settings.webapp_url.startswith("https://"):
+        await bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(text=settings.menu_button, web_app=WebAppInfo(url=settings.webapp_url))
+        )
     scope = BotCommandScopeAllPrivateChats()
     for lang, items in COMMANDS.items():
         commands = [BotCommand(command=c, description=d) for c, d in items]
@@ -144,11 +149,8 @@ async def set_profile(bot: Bot, settings: Settings) -> None:
     for code, (description, short) in DESCRIPTIONS.items():
         with contextlib.suppress(Exception):  # Telegram ограничивает частоту — не критично
             await bot.set_my_description(description=description, language_code=code)
+        with contextlib.suppress(Exception):
             await bot.set_my_short_description(short_description=short, language_code=code)
-    if settings.webapp_url.startswith("https://"):
-        await bot.set_chat_menu_button(
-            menu_button=MenuButtonWebApp(text="SlideLab", web_app=WebAppInfo(url=settings.webapp_url))
-        )
 
 
 def start_background(bot: Bot, dp: Dispatcher, settings: Settings) -> list["asyncio.Task[None]"]:
