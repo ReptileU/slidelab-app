@@ -5,9 +5,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
-import { DEADLINES, deadlineKey, slidesKey, TIERS, tierPrice } from "../lib/order";
+import { DEADLINES, deadlineKey, estimate, slidesKey, TIERS, tierPrice } from "../lib/order";
 import { alert, haptic } from "../lib/tg";
-import type { Design, Lang, OrderDraft } from "../lib/types";
+import type { Design, Lang, OrderDraft, Quote } from "../lib/types";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 import { Cell, Group, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
 
@@ -86,20 +86,35 @@ export function NewOrder() {
   const first = me.data?.first_order_price ?? null;
   const style = c?.styles.find((s) => s.key === draft.style_key);
 
-  const step1Ok = draft.topic.trim().length >= 3 && (draft.design === "ours" || (draft.template_url ?? "").trim().length > 3);
-  const step2Ok = !!draft.slides && !!draft.deadline;
+  // Чего не хватает на шаге — как в прежней витрине: кнопка подсказывает, поля подсвечиваются
+  const missing1 = [
+    ...(draft.topic.trim().length < 3 ? (["topic"] as const) : []),
+    ...(draft.design === "own" && (draft.template_url ?? "").trim().length <= 3 ? (["template"] as const) : []),
+  ];
+  const missing2 = [...(!draft.slides ? (["slides"] as const) : []), ...(!draft.deadline ? (["deadline"] as const) : [])];
+  const missing = step === 1 ? missing1 : step === 2 ? missing2 : [...missing1, ...missing2];
+  const [showNeed, setShowNeed] = useState(false);
+  const need = (k: (typeof missing)[number]) => showNeed && missing.includes(k as never);
+  const step2Ok = missing2.length === 0;
 
   const quote = useQuery({
     queryKey: ["quote", draft.slides, draft.deadline, draft.extra_text, draft.extra_notes],
     queryFn: () =>
       api.quote({ slides: draft.slides!, deadline: draft.deadline!, extra_text: draft.extra_text, extra_notes: draft.extra_notes }),
-    enabled: step === 3 && step2Ok,
+    enabled: step2Ok,
+    retry: 1,
   });
+  // Цена видна сразу, даже пока сервер не ответил (или недоступен); его ответ — точнее, он в приоритете
+  const notesFree = !!c?.plans.find((p) => p.code === me.data?.package?.plan)?.notes_free;
+  const local: Quote | null =
+    c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, first, me.data?.package ?? null, notesFree) : null;
+  const shown = (step2Ok && quote.data) || local;
 
   const submit = useMutation({
     mutationFn: () => {
+      const { key, ...fields } = draft;
       const body: OrderDraft = {
-        ...draft,
+        ...fields,
         slides: draft.slides!,
         deadline: draft.deadline!,
         topic: draft.topic.trim(),
@@ -109,7 +124,7 @@ export function NewOrder() {
         comment: draft.comment?.trim() || null,
         sources: draft.sources?.trim() || null,
       };
-      return api.createOrder(body, draft.key);
+      return api.createOrder(body, key);
     },
     onSuccess: (order) => {
       haptic.success();
@@ -120,17 +135,37 @@ export function NewOrder() {
     },
     onError: (e) => {
       haptic.error();
-      alert(e instanceof ApiError ? e.message : t("error"));
+      // 422 — неполная заявка: возвращаем к шагу, где не хватает данных, а не показываем техническую ошибку
+      if (e instanceof ApiError && e.status === 422) {
+        setStep(missing1.length ? 1 : missing2.length ? 2 : 3);
+        setShowNeed(true);
+        void alert(t("error"));
+        return;
+      }
+      void alert(e instanceof ApiError ? e.message : t("error"));
     },
   });
 
   const back = () => (step > 1 ? setStep(step - 1) : nav(-1));
   const next = () => {
+    if (missing.length) {
+      haptic.error();
+      setShowNeed(true);
+      if (step === 3) setStep(missing1.length ? 1 : 2);
+      document.getElementById(`need-${missing[0]}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    setShowNeed(false);
     if (step < 3) {
       setStep(step + 1);
       window.scrollTo({ top: 0 });
     } else submit.mutate();
   };
+  const buttonText = missing.length
+    ? t("left", { items: missing.map((k) => t(`miss_${k}` as Parameters<typeof t>[0])).join(", ") })
+    : step < 3
+      ? t("next")
+      : t("send");
 
   return (
     <div className="page no-tabbar">
@@ -145,7 +180,7 @@ export function NewOrder() {
 
       {step === 1 && (
         <>
-          <Section title={t("f_topic")}>
+          <Section title={t("f_topic")} id="need-topic" need={need("topic")}>
             <Group>
               <TextArea value={draft.topic} onChange={(v) => set("topic", v)} placeholder={t("f_topic_ph")} maxLength={300} rows={2} />
             </Group>
@@ -161,7 +196,12 @@ export function NewOrder() {
               ]}
             />
           </Section>
-          <Section title={t("f_design")} footer={draft.design === "own" ? t("f_template_hint") : undefined}>
+          <Section
+            title={t("f_design")}
+            footer={draft.design === "own" ? t("f_template_hint") : undefined}
+            id="need-template"
+            need={need("template")}
+          >
             <Segmented
               value={draft.design}
               onChange={(v) => set("design", v)}
@@ -192,7 +232,7 @@ export function NewOrder() {
 
       {step === 2 && c && (
         <>
-          <Section title={t("f_slides")}>
+          <Section title={t("f_slides")} id="need-slides" need={need("slides")}>
             <Group>
               {TIERS.map((tier) => (
                 <Cell
@@ -207,7 +247,7 @@ export function NewOrder() {
               ))}
             </Group>
           </Section>
-          <Section title={t("f_deadline")}>
+          <Section title={t("f_deadline")} id="need-deadline" need={need("deadline")}>
             <Group>
               {DEADLINES.map((d) => (
                 <Cell
@@ -243,6 +283,7 @@ export function NewOrder() {
               />
             </Group>
           </Section>
+          {shown && <PriceCard q={shown} />}
         </>
       )}
 
@@ -275,44 +316,11 @@ export function NewOrder() {
             </div>
           </Section>
 
-          <Section title={t("price_t")} footer={t("price_free_now")}>
-            <div className="card">
-              {quote.data ? (
-                <>
-                  {quote.data.paid_from === "package" ? (
-                    <>
-                      <div className="headline">
-                        {t("price_package", { cost: quote.data.package_cost, left: quote.data.package_left_after ?? 0 })}
-                      </div>
-                      {quote.data.price > 0 && (
-                        <div className="subhead secondary mt-8">
-                          {t("price_extra")}: {money(quote.data.price)} {t("sum")}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="row spread">
-                      <span className="title2 tabular">
-                        {money(quote.data.price)} {t("sum")}
-                      </span>
-                      {quote.data.first_order_discount && <span className="badge gold">{t("price_first")}</span>}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <Skeleton height={28} width={140} />
-              )}
-            </div>
-          </Section>
+          {shown ? <PriceCard q={shown} /> : <Skeleton height={28} width={140} />}
         </>
       )}
 
-      <MainButton
-        text={step < 3 ? t("next") : t("send")}
-        disabled={(step === 1 && !step1Ok) || (step === 2 && !step2Ok)}
-        loading={submit.isPending}
-        onClick={next}
-      />
+      <MainButton text={buttonText} muted={missing.length > 0} loading={submit.isPending} onClick={next} />
 
       <Sheet open={stylePicker} onClose={() => setStylePicker(false)} title={t("f_style")}>
         <Group>
@@ -341,5 +349,32 @@ export function NewOrder() {
         </Group>
       </Sheet>
     </div>
+  );
+}
+
+function PriceCard({ q }: { q: Quote }) {
+  const t = useT();
+  return (
+    <Section title={t("price_t")} footer={t("price_free_now")}>
+      <div className="card">
+        {q.paid_from === "package" ? (
+          <>
+            <div className="headline">{t("price_package", { cost: q.package_cost, left: q.package_left_after ?? 0 })}</div>
+            {q.price > 0 && (
+              <div className="subhead secondary mt-8">
+                {t("price_extra")}: {money(q.price)} {t("sum")}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="row spread">
+            <span className="title2 tabular">
+              {money(q.price)} {t("sum")}
+            </span>
+            {q.first_order_discount && <span className="badge gold">{t("price_first")}</span>}
+          </div>
+        )}
+      </div>
+    </Section>
   );
 }

@@ -782,3 +782,14 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Незаполненное обязательное поле: подпись и рамка темнеют, блок коротко вздрагивает */
+.section.need .section-header { color: var(--danger); }
+.section.need .group,
+.section.need .segmented { box-shadow: 0 0 0 1.5px var(--danger); animation: shake 0.4s var(--ease-out); }
+@keyframes shake {
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}

@@ -18,7 +18,8 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`./api${path}`, { ...init, headers });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    const detail = typeof body.detail === "string" ? body.detail : res.statusText;
+    // 422 от FastAPI — список ошибок полей; клиенту понятнее общий текст, чем техническое описание
+    const detail = typeof body.detail === "string" ? body.detail : res.statusText || `HTTP ${res.status}`;
     throw new ApiError(res.status, body.code ?? "http", detail);
   }
   return (await res.json()) as T;

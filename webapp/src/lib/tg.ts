@@ -75,12 +75,19 @@ export const haptic = {
 };
 
 export function alert(message: string): Promise<void> {
+  // Telegram роняет showAlert на пустом или слишком длинном тексте — подстрахуемся
+  const text = (message || "").trim().slice(0, 250) || "Что-то пошло не так. Попробуйте ещё раз.";
   return new Promise((resolve) => {
-    if (tg) tg.showAlert(message, resolve);
-    else {
-      window.alert(message);
-      resolve();
+    if (tg) {
+      try {
+        tg.showAlert(text, resolve);
+        return;
+      } catch {
+        /* попап уже открыт или версия клиента старая — покажем обычным окном */
+      }
     }
+    window.alert(text);
+    resolve();
   });
 }
 

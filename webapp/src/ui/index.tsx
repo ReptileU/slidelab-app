@@ -9,16 +9,20 @@ export function Section({
   action,
   footer,
   large,
+  id,
+  need,
   children,
 }: {
   title?: ReactNode;
   action?: { label: string; onClick: () => void };
   footer?: ReactNode;
   large?: boolean;
+  id?: string;
+  need?: boolean; // не заполнено обязательное — подсветить
   children: ReactNode;
 }) {
   return (
-    <section className="section">
+    <section className={`section${need ? " need" : ""}`} id={id}>
       {title && (
         <div className={`section-header${large ? " large" : ""}`}>
           <span>{title}</span>

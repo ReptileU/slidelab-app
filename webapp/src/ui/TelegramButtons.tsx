@@ -8,20 +8,30 @@ export function MainButton({
   text,
   onClick,
   disabled = false,
+  muted = false,
   loading = false,
 }: {
   text: string;
   onClick: () => void;
   disabled?: boolean;
+  /** Нажимается, но выглядит приглушённо: «Осталось: …» — нажатие подсветит, что заполнить */
+  muted?: boolean;
   loading?: boolean;
 }) {
   const handler = useRef(onClick);
   handler.current = onClick;
+  // Telegram на macOS и некоторых Android присылает нажатие и неактивной кнопки — проверяем сами
+  const blocked = useRef(disabled || loading);
+  blocked.current = disabled || loading;
 
   useEffect(() => {
     if (!tg) return;
     const mb = tg.MainButton;
     const click = () => {
+      if (blocked.current) {
+        haptic.error();
+        return;
+      }
       haptic.tap();
       handler.current();
     };
@@ -39,17 +49,22 @@ export function MainButton({
       text,
       is_visible: true,
       is_active: !disabled && !loading,
-      color: disabled ? "#8E8E93" : css.getPropertyValue("--accent").trim(),
-      text_color: disabled ? "#FFFFFF" : css.getPropertyValue("--on-accent").trim(),
+      color: disabled || muted ? "#8E8E93" : css.getPropertyValue("--accent").trim(),
+      text_color: disabled || muted ? "#FFFFFF" : css.getPropertyValue("--on-accent").trim(),
     });
     if (loading) tg.MainButton.showProgress(false);
     else tg.MainButton.hideProgress();
-  }, [text, disabled, loading]);
+  }, [text, disabled, muted, loading]);
 
   if (tg) return null;
   return createPortal(
     <div className="bottom-bar">
-      <button className="btn btn-filled" disabled={disabled || loading} onClick={onClick}>
+      <button
+        className="btn btn-filled"
+        style={muted ? { opacity: 0.55 } : undefined}
+        disabled={disabled || loading}
+        onClick={onClick}
+      >
         {loading ? "…" : text}
       </button>
     </div>,
