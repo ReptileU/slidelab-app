@@ -164,6 +164,7 @@ body:not(.onHome) .helper,body.scrolled .helper{opacity:0;pointer-events:none;tr
   padding:14px 16px;margin-bottom:8px;font:700 15px Manrope,system-ui,sans-serif}
 .opt-list button.on{border-color:var(--v);background:var(--card2)}
 .opt-list button.on:after{content:"✓";color:var(--v2)}
+.dbtn.del{border-color:#5a2a33;color:#ff8a94}
 .dbtn.pri{background:var(--v);color:#0F1B2D;border-color:var(--v)}
 .dl{margin-top:14px}.dl b{display:block;font-size:14px;margin-bottom:2px}.dl small{display:block;color:var(--muted);font-size:12px;margin-bottom:8px}
 .dl .g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dl .g button{border:1px solid var(--line);background:var(--card);color:#fff;border-radius:12px;padding:12px 8px;font:700 13px Manrope,system-ui,sans-serif}
@@ -612,7 +613,7 @@ ru:{
  qa:[["files","🎞","Мои","файлы"],["packs","📦","Пакеты","дешевле"],["price","💰","Прайс","цены"],["works","🖼","Примеры","работ"],["ask","💬","Задать","вопрос"],["channel","📢","Наш","канал"]],
  how_t:"Как это работает", how:[["📝","Оформляете заказ","тема, слайды, срок — 1 минута"],["🎨","Бесплатная обложка","смотрите стиль — пока без оплаты"],["💳","Оплата","картой или звёздами Telegram"],["🎉","Готовая презентация","в любом формате + 2 правки бесплатно"]],
  help_t:"🟢 МЕНЕДЖЕР НА СВЯЗИ", help_x:"Ответит человек, а не бот — спросите", cont_t:"Продолжить", show_all:"Все",
- files_t:"🎞 Мои работы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате", v_btn:"Листать презентацию", dl_t:"⬇️ Скачать", dl_hint:"Нажмите формат — бот сразу пришлёт его в чат.", dl_all:"📦 Все форматы сразу", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Картинки",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Закрыть",
+ files_t:"🎞 Мои работы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате", v_btn:"Листать презентацию", dl_t:"⬇️ Скачать", dl_hint:"Нажмите формат — бот сразу пришлёт его в чат.", del_btn:"🗑 Удалить из «Мои работы»", del_pop:"Убрать эту презентацию из списка? Файлы в чате с ботом останутся.", clr_btn:"🗑 Очистить историю", clr_pop:"Убрать из списка все готовые и отменённые презентации? Заказы в работе останутся, файлы в чате с ботом — тоже.", dl_all:"📦 Все форматы сразу", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Картинки",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Закрыть",
  set_packs:"Пакеты и оплата", set_files:"Мои работы", set_faq:"Вопросы и помощь", set_review:"Оставить отзыв", set_lang:"Язык", set_channel:"Канал SlideLab", set_none:"нет",
  rv_t:"⭐ Ваш отзыв", rv_x:"Что понравилось, что улучшить? Это очень помогает нам.", rv_ph:"Напишите пару слов…", rv_send:"Отправить отзыв", rv_pop:"Приложение закроется, отзыв уйдёт менеджеру. Спасибо!", rv_tag:"Отзыв",
  fwd_pop:"Откроется чат с ботом. Перешлите туда файл лекции или задания из любого чата — бот оформит заказ в 2 нажатия.",
@@ -685,7 +686,7 @@ en:{
  qa:[["files","🎞","My","files"],["packs","📦","Packs","cheaper"],["price","💰","Prices","list"],["works","🖼","Our","work"],["ask","💬","Ask a","question"],["channel","📢","Our","channel"]],
  how_t:"How it works", how:[["📝","You place an order","topic, slides, deadline — 1 minute"],["🎨","Free cover","see the style — no payment yet"],["💳","Payment","by card or Telegram Stars"],["🎉","Finished presentation","in any format + 2 rounds of edits free"]],
  help_t:"🟢 MANAGER ONLINE", help_x:"A real person replies, not a bot — ask", cont_t:"Continue", show_all:"All",
- files_t:"🎞 My work", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat", v_btn:"Flip through the presentation", dl_t:"⬇️ Download", dl_hint:"Tap a format — the bot sends it to the chat right away.", dl_all:"📦 All formats at once", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Images",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Close",
+ files_t:"🎞 My work", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat", v_btn:"Flip through the presentation", dl_t:"⬇️ Download", dl_hint:"Tap a format — the bot sends it to the chat right away.", del_btn:"🗑 Remove from «My work»", del_pop:"Remove this presentation from the list? Files in the bot chat will stay.", clr_btn:"🗑 Clear history", clr_pop:"Remove all finished and cancelled presentations from the list? Orders in progress stay, and so do files in the bot chat.", dl_all:"📦 All formats at once", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Images",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Close",
  set_packs:"Packs & payment", set_files:"My work", set_faq:"Questions & help", set_review:"Leave a review", set_lang:"Language", set_channel:"SlideLab channel", set_none:"none",
  rv_t:"⭐ Your review", rv_x:"What did you like, what can we improve? It really helps us.", rv_ph:"Write a few words…", rv_send:"Send review", rv_pop:"The app will close and your review will go to the manager. Thank you!", rv_tag:"Review",
  fwd_pop:"The bot chat will open. Forward a lecture or assignment file there from any chat — the bot will place the order in 2 taps.",
@@ -758,7 +759,7 @@ uz:{
  qa:[["files","🎞","Mening","fayllarim"],["packs","📦","Paketlar","arzonroq"],["price","💰","Narxlar","ro‘yxati"],["works","🖼","Ishlar","namunasi"],["ask","💬","Savol","berish"],["channel","📢","Bizning","kanal"]],
  how_t:"Bu qanday ishlaydi", how:[["📝","Buyurtma berasiz","mavzu, slaydlar, muddat — 1 daqiqa"],["🎨","Bepul muqova","uslubni ko‘rasiz — hali to‘lovsiz"],["💳","To‘lov","karta yoki Telegram yulduzlari"],["🎉","Tayyor taqdimot","istalgan formatda + 2 tuzatish bepul"]],
  help_t:"🟢 MENEJER ALOQADA", help_x:"Bot emas, odam javob beradi — so‘rang", cont_t:"Davom ettirish", show_all:"Hammasi",
- files_t:"🎞 Ishlarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish", v_btn:"Taqdimotni varaqlash", dl_t:"⬇️ Yuklab olish", dl_hint:"Formatni bosing — bot uni darhol chatga yuboradi.", dl_all:"📦 Barcha formatlar", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Rasmlar",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Yopish",
+ files_t:"🎞 Ishlarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish", v_btn:"Taqdimotni varaqlash", dl_t:"⬇️ Yuklab olish", dl_hint:"Formatni bosing — bot uni darhol chatga yuboradi.", del_btn:"🗑 «Ishlarim»dan o‘chirish", del_pop:"Bu taqdimotni ro‘yxatdan olib tashlaysizmi? Bot chatidagi fayllar qoladi.", clr_btn:"🗑 Tarixni tozalash", clr_pop:"Barcha tayyor va bekor qilingan taqdimotlarni ro‘yxatdan olib tashlaysizmi? Jarayondagi buyurtmalar va bot chatidagi fayllar qoladi.", dl_all:"📦 Barcha formatlar", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Rasmlar",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Yopish",
  set_packs:"Paketlar va to‘lov", set_files:"Ishlarim", set_faq:"Savollar va yordam", set_review:"Fikr qoldirish", set_lang:"Til", set_channel:"SlideLab kanali", set_none:"yo‘q",
  rv_t:"⭐ Fikringiz", rv_x:"Nima yoqdi, nimani yaxshilash kerak? Bu bizga juda yordam beradi.", rv_ph:"Bir-ikki so‘z yozing…", rv_send:"Fikrni yuborish", rv_pop:"Ilova yopiladi, fikringiz menejerga ketadi. Rahmat!", rv_tag:"Fikr",
  fwd_pop:"Bot bilan chat ochiladi. U yerga istalgan chatdan ma’ruza yoki topshiriq faylini forward qiling — bot 2 bosishda buyurtma qiladi.",
@@ -1195,7 +1196,10 @@ function fileCard(o, t, esc){
 function renderFiles(t, esc){
   const cards = ORDERS.map(o => fileCard(o, t, esc)).join("");
   const add = `<button class="fcard fnew" data-new="1"><div class="fthumb">+</div><b>${t.files_new}</b><small>${t.files_new_x}</small></button>`;
-  $("#fgrid").innerHTML = add + cards + (ORDERS.length ? "" : `<p class="note" style="grid-column:1/-1">${t.files_empty}</p>`);
+  const old = ORDERS.filter(o => ["done","cancel"].includes(o[3])).length;
+  $("#fgrid").innerHTML = add + cards + (ORDERS.length ? "" : `<p class="note" style="grid-column:1/-1">${t.files_empty}</p>`)
+    + (old ? `<button class="dbtn del" id="fClear" style="grid-column:1/-1">${t.clr_btn}</button>` : "");
+  const fc = $("#fClear"); if (fc) fc.onclick = () => { haptic(); hideOrder("all"); };
   $("#cont").innerHTML = ORDERS.length > 1 ? `<div class="rowh"><h2>${t.cont_t}</h2><button data-go="files">${t.show_all}</button></div>
     <div class="hscroll">${ORDERS.slice(0,4).map(o => fileCard(o, t, esc)).join("")}</div>` : "";
   document.querySelectorAll(".fcard").forEach(c => c.onclick = () => { haptic(); c.dataset.new ? go("order") : openFile(+c.dataset.id); });
@@ -1216,7 +1220,9 @@ function openFile(id){
     ${view && /^https:\/\/(www\.)?canva\.com\//.test(view) ? `<button class="dbtn pri" id="dView">👀 ${t.v_btn}</button>` : ""}
     ${ready && fmts.length ? `<div class="dl"><b>${t.dl_t}</b><small>${t.dl_hint}</small><div class="g">${fmts.map(f => `<button data-f="${f}">${t.dl_names[f] || f.toUpperCase()}</button>`).join("")}${fmts.length > 1 ? `<button class="all" data-f="all">${t.dl_all}</button>` : ""}</div></div>` : ""}
     ${link && /^https:\/\//.test(link) ? `<button class="dbtn" id="dOpen">🔗 ${t.open}</button>` : ""}
-    <button class="dbtn" id="dChat">💬 ${ready && !fmts.length ? t.d_files : t.go_chat}</button>`);
+    <button class="dbtn" id="dChat">💬 ${ready && !fmts.length ? t.d_files : t.go_chat}</button>
+    ${["done","cancel"].includes(status) ? `<button class="dbtn del" id="dDel">${t.del_btn}</button>` : ""}`);
+  const db = $("#dDel"); if (db) db.onclick = () => { haptic(); hideOrder(id); };
   const vb = $("#dView"); if (vb) vb.onclick = () => { haptic(); openViewer(view, topic); };
   document.querySelectorAll("#shBody .dl [data-f]").forEach(b => b.onclick = () => { haptic(); getFormat(id, b.dataset.f); });
   const box = document.querySelector("#shBody .edit");
@@ -1241,6 +1247,15 @@ function openViewer(url, title){
   $("#vTitle").textContent = title; $("#viewer").classList.add("on");
 }
 function closeViewer(){ $("#viewer").classList.remove("on"); $("#vFrame").src = "about:blank"; }
+function hideOrder(id){
+  const t = T[L];
+  if (!inTg){ alert(t.no_tg); return; }
+  tg.showConfirm(id === "all" ? t.clr_pop : t.del_pop, ok => {
+    if (!ok) return;
+    if (linkMode){ tg.openTelegramLink(`https://t.me/${BOT}?start=hide_${id}`); setTimeout(() => tg.close(), 300); return; }
+    tg.sendData(JSON.stringify({type:"hide", id}));
+  });
+}
 function getFormat(id, f){
   if (!inTg){ alert(T[L].no_tg); return; }
   if (linkMode){ tg.openTelegramLink(`https://t.me/${BOT}?start=get_${id}_${f}`); setTimeout(() => tg.close(), 300); return; }

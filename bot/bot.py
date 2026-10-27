@@ -892,7 +892,7 @@ def app_url(lang: str, uid: int | None) -> str:
     url = f"{MINIAPP_URL}?lang={lang}"
     if uid:
         mine = []
-        for o in user_orders(uid)[:8]:
+        for o in [x for x in user_orders(uid) if not x.get("hidden")][:8]:
             row = [o["id"], o["topic"][:32], o["slides"], o["status"], o["price"]]
             view = (o.get("deliver_links") or {}).get("view", "")
             if o.get("link") or o.get("has_file") or view:
@@ -990,6 +990,9 @@ async def cmd_start(message: Message, state: FSMContext, command: CommandObject)
     if (command.args or "").startswith("edit_") and (command.args or "")[5:].isdigit():
         if await start_edit(message, state, int(command.args[5:]), message.from_user.id):
             return
+    if (command.args or "").startswith("hide_") and (command.args[5:].isdigit() or command.args[5:] == "all"):
+        await app_hide_order(message, command.args[5:])
+        return
     if (command.args or "").startswith("get_"):
         parts = command.args.split("_")
         if len(parts) == 3:
@@ -1109,10 +1112,35 @@ async def order_from_app(message: Message, state: FSMContext):
     if d.get("type") == "q":
         await send_question(message, state, str(d.get("text", ""))[:1500], d.get("lang"))
         return
+    if d.get("type") == "hide":
+        await app_hide_order(message, str(d.get("id", "")))
+        return
     if d.get("type") == "get":
         await app_get_format(message, str(d.get("id", "")), str(d.get("fmt", "")))
         return
     await handle_app_order(message, state, d)
+
+
+_HIDE_OK = {"ru": "🗑 Убрал #{id} из «Мои работы». Файлы в чате остались.",
+            "uz": "🗑 #{id} «Ishlarim»dan olib tashlandi. Chatdagi fayllar qoldi.",
+            "en": "🗑 Removed #{id} from «My work». Files in the chat are still here."}
+
+
+async def app_hide_order(message: Message, oid: str) -> None:
+    """Клиент убирает готовый/отменённый заказ из списка в приложении (данные у нас сохраняются)."""
+    db = load_orders()
+    mine = [o for o in db["orders"].values() if o.get("uid") == message.from_user.id
+            and o.get("status") in ("done", "cancel") and not o.get("hidden")]
+    if oid != "all":
+        mine = [o for o in mine if str(o["id"]) == oid]
+    if not mine:
+        return
+    for o in mine:
+        o["hidden"] = True
+    save_orders(db)   # здесь же обновится личная кнопка «Открыть»
+    lang = mine[-1].get("lang", "ru") if mine[-1].get("lang") in _HIDE_OK else "ru"
+    ids = ", #".join(str(o["id"]) for o in mine)
+    await message.answer(_HIDE_OK[lang].format(id=ids), reply_markup=main_menu(lang, message.from_user.id))
 
 
 async def app_get_format(message: Message, oid: str, choice: str) -> None:
