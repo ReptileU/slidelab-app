@@ -789,6 +789,47 @@ def load_orders() -> dict:
 
 def save_orders(db: dict) -> None:
     ORDERS_DB.write_text(json.dumps(db, ensure_ascii=False, indent=1), encoding="utf-8")
+    refresh_menu_buttons(db)
+
+
+# ───── Кнопка «Открыть» у каждого клиента — со своими заказами ─────
+# Приложение без сервера: список «Мои работы» зашит в ссылку. Общая кнопка меню открывала
+# приложение без заказов, поэтому ставим каждому клиенту личную кнопку и обновляем её,
+# когда у его заказов что-то меняется.
+_BOT_REF: list = []
+_MENU_URL: dict = {}
+_MENU_TEXT = {"ru": "Открыть", "uz": "Ochish", "en": "Open"}
+
+
+def refresh_menu_buttons(db: dict | None = None, only_uid: int | None = None) -> None:
+    if not _BOT_REF or not MINIAPP_URL.startswith("https://"):
+        return
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return
+    db = db or load_orders()
+    langs: dict = {}
+    for o in sorted(db["orders"].values(), key=lambda o: o["id"]):
+        if o.get("uid"):
+            langs[o["uid"]] = o.get("lang", "ru") if o.get("lang") in _MENU_TEXT else "ru"
+    if only_uid is not None:
+        langs = {only_uid: langs.get(only_uid, "ru")}
+    from aiogram.types import MenuButtonWebApp
+    for uid, lang in langs.items():
+        url = app_url(lang, uid)
+        if _MENU_URL.get(uid) == url:
+            continue
+        _MENU_URL[uid] = url
+
+        async def _set(uid=uid, lang=lang, url=url):
+            try:
+                await _BOT_REF[0].set_chat_menu_button(chat_id=uid, menu_button=MenuButtonWebApp(
+                    text=_MENU_TEXT[lang], web_app=WebAppInfo(url=url)))
+            except Exception as e:  # noqa: BLE001
+                _MENU_URL.pop(uid, None)
+                logging.warning("Кнопка меню для %s: %s", uid, e)
+        loop.create_task(_set())
 
 
 def user_orders(uid: int) -> list[dict]:
@@ -806,6 +847,7 @@ def load_subs() -> dict:
 
 def save_subs(db: dict) -> None:
     SUBS_DB.write_text(json.dumps(db, ensure_ascii=False, indent=1), encoding="utf-8")
+    refresh_menu_buttons()
 
 
 def active_sub(uid: int) -> dict | None:
@@ -2764,6 +2806,7 @@ async def main():
               "Напишите боту /id и впишите число в settings.txt")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    _BOT_REF.append(bot)
     dp = Dispatcher(storage=MemoryStorage())
     dp.update.outer_middleware(user_ctx_middleware)
     dp.include_router(admin_router)
@@ -2799,6 +2842,7 @@ async def main():
                 text="Открыть", web_app=WebAppInfo(url=MINIAPP_URL)))
         except Exception as e:  # noqa: BLE001
             logging.warning("Не удалось поставить кнопку меню: %s", e)
+        refresh_menu_buttons()   # личные кнопки с заказами — всем, у кого есть заказы
     print("✅ Бот SlideLab запущен. Не закрывайте это окно. Остановить: Ctrl+C")
     print("🔄 Автоперезапуск включён: после изменений бот перезапустится сам.")
     await dp.start_polling(bot, handle_signals=False)
