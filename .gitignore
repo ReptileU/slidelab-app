@@ -1,0 +1,13 @@
+# Секреты и данные клиентов — никогда не загружать
+bot/settings.txt
+settings.txt
+.env
+bot/orders/
+bot/orders.json
+bot/orders.csv
+bot/subs.json
+bot/posts/state.json
+bot/media/
+bot/.venv/
+__pycache__/
+*.pyc
