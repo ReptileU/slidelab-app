@@ -27,8 +27,10 @@ export function PaySheet({
   const t = useT();
   const catalog = useCatalog();
   const [busy, setBusy] = useState(false);
-  const rate = catalog.data?.prices.uzs_per_star ?? 170;
-  const stars = Math.max(1, Math.ceil(amount / rate));
+  const rate = catalog.data?.prices.uzs_per_star ?? 155;
+  // Как to_stars на сервере: вверх до кратного 5, минимум 5 — иначе в счёте будет другая цифра
+  const stars = Math.max(5, Math.ceil(amount / (rate * 5)) * 5);
+  const starsOn = catalog.data?.stars ?? true;
 
   async function pay(provider: "stars" | "card") {
     if (busy) return;
@@ -62,14 +64,16 @@ export function PaySheet({
         </div>
       </div>
       <Group icons>
-        <Cell
-          icon={<Star fill="currentColor" />}
-          title={t("pay_stars")}
-          subtitle={t("pay_stars_x", { stars })}
-          chevron
-          disabled={busy}
-          onClick={() => pay("stars")}
-        />
+        {starsOn && (
+          <Cell
+            icon={<Star fill="currentColor" />}
+            title={t("pay_stars")}
+            subtitle={t("pay_stars_x", { stars })}
+            chevron
+            disabled={busy}
+            onClick={() => pay("stars")}
+          />
+        )}
         <Cell
           icon={<CreditCard />}
           title={t("pay_card")}

@@ -56,6 +56,8 @@ TEXTS: dict[str, str] = {
     "btn_language": "Til",
     "ask_prompt": "Savolingizni bitta xabarda yozing — menejerga yetkazaman. Javob shu yerga keladi.",
     "question_sent": "Yubordim. Shu yerda, chatda javob beramiz.",
+    "menu_updated": "Menyu yangilandi — tugmalar pastda.",
+    "stale_button": "Bu tugma botning eski versiyasidan. Buyurtmani «Buyurtmalarim»da oching — u yerda yangi tugmalar bor.",
     "manager_reply": "<b>SlideLab javobi</b>",
     "paysupport": "To‘lov va qaytarish bo‘yicha — shu yerga yoki @{admin} ga yozing. Ish boshlanishidan oldin bekor qilinsa, yulduzlarni qaytaramiz.",
     # --- anketa ---

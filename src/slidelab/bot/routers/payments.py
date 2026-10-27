@@ -1,14 +1,16 @@
 """Оплата: перевод на карту с чеком и звёзды Telegram."""
 
 import html
+import logging
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, LabeledPrice, Message, PreCheckoutQuery
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
-from slidelab.core.enums import PaymentProvider, PlanCode
+from slidelab.core.enums import PaymentProvider, PaymentStatus, PlanCode
 from slidelab.core.errors import DomainError
 from slidelab.core.i18n import money, t
 from slidelab.core.models import Payment, User
@@ -20,11 +22,55 @@ from slidelab.telegram.flows import Flows
 from slidelab.telegram.states import ReceiptForm
 
 router = Router(name="payments")
+log = logging.getLogger(__name__)
 
 
 def _payment_id(payload: str) -> int | None:
     prefix, _, value = payload.partition(":")
     return int(value) if prefix == "pay" and value.isdigit() else None
+
+
+async def _legacy_payment(session: AsyncSession, user: User, payload: str, amount: int) -> Payment | None:
+    """Счёт, выставленный прежним ботом: «o:12» — заказ, «s:month» или «s:month.12» — пакет (с зачётом #12).
+
+    Такие счета ещё могут лежать в чатах клиентов. Заводим под них платёж, если сумма совпадает.
+    """
+    kind, _, ref = payload.partition(":")
+    service = PaymentService(session)
+    pending = select(Payment).where(
+        Payment.user_id == user.id,
+        Payment.provider == PaymentProvider.STARS,
+        Payment.status == PaymentStatus.PENDING,
+        Payment.amount == amount,
+    )
+    if kind == "o" and ref.isdigit():
+        order = await repo.get_order(session, int(ref))
+        if order.user_id != user.id:
+            return None
+        found = await session.scalar(pending.where(Payment.order_id == order.id).order_by(Payment.id.desc()))
+        payment = found or await service.for_order(order, PaymentProvider.STARS)
+    elif kind == "s":
+        plan, _, credit = ref.partition(".")
+        if plan not in PlanCode._value2member_map_:
+            return None
+        found = await session.scalar(pending.where(Payment.plan_code == PlanCode(plan)).order_by(Payment.id.desc()))
+        payment = found or await service.for_plan(
+            user.id, PlanCode(plan), PaymentProvider.STARS, int(credit) if credit.isdigit() else None
+        )
+    else:
+        return None
+    return payment if payment.amount == amount else None
+
+
+async def _resolve(session: AsyncSession, user: User, payload: str, amount: int) -> int | None:
+    payment_id = _payment_id(payload)
+    if payment_id is not None:
+        return payment_id
+    try:
+        legacy = await _legacy_payment(session, user, payload, amount)
+    except DomainError:
+        return None
+    return legacy.id if legacy else None
 
 
 async def create_payment(session: AsyncSession, user: User, data: PayCb, provider: PaymentProvider) -> Payment:
@@ -111,10 +157,11 @@ async def on_stars_invoice(callback: CallbackQuery, callback_data: PayCb, sessio
 
 @router.pre_checkout_query()
 async def on_pre_checkout(query: PreCheckoutQuery, session: AsyncSession, user: User) -> None:
-    payment_id = _payment_id(query.invoice_payload)
+    payment_id = await _resolve(session, user, query.invoice_payload, query.total_amount)
     if payment_id is None:
         await query.answer(ok=False, error_message=t(user.lang, "error", admin="slidelab_uz"))
         return
+    await session.commit()  # платёж под старый счёт должен сохраниться до successful_payment
     try:
         await PaymentService(session).check_pending(payment_id, query.total_amount, query.currency)
     except DomainError as e:
@@ -127,13 +174,27 @@ async def on_pre_checkout(query: PreCheckoutQuery, session: AsyncSession, user: 
 async def on_successful_payment(message: Message, session: AsyncSession, user: User, flows: Flows) -> None:
     sp = message.successful_payment
     assert sp is not None
-    payment_id = _payment_id(sp.invoice_payload)
-    if payment_id is None:
+    # после отката объекты сессии устаревают — нужное для предупреждения берём заранее
+    who, tg_id, lang = views.client_name(user), user.tg_id, user.lang
+    payment_id = await _resolve(session, user, sp.invoice_payload, sp.total_amount)
+    try:
+        if payment_id is None:
+            raise DomainError(f"не найден счёт {sp.invoice_payload}")
+        result = await PaymentService(session).mark_paid(
+            payment_id, external_id=sp.telegram_payment_charge_id, raw=sp.model_dump(mode="json")
+        )
+        await session.commit()
+    except Exception as e:
+        # Звёзды уже списаны, а Telegram это сообщение не повторит — владелец должен узнать в любом случае
+        await session.rollback()
+        log.exception("Оплата звёздами не записалась")
+        await flows.n.staff(
+            f"⚠️ <b>Звёзды получены, но оплата не записалась</b>\n{sp.total_amount} ⭐ · счёт "
+            f"<code>{html.escape(sp.invoice_payload)}</code> · charge <code>{sp.telegram_payment_charge_id}</code>\n"
+            f"{html.escape(who)} · ID: <code>{tg_id}</code>\n{html.escape(str(e))[:300]}"
+        )
+        await message.answer(t(lang, "receipt_sent"))
         return
-    result = await PaymentService(session).mark_paid(
-        payment_id, external_id=sp.telegram_payment_charge_id, raw=sp.model_dump(mode="json")
-    )
-    await session.commit()
     await flows.announce_paid(result, user)
     if result.order is not None and not result.already_paid:
         await flows.n.staff(

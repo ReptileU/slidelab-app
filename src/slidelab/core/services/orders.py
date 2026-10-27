@@ -26,8 +26,8 @@ TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
     S.COVER: frozenset({S.AWAITING_PAYMENT, S.WORK, S.CANCELLED}),
     S.AWAITING_PAYMENT: frozenset({S.WORK, S.COVER, S.CANCELLED}),  # COVER — передумал по обложке
     S.WORK: frozenset({S.DONE, S.CANCELLED}),
-    S.DONE: frozenset({S.REVISION}),
-    S.REVISION: frozenset({S.DONE}),
+    S.DONE: frozenset({S.REVISION, S.CANCELLED}),  # отмена после сдачи — вручную владельцем
+    S.REVISION: frozenset({S.DONE, S.CANCELLED}),
     S.CANCELLED: frozenset(),
 }
 
@@ -144,12 +144,14 @@ class OrderService:
         return order
 
     async def mark_paid(self, order: Order, actor_id: int | None) -> bool:
-        """Оплата получена. Если обложка уже у клиента или согласована — сразу в работу.
+        """Оплата получена. Если клиент уже одобрил обложку — сразу в работу.
 
-        Возвращает True, если работа началась.
+        Пока обложку делают или переделывают, оплата только запоминается: работа начнётся,
+        когда клиент нажмёт «Нравится» (как в прежнем боте). Возвращает True, если работа началась.
         """
         order.is_paid = True
-        if order.status in (S.COVER, S.AWAITING_PAYMENT):
+        cover_ready = order.status is S.COVER and order.stage in (Stage.COVER_SENT, Stage.COVER_OK)
+        if order.status is S.AWAITING_PAYMENT or cover_ready:
             await self._apply(order, S.WORK, actor_id, comment="оплачено")
             return True
         await self.session.flush()
@@ -196,14 +198,22 @@ class OrderService:
         """Правки от клиента. Две бесплатные, дальше — с пометкой «платная» для менеджера.
 
         Пока правки уже в работе, новые сообщения дополняют их и не тратят бесплатную попытку.
+        Как в прежнем боте, правки принимаются на любом этапе: пока делается обложка — Claude переделывает
+        обложку, пока делается презентация — пожелание просто дописывается к заданию.
         """
         order = await repo.get_order(self.session, order_id, for_update=True)
         self._own(order, user_id)
-        if order.status not in (S.DONE, S.REVISION):
-            raise InvalidTransitionError("Правки можно отправить, когда заказ готов")
+        if order.status is S.CANCELLED:
+            raise InvalidTransitionError("Заказ отменён")
 
         is_paid = False
-        if order.status is S.DONE:
+        if order.status in (S.NEW, S.COVER, S.AWAITING_PAYMENT):
+            if order.status is S.AWAITING_PAYMENT:
+                await self._apply(order, S.COVER, user_id, comment="правки к обложке")
+            self.set_stage(order, Stage.COVER_TODO)
+        elif order.status is S.REVISION and order.stage is Stage.EDIT_REVIEW:
+            self.set_stage(order, Stage.EDIT_TODO)  # ещё правки, пока прошлые на проверке — Claude учтёт все
+        elif order.status is S.DONE:
             is_paid = order.revisions_left == 0
             if not is_paid:
                 order.revisions_left -= 1
@@ -222,8 +232,11 @@ class OrderService:
             if not order.is_paid:
                 raise PaymentRequiredError(f"Заказ #{order.id} не оплачен")
             self.set_stage(order, Stage.DECK_TODO)
-        elif to is S.CANCELLED and order.package_cost:
-            await self.packages.refund(order)
+        elif to is S.CANCELLED:
+            if order.package_cost:
+                await self.packages.refund(order)
+            order.stage = None  # убираем из конвейера: Claude и сторож его больше не видят
+            order.credit_until = None
 
         order.status = to
         self._event(order, current, to, actor_id, comment)

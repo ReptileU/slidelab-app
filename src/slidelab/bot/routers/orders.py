@@ -208,7 +208,7 @@ async def send_format(session: AsyncSession, user: User, flows: Flows, order_id:
 
 async def ask_revision(message: Message, state: FSMContext, session: AsyncSession, user: User, order_id: int) -> None:
     order = await own(session, user, order_id)
-    if order is None or order.status not in (OrderStatus.DONE, OrderStatus.REVISION):
+    if order is None or order.status is OrderStatus.CANCELLED:
         await message.answer(t(user.lang, "revise_not_allowed"))
         return
     await state.set_state(RevisionForm.collecting)

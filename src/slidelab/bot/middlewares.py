@@ -1,8 +1,10 @@
+import asyncio
 from collections.abc import Awaitable, Callable
 from typing import Any
+from weakref import WeakValueDictionary
 
 from aiogram import BaseMiddleware, Bot
-from aiogram.types import TelegramObject
+from aiogram.types import TelegramObject, Update
 from aiogram.types import User as TgUser
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -12,6 +14,27 @@ from slidelab.telegram.flows import Flows
 from slidelab.telegram.notifier import Notifier
 
 Handler = Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]]
+
+
+class SerialMiddleware(BaseMiddleware):
+    """Апдейты одного чата — строго по очереди.
+
+    aiogram обрабатывает апдейты параллельно: двойное нажатие «Оплата получена» или «Отправить клиенту»
+    без этого выполнилось бы дважды (на SQLite блокировки строк нет). Разные чаты не ждут друг друга.
+    """
+
+    def __init__(self) -> None:
+        self._locks: WeakValueDictionary[int, asyncio.Lock] = WeakValueDictionary()
+
+    async def __call__(self, handler: Handler, event: TelegramObject, data: dict[str, Any]) -> Any:
+        chat = data.get("event_chat")
+        if not isinstance(event, Update) or chat is None:
+            return await handler(event, data)
+        lock = self._locks.get(chat.id)
+        if lock is None:
+            lock = self._locks[chat.id] = asyncio.Lock()
+        async with lock:
+            return await handler(event, data)
 
 
 class DbSessionMiddleware(BaseMiddleware):

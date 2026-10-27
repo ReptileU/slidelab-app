@@ -117,9 +117,12 @@ class PackageService:
         order.credit_until = self.clock() + timedelta(days=days)
         return True
 
-    async def credit_for(self, order_id: int, plan_code: PlanCode) -> Credit | None:
-        order = await repo.get_order(self.session, order_id)
-        if order.credit_until is None or order.credit_used or self.clock() > as_utc(order.credit_until):
+    async def credit_for(self, order_id: int, plan_code: PlanCode, *, at_payment: bool = False) -> Credit | None:
+        """Зачёт заказа в пакет. При оплате срок уже не проверяем: счёт выставлен, пока зачёт действовал."""
+        order = await repo.get_order(self.session, order_id, for_update=at_payment)
+        if order.credit_until is None or order.credit_used or not order.is_paid:
+            return None
+        if not at_payment and self.clock() > as_utc(order.credit_until):
             return None
         plan = await repo.get_plan(self.session, plan_code)
         units = package_cost(order.slides)

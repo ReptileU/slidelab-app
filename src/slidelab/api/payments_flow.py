@@ -5,9 +5,15 @@ from aiogram.types import LabeledPrice
 
 from slidelab.api.schemas import InvoiceOut
 from slidelab.core.enums import PlanCode
+from slidelab.core.errors import InvalidTransitionError
 from slidelab.core.models import Order, Payment, User
 from slidelab.core.services.packages import Credit
 from slidelab.telegram.notifier import Notifier
+
+
+def ensure_stars(notifier: Notifier) -> None:
+    if not notifier.settings.stars:
+        raise InvalidTransitionError("Оплата звёздами сейчас выключена — выберите перевод на карту")
 
 
 async def stars_invoice(payment: Payment, title: str, description: str, *, bot: Bot) -> InvoiceOut:

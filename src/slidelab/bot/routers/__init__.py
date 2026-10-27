@@ -1,6 +1,6 @@
 from aiogram import Router
 
-from slidelab.bot.routers import errors, legacy, order, orders, payments, staff, start, support
+from slidelab.bot.routers import errors, fallback, legacy, order, orders, payments, staff, start, support
 
 
 def build_router(extra: Router | None = None) -> Router:
@@ -19,5 +19,6 @@ def build_router(extra: Router | None = None) -> Router:
         order.router,
         orders.router,
         support.router,
+        fallback.router,
     )
     return root

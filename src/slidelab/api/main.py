@@ -41,6 +41,7 @@ class ClientError(BaseModel):
 
 WEBAPP_DIST = Path(__file__).resolve().parents[3] / "webapp" / "dist"
 
+
 class WebappFiles(StaticFiles):
     """Файлы сборки с хэшем в имени кэшируются навсегда, index.html — всегда свежий."""
 

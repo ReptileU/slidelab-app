@@ -17,13 +17,16 @@
 import json
 import re
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 from slidelab.core.enums import Deadline, Design, OrderStatus, SlideTier, Stage
 from slidelab.core.models import Order
 from slidelab.core.models.base import as_utc
+
+# Время в brief.json — местное, как писал прежний бот (Ташкент, без перехода на летнее время)
+LOCAL_TZ = timezone(timedelta(hours=5), "Asia/Tashkent")
 
 TODO: dict[Stage, str] = {Stage.COVER_TODO: "cover", Stage.DECK_TODO: "deck", Stage.EDIT_TODO: "edit"}
 REVIEW_OF: dict[str, Stage] = {
@@ -112,7 +115,7 @@ class Pipeline:
             "sources": order.sources or "",
             "client_will_send_files": order.has_source_files,
             "client": client_name,
-            "created": as_utc(order.created_at).strftime("%Y-%m-%d %H:%M"),
+            "created": as_utc(order.created_at).astimezone(LOCAL_TZ).strftime("%Y-%m-%d %H:%M"),
         }
         self._write_json(self.dir(order.id) / "brief.json", brief, indent=1)
         self.sync_status(order)
@@ -142,18 +145,20 @@ class Pipeline:
     def ready_reviews(self, orders: dict[int, Order]) -> list[ReadyReview]:
         """Заказы, по которым Claude положил результат (review/review.json), пока стадия «сделать»."""
         found = []
-        for manifest in sorted(self.root.glob("*/review/review.json")):
-            name = manifest.parent.parent.name
-            if not name.isdigit():
-                continue
-            order = orders.get(int(name))
-            if order is None or order.stage not in TODO:
+        # Смотрим только папки заказов, которые сейчас в работе, а не весь архив
+        for order_id in sorted(orders):
+            order = orders[order_id]
+            manifest = self.root / str(order_id) / "review" / "review.json"
+            if order.stage not in TODO or not manifest.exists():
                 continue
             data = self._read_json(manifest)
+            kind = str(data.get("kind") or "")
+            if kind not in REVIEW_OF:  # неизвестный вид — берём тот, что сейчас делается
+                kind = TODO[order.stage]
             found.append(
                 ReadyReview(
                     order_id=order.id,
-                    kind=str(data.get("kind") or TODO[order.stage]),
+                    kind=kind,
                     files=[manifest.parent / f for f in data.get("files", []) if (manifest.parent / f).exists()],
                     message=str(data.get("message", "")),
                     canva=str(data.get("canva", "")),
@@ -205,15 +210,29 @@ class Pipeline:
         data.setdefault("links", {})[key] = url
         self._write_json(manifest, data)
 
-    def archive_review(self, order_id: int, kind: str, *, rejected: bool = False) -> Path:
+    def archive_target(self, order_id: int, kind: str, *, rejected: bool = False) -> Path:
+        return self.dir(order_id) / f"{'rejected' if rejected else 'sent'}_{kind}_{datetime.now():%m%d_%H%M%S}"
+
+    def archive_review(self, order_id: int, kind: str, *, rejected: bool = False, target: Path | None = None) -> Path:
         """review/ → sent_<kind>_<время>/ (или rejected_…), чтобы следующий этап начинался с чистой папки."""
         rv = self.dir(order_id) / "review"
-        target = self.dir(order_id) / f"{'rejected' if rejected else 'sent'}_{kind}_{datetime.now():%m%d_%H%M%S}"
+        target = target or self.archive_target(order_id, kind, rejected=rejected)
+        if target.exists():
+            return target
         if rv.exists():
             rv.rename(target)
         else:
             target.mkdir()
         return target
+
+    def mark_review_broken(self, order_id: int, reason: str) -> None:
+        """Результат не удалось показать владельцу: убираем его из очереди и пишем failed.json —
+        сторож предупредит с кнопкой «Переделать», а остальные заказы не ждут."""
+        rv = self.dir(order_id) / "review"
+        manifest = rv / "review.json"
+        if manifest.exists():
+            manifest.rename(rv / f"review.error_{datetime.now():%m%d_%H%M%S}.json")
+        self._write_json(rv / "failed.json", {"reason": reason[:500]})
 
     def reset_attempt(self, order_id: int) -> None:
         rv = self.dir(order_id) / "review"
@@ -252,11 +271,18 @@ class Pipeline:
             return (f"{order.stage.value}|failed", f"Claude не смог сделать {KIND_ACC[kind]}: {why}")
         if (rv / "review.json").exists():
             return None
-        since = as_utc(order.stage_at) if order.stage_at else None
+        since = as_utc(order.stage_at) if order.stage_at else self._status_time(order.id)
         hours = (now - since).total_seconds() / 3600 if since else 0.0
         if hours >= stuck_hours:
             return (f"{order.stage.value}|late", f"{KIND_RU[kind]}: результата нет уже {hours:.0f} ч")
         return None
+
+    def _status_time(self, order_id: int) -> datetime | None:
+        """Перенесённые заказы без stage_at: как прежний бот — по времени изменения status.json."""
+        try:
+            return datetime.fromtimestamp((self.root / str(order_id) / "status.json").stat().st_mtime, UTC)
+        except OSError:
+            return None
 
     @staticmethod
     def _read_json(path: Path) -> dict[str, Any]:

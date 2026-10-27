@@ -40,9 +40,9 @@ from slidelab.telegram import keyboards as kb
 from slidelab.telegram import views
 from slidelab.telegram.callbacks import MgrCb
 from slidelab.telegram.flows import Flows, Material
+from slidelab.telegram.notifier import lang_of
 from slidelab.telegram.states import StaffForm
 
-ID_RE = re.compile(r"ID:?\s*(\d+)")
 ORDER_RE = re.compile(r"#(\d+)")
 URL_RE = re.compile(r"https://\S+")
 
@@ -52,7 +52,12 @@ class FromStaff(BaseFilter):
 
     async def __call__(self, event: Message | CallbackQuery, settings: Settings, is_manager: bool = False) -> bool:
         message = event if isinstance(event, Message) else event.message
-        return bool(is_manager and message is not None and message.chat.id == settings.staff_chat_id)
+        if not is_manager or message is None:
+            return False
+        if message.chat.id == settings.staff_chat_id:
+            return True
+        # Группа менеджеров задана — команды (/stats, /grant…) всё равно доступны в личке с ботом
+        return isinstance(event, Message) and message.chat.type == "private" and (event.text or "").startswith("/")
 
 
 router = Router(name="staff")
@@ -315,14 +320,17 @@ async def on_review_send(
     orders = OrderService(session)
     pipe = flows.pipeline
     files = pipe.review_files(order.id)
+    # Порядок важен: если Telegram или база откажут, папка review/ останется на месте и можно нажать ещё раз
     if kind == "cover":
         await flows.send_cover(order, client, files)
         await orders.cover_sent(order, actor_id=user.id)
+        await flows.sync(order)
+        await session.commit()
         pipe.archive_review(order.id, kind)
         note = "обложка отправлена клиенту — ждём его ответа"
     else:
-        links = pipe.review_links(order.id)  # ссылки читаем до переноса папки
-        folder = pipe.archive_review(order.id, kind)
+        links = pipe.review_links(order.id)
+        folder = pipe.archive_target(order.id, kind)
         rel = str(folder.relative_to(pipe.root))
         names = [f.name for f in files]
         if order.status in (OrderStatus.WORK, OrderStatus.REVISION):
@@ -330,10 +338,11 @@ async def on_review_send(
         else:
             order.deliver_dir, order.deliver_files, order.deliver_links = rel, names, links
         order.delivered = False  # новая версия — снова предложим правки
+        await flows.sync(order)
+        await session.commit()
+        pipe.archive_review(order.id, kind, target=folder)
         await flows.offer_formats(order, client)
         note = f"{KIND_ACC[kind]} отправлена клиенту"
-    await flows.sync(order)
-    await session.commit()
     await callback.answer("Отправлено клиенту")
     if isinstance(callback.message, Message):
         await callback.message.edit_reply_markup(reply_markup=None)
@@ -370,7 +379,13 @@ async def on_fix_text(message: Message, state: FSMContext, session: AsyncSession
     await message.reply(f"Записал. Claude переделает {KIND_ACC[kind]} #{order.id} и пришлёт снова.")
 
 
-@router.message(F.reply_to_message, F.text.contains("canva."))
+REVIEW_CAPTION = re.compile(r"^#(\d+) · ")
+
+
+@router.message(
+    F.text.contains("canva."),
+    F.reply_to_message.func(lambda m: bool(REVIEW_CAPTION.match(m.caption or m.text or ""))),
+)
 async def on_canva_link(message: Message, session: AsyncSession, flows: Flows) -> None:
     """Ответ ссылкой Canva на сообщение с файлами заказа: «редактируемая копия» или «листать» (/view)."""
     src = message.reply_to_message
@@ -387,6 +402,9 @@ async def on_canva_link(message: Message, session: AsyncSession, flows: Flows) -
         await message.reply(
             f"Ссылку {'для просмотра' if key == 'view' else 'Canva'} добавил к #{order.id} — уйдёт вместе с файлами."
         )
+        return
+    if not order.deliver_dir:
+        await message.reply(f"#{order.id}: сначала отправьте клиенту файлы — ссылку добавлю к ним.")
         return
     order.deliver_links = {**(order.deliver_links or {}), key: url}
     await session.commit()
@@ -434,6 +452,42 @@ async def on_stuck(callback: CallbackQuery, callback_data: MgrCb, session: Async
         await callback.message.reply(
             f"#{order.id} снова в работе ({KIND_ACC[TODO[stage]]}). Claude возьмёт его в ближайший запуск."
         )
+
+
+# --- ручная смена статуса -------------------------------------------------------------
+
+
+@router.callback_query(MgrCb.filter(F.action.in_({"st_work", "st_done", "st_edit"})))
+async def on_set_status(
+    callback: CallbackQuery, callback_data: MgrCb, session: AsyncSession, user: User, flows: Flows
+) -> None:
+    """Как кнопки статусов прежнего бота: клиент получает уведомление, «Готово» — ещё и правки с зачётом."""
+    orders = OrderService(session)
+    order = await repo.get_order(session, callback_data.order_id, for_update=True)
+    client = await owner_of(session, order)
+    try:
+        if callback_data.action == "st_work":
+            await orders.transition(order.id, OrderStatus.WORK, actor_id=user.id, comment="вручную")
+            note = "в работе — Claude делает презентацию"
+        elif callback_data.action == "st_done":
+            await orders.deliver(order, user.id)
+            note = "готово (вручную)"
+        else:
+            await orders.transition(order.id, OrderStatus.REVISION, actor_id=user.id, comment="правки вручную")
+            orders.set_stage(order, Stage.EDIT_TODO)
+            note = "правки — Claude вносит изменения"
+    except DomainError as e:
+        await callback.answer(str(e), show_alert=True)
+        return
+    await flows.sync(order)
+    await session.commit()
+    await callback.answer(note)
+    await flows.notify_status(order, client)
+    if order.status is OrderStatus.DONE:
+        await flows.n.client(client, "after_delivery", kb.after_delivery(lang_of(client), order.id))
+        await flows.offer_credit(order, client)
+    await flows.n.refresh_card(order, note)
+    await session.commit()
 
 
 # --- статистика, пакеты ---------------------------------------------------------------
@@ -523,8 +577,17 @@ def _reply_target(message: Message) -> int | None:
     src = message.reply_to_message
     if src is None or src.from_user is None or not src.from_user.is_bot:
         return None
-    found = ID_RE.search(src.text or src.caption or "")
-    return int(found.group(1)) if found else None
+    # Адресат — только «ID: <code>123</code>», который пишет сам бот. Имя и текст клиента в сообщениях бота
+    # экранированы, поэтому «ID: 555» в них — просто текст и адресата не подменит.
+    text = src.text or src.caption or ""
+    for entity in src.entities or src.caption_entities or []:
+        if entity.type != "code":
+            continue
+        value = entity.extract_from(text)
+        before = text.encode("utf-16-le")[: entity.offset * 2].decode("utf-16-le")
+        if value.isdigit() and before.rstrip().endswith("ID:"):
+            return int(value)
+    return None
 
 
 @router.message(StateFilter(None), F.func(lambda m: _reply_target(m) is not None))

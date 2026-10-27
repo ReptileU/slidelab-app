@@ -35,6 +35,7 @@ from slidelab.core.enums import (
     Stage,
 )
 from slidelab.core.models import Order, OrderEvent, PackageLedger, Payment, User, UserPackage
+from slidelab.core.services.pipeline import LOCAL_TZ
 
 STATUS = {
     "new": OrderStatus.NEW,
@@ -60,7 +61,8 @@ def _dt(value: str | None) -> datetime | None:
         return None
     for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
         try:
-            return datetime.strptime(value, fmt).replace(tzinfo=UTC)
+            # прежний бот писал местное время компьютера (Ташкент)
+            return datetime.strptime(value, fmt).replace(tzinfo=LOCAL_TZ).astimezone(UTC)
         except ValueError:
             continue
     return None

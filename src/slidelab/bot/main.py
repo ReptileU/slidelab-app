@@ -26,7 +26,7 @@ from aiohttp import web
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from slidelab.bot import publisher, tasks
-from slidelab.bot.middlewares import ContextMiddleware, DbSessionMiddleware
+from slidelab.bot.middlewares import ContextMiddleware, DbSessionMiddleware, SerialMiddleware
 from slidelab.bot.routers import build_router
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
@@ -124,6 +124,7 @@ def build_dispatcher(
         engine = make_engine(settings.database_url)
         sessionmaker = make_sessionmaker(engine)
         dp.shutdown.register(engine.dispose)
+    dp.update.outer_middleware(SerialMiddleware())  # до сессии БД: второй апдейт видит итог первого
     dp.update.outer_middleware(DbSessionMiddleware(sessionmaker))
     dp.update.outer_middleware(ContextMiddleware(settings))
     dp.include_router(build_router(extra_router))
@@ -161,6 +162,9 @@ def start_background(bot: Bot, dp: Dispatcher, settings: Settings) -> list["asyn
     return jobs
 
 
+EXTRA_BOTS: list[Bot] = []  # отдельный бот для постов — закрываем его сессию при остановке
+
+
 def make_publisher_router(bot: Bot, settings: Settings) -> Router | None:
     if not (settings.admin_id and settings.channel):
         log.info("Публикация постов выключена: нужны ADMIN_ID и CHANNEL_URL")
@@ -170,6 +174,8 @@ def make_publisher_router(bot: Bot, settings: Settings) -> Router | None:
         if settings.post_bot_token
         else bot
     )
+    if post_bot is not bot:
+        EXTRA_BOTS.append(post_bot)
     return publisher.setup(settings.admin_id, settings.channel, post_bot, settings.content_dir)
 
 
@@ -189,8 +195,12 @@ def main() -> None:
         dp["jobs"] = start_background(bot, dp, settings)
 
     async def on_shutdown() -> None:
-        for job in dp.workflow_data.get("jobs", []):
+        jobs = dp.workflow_data.get("jobs", [])
+        for job in jobs:
             job.cancel()
+        await asyncio.gather(*jobs, return_exceptions=True)  # дождаться, пока фоновые задачи закроют сессии БД
+        for extra in EXTRA_BOTS:
+            await extra.session.close()
 
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)

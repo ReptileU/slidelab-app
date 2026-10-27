@@ -305,7 +305,14 @@ def staff_card(order: Order, *, stars_paid: bool) -> InlineKeyboardMarkup | None
         b.append(("Изменить цену", MgrCb(action="price", order_id=order.id)))
     if order.status in (s.WORK, s.REVISION):
         b.append(("Отправить файлы", MgrCb(action="files", order_id=order.id)))
-    if order.status in (s.NEW, s.COVER, s.AWAITING_PAYMENT, s.WORK):
+    # Ручная смена статуса — как в прежнем боте, если что-то сделали вне конвейера
+    if order.is_paid and order.status in (s.COVER, s.AWAITING_PAYMENT):
+        b.append(("▶️ В работу", MgrCb(action="st_work", order_id=order.id)))
+    if order.status in (s.WORK, s.REVISION):
+        b.append(("✅ Готово", MgrCb(action="st_done", order_id=order.id)))
+    if order.status is s.DONE:
+        b.append(("✏️ Правки", MgrCb(action="st_edit", order_id=order.id)))
+    if order.status is not s.CANCELLED:
         if stars_paid:
             b.append(("Вернуть звёзды", MgrCb(action="refund", order_id=order.id)))
         else:

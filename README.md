@@ -18,7 +18,7 @@ src/slidelab/
 webapp/            Mini App: React + TypeScript, чёрно-белый дизайн в стиле Apple
 content/           посты канала (posts/), картинки (media/), портфолио (portfolio/)
 orders/            папки заказов для конвейера Claude (не в git)
-tests/             111 тестов: правила, конвейер, API, сквозные сценарии бота
+tests/             113 тестов: правила, конвейер, API, сквозные сценарии бота
 ```
 
 ### Путь заказа

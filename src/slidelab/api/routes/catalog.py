@@ -58,4 +58,5 @@ async def get_catalog(
         faq=[FaqOut(**_tr(f.texts, lang)) for f in faq],
         bot_username=settings.bot_username,
         channel_username=settings.channel.lstrip("@") or "slidelab_uz",
+        stars=settings.stars,
     )

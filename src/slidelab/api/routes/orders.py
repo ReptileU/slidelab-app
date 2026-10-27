@@ -190,6 +190,7 @@ async def invoice(
         out = await payments_flow.card_in_chat(flows.n, user, order.price, order=order)
         await session.commit()
         return out
+    payments_flow.ensure_stars(flows.n)
     payment = await PaymentService(session).for_order(order, PaymentProvider.STARS)
     await session.commit()
     slides = t(user.lang, "slides_" + order.slides.value)

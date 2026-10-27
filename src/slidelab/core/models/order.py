@@ -61,7 +61,7 @@ class Order(CreatedAtMixin, Base):
     is_paid: Mapped[bool] = mapped_column(default=False)
 
     # Конвейер Claude (папка orders/<id>/)
-    stage: Mapped[Stage | None] = mapped_column(str_enum(Stage))
+    stage: Mapped[Stage | None] = mapped_column(str_enum(Stage), index=True)
     stage_at: Mapped[datetime | None]
     alerted: Mapped[str | None] = mapped_column(String(64))  # о чём уже предупредили админа
     alerted_at: Mapped[datetime | None]

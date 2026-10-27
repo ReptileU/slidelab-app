@@ -1,7 +1,7 @@
 import asyncio
-import os
 
 from alembic import context
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -10,8 +10,15 @@ from slidelab.core.models import Base
 
 target_metadata = Base.metadata
 
-# Миграциям токен бота не нужен — берём только адрес БД
-DATABASE_URL = os.environ.get("DATABASE_URL") or Settings.model_fields["database_url"].default
+
+class _DbSettings(BaseSettings):
+    """Миграциям токен бота не нужен — берём только адрес БД, из окружения или .env, как бот и seed."""
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    database_url: str = Settings.model_fields["database_url"].default
+
+
+DATABASE_URL = _DbSettings().database_url
 
 
 def run_migrations_offline() -> None:

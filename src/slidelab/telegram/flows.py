@@ -5,11 +5,11 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
-from aiogram.exceptions import TelegramAPIError
+from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import FSInputFile, InlineKeyboardMarkup
 from sqlalchemy import select
 
-from slidelab.core.enums import PaidFrom, PlanCode
+from slidelab.core.enums import PaidFrom, PaymentProvider, PlanCode
 from slidelab.core.i18n import money, t
 from slidelab.core.models import Order, PackagePlan, ShowcaseStyle, User
 from slidelab.core.services.payments import PaidResult, PaymentService
@@ -50,6 +50,8 @@ class Flows:
             await self.save_materials(order.id, materials)
 
         await self.n.post_card(order, user)
+        if materials:
+            await self.materials_to_staff(order, user, materials)
 
         lang = user.lang
         package = ""
@@ -79,6 +81,29 @@ class Flows:
             except (TelegramAPIError, OSError) as e:
                 log.warning("Материал к заказу #%s не скачался (%s) — он есть в чате", order_id, e)
 
+    async def materials_to_staff(self, order: Order, user: User, materials: list[Material]) -> None:
+        """Как в прежнем боте: материалы клиента — владельцу сразу под карточкой заказа."""
+        chat_id = self.settings.staff_chat_id
+        if chat_id is None:
+            return
+        await self.n.staff(
+            f"📎 <b>Материалы к #{order.id}</b> · {len(materials)}\n"
+            f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
+            user=user,
+        )
+        thread = await self.n.topic_of(user)
+        for m in materials:
+            try:
+                if m.file_id:
+                    try:
+                        await self.bot.send_document(chat_id, m.file_id, message_thread_id=thread)
+                    except TelegramBadRequest:  # file_id фотографии документом не отправить
+                        await self.bot.send_photo(chat_id, m.file_id, message_thread_id=thread)
+                elif m.text:
+                    await self.bot.send_message(chat_id, html.escape(m.text)[:4000], message_thread_id=thread)
+            except TelegramAPIError as e:
+                log.warning("Материал к заказу #%s не переслан владельцу: %s", order.id, e)
+
     # --- оплата -----------------------------------------------------------------
 
     async def announce_paid(self, result: PaidResult, user: User) -> None:
@@ -86,6 +111,12 @@ class Flows:
             return
         p = result.payment
         amount = f"{p.amount} ⭐" if p.currency == "XTR" else f"{money(p.amount)} сум"
+        if result.attention:
+            await self.n.staff(
+                f"⚠️ {html.escape(result.attention)}\nПлатёж {p.id} · {amount}\n"
+                f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
+                user=user,
+            )
         if result.package is not None:
             pkg = result.package
             name = t(user.lang, "plan_" + pkg.plan_code.value)
@@ -100,7 +131,7 @@ class Flows:
             )
             if p.plan_code is not None:
                 await self.n.send_gift(user, p.plan_code)
-        if result.order is not None:
+        if result.order is not None and not (result.attention and not result.started):
             order = result.order
             self.pipeline.sync_status(order)
             self.pipeline.add_note(order.id, "Оплата", amount)
@@ -232,11 +263,17 @@ class Flows:
             return False
         await self.n.client(user, "pkg_requested", plan=t(user.lang, "plan_" + code.value))
         await self.n.send_pay(user, amount=q.amount, plan=code, credit=q.credit)
+        # Счёт на перевод заводим сразу: как в прежнем боте, владелец может включить пакет одной кнопкой,
+        # не дожидаясь чека (тот же счёт подхватит и чек клиента)
+        payment = await payments.for_plan(
+            user.id, code, PaymentProvider.MANUAL_CARD, q.credit.order_id if q.credit else None
+        )
         await self.n.staff(
             f"📦 Заявка на пакет «{t(None, 'plan_' + code.value)}» — {money(q.amount)} сум"
             + (f" (засчитан #{q.credit.order_id})" if q.credit else "")
             + f"\n{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>\n"
-            "<i>Реквизиты клиенту отправлены. Звёзды подтвердятся сами, перевод — по чеку.</i>",
+            "<i>Реквизиты клиенту отправлены. Звёзды подтвердятся сами. Перевод пришёл — включите пакет:</i>",
+            kb.staff_receipt(payment.id),
             user=user,
         )
         return True

@@ -19,6 +19,19 @@ uv sync --python 3.12 --no-dev
 uv run alembic upgrade head
 uv run python -m slidelab.core.seed
 
+# Новая Mini App: собираем один раз, если на компьютере есть Node.js
+if [ ! -f webapp/dist/index.html ] && command -v npm >/dev/null 2>&1; then
+  (cd webapp && npm ci && npm run build)
+fi
+
+# API для Mini App — в фоне, тоже с перезапуском; закрывается вместе с окном
+(while true; do
+  uv run uvicorn --factory slidelab.api.main:create_app --host 127.0.0.1 --port 8010
+  sleep 5
+done) &
+API_LOOP=$!
+trap 'kill $API_LOOP 2>/dev/null; pkill -f "slidelab.api.main" 2>/dev/null' EXIT
+
 while true; do
   echo "Бот SlideLab запущен. Остановить: Ctrl+C"
   uv run python -m slidelab.bot.main

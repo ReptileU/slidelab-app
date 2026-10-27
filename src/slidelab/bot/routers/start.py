@@ -37,6 +37,7 @@ async def cmd_start(
     message: Message, command: CommandObject, state: FSMContext, session: AsyncSession, user: User, flows: Flows
 ) -> None:
     await state.clear()
+    await legacy_router.reset_menu_button(message)
     payload = command.args or ""
 
     action = legacy.parse_start_payload(payload)

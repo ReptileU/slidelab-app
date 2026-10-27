@@ -152,9 +152,22 @@ async def test_cover_change_restarts_cover(orders: OrderService, make_user: Call
     await orders.request_cover_change(order.id, user.id)
     assert (order.status, order.stage) == (S.COVER, Stage.COVER_TODO)
 
-    await orders.mark_paid(order, actor_id=None)  # оплатил, пока переделываем — сразу в работу
+    # оплатил, пока переделываем: как в прежнем боте — ждём новую обложку, работа не начинается
+    assert await orders.mark_paid(order, actor_id=None) is False
+    assert (order.status, order.stage, order.is_paid) == (S.COVER, Stage.COVER_TODO, True)
+
+    await orders.cover_sent(order, actor_id=None)
+    await orders.approve_cover(order.id, user.id)  # понравилась — оплата уже есть, сразу в работу
+    assert (order.status, order.stage) == (S.WORK, Stage.DECK_TODO)
     with pytest.raises(InvalidTransitionError):
         await orders.request_cover_change(order.id, user.id)
+
+
+async def test_cancel_removes_from_pipeline(orders: OrderService, make_user: Callable[..., Any]) -> None:
+    user = await make_user()
+    order = await orders.create(user.id, draft())
+    await orders.transition(order.id, S.CANCELLED, actor_id=None)
+    assert order.stage is None
 
 
 async def test_cancelled_is_final(orders: OrderService, make_user: Callable[..., Any]) -> None:
@@ -296,13 +309,21 @@ async def test_more_edits_while_revising_do_not_spend_attempts(
     assert order.revisions_left == 1
 
 
-async def test_revision_only_for_owner_and_done(orders: OrderService, make_user: Callable[..., Any]) -> None:
+async def test_revision_any_stage_like_old_bot(orders: OrderService, make_user: Callable[..., Any]) -> None:
     owner, stranger = await make_user(), await make_user()
     order = await orders.create(owner.id, draft())
-    with pytest.raises(InvalidTransitionError):
-        await orders.request_revision(order.id, owner.id, "правка")
     with pytest.raises(ForbiddenError):
         await orders.request_revision(order.id, stranger.id, "правка")
+
+    # пока обложка у клиента — правки переделывают обложку, бесплатные правки презентации не тратятся
+    await to_cover(orders, order)
+    revision = await orders.request_revision(order.id, owner.id, "другой цвет")
+    assert (order.status, order.stage, revision.is_paid) == (S.COVER, Stage.COVER_TODO, False)
+    assert order.revisions_left == 2
+
+    await orders.transition(order.id, S.CANCELLED, actor_id=None)
+    with pytest.raises(InvalidTransitionError):
+        await orders.request_revision(order.id, owner.id, "правка")
 
 
 async def test_stage_change_resets_watch_alert(orders: OrderService, make_user: Callable[..., Any]) -> None:

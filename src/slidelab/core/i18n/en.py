@@ -56,6 +56,8 @@ TEXTS: dict[str, str] = {
     "btn_language": "Language",
     "ask_prompt": "Write your question in one message — I'll pass it to the manager. The answer will come here.",
     "question_sent": "Sent. We'll reply right here in the chat.",
+    "menu_updated": "The menu has been updated — buttons are below.",
+    "stale_button": "This button is from the previous version of the bot. Open the order in “My orders” for the current buttons.",
     "manager_reply": "<b>SlideLab reply</b>",
     "paysupport": "About payments and refunds — write here or to @{admin}. If an order is cancelled before work starts, we refund the Stars.",
     # --- order form ---

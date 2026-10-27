@@ -264,6 +264,10 @@ class Notifier:
 
     # --- внутреннее -------------------------------------------------------------
 
+    async def topic_of(self, user: User) -> int | None:
+        """Тема клиента в группе менеджеров (None — личка владельца)."""
+        return await self._topic(user)
+
     async def _topic(self, user: User) -> int | None:
         """Тема клиента — только в супергруппе менеджеров."""
         if self.settings.managers_chat_id is None:

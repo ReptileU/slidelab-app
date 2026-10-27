@@ -55,8 +55,8 @@ async def get_user(session: AsyncSession, user_id: int) -> User:
 
 async def get_order(session: AsyncSession, order_id: int, *, for_update: bool = False) -> Order:
     stmt = select(Order).where(Order.id == order_id)
-    if for_update:
-        stmt = stmt.with_for_update()
+    if for_update:  # свежие данные, даже если заказ уже загружен в сессию
+        stmt = stmt.with_for_update().execution_options(populate_existing=True)
     order = await session.scalar(stmt)
     if order is None:
         raise NotFoundError(f"Заказ #{order_id} не найден")
@@ -104,7 +104,7 @@ async def get_active_package(
         .limit(1)
     )
     if for_update:
-        stmt = stmt.with_for_update()
+        stmt = stmt.with_for_update().execution_options(populate_existing=True)
     return await session.scalar(stmt)
 
 
@@ -143,7 +143,7 @@ async def get_user_by_topic(session: AsyncSession, topic_id: int) -> User | None
 async def get_payment(session: AsyncSession, payment_id: int, *, for_update: bool = False) -> Payment:
     stmt = select(Payment).where(Payment.id == payment_id)
     if for_update:
-        stmt = stmt.with_for_update()
+        stmt = stmt.with_for_update().execution_options(populate_existing=True)
     payment = await session.scalar(stmt)
     if payment is None:
         raise NotFoundError(f"Платёж {payment_id} не найден")
@@ -165,7 +165,7 @@ async def get_price_rule_row(session: AsyncSession) -> PriceRule:
 
 
 async def orders_in_stages(session: AsyncSession, stages: Iterable[Stage]) -> dict[int, Order]:
-    stmt = select(Order).where(Order.stage.in_(list(stages)))
+    stmt = select(Order).where(Order.stage.in_(list(stages)), Order.status.in_(ACTIVE_STATUSES))
     return {o.id: o for o in (await session.scalars(stmt)).all()}
 
 

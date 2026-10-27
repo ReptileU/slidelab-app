@@ -16,6 +16,7 @@ from aiogram.types import (
     Chat,
     Document,
     Message,
+    MessageEntity,
     ReplyKeyboardMarkup,
     SuccessfulPayment,
     Update,
@@ -130,13 +131,23 @@ def msg(user_id: int, **kwargs: Any) -> Message:
     )
 
 
-def bot_msg(chat_id: int, text: str) -> Message:
+def bot_msg(chat_id: int, html_text: str) -> Message:
+    """Сообщение бота, как его отдаёт Telegram: текст без HTML, а <code> — моноширинными entities."""
+    text, entities = "", []
+    for part in re.split(r"(<code>.*?</code>)", html_text):
+        if part.startswith("<code>"):
+            value = part[6:-7]
+            entities.append(MessageEntity(type="code", offset=len(text.encode("utf-16-le")) // 2, length=len(value)))
+            text += value
+        else:
+            text += re.sub(r"<[^>]+>", "", part)
     return Message(
         message_id=next(ids),
         date=datetime.now(UTC),
         chat=Chat(id=chat_id, type="private"),
         from_user=User(id=42, is_bot=True, first_name="SlideLab"),
         text=text,
+        entities=entities,
     )
 
 
@@ -338,10 +349,19 @@ async def test_owner_reply_goes_to_client(h: Harness) -> None:
     await h.text("Здравствуйте, сколько стоит 15 слайдов?")
     question = h.texts(ADMIN)[-1]
     assert "ID: <code>777</code>" in question
-    plain = re.sub(r"<[^>]+>", "", question)  # Telegram отдаёт текст реплая без HTML
-    await h.text("Добрый день! 29 000 сум", user=ADMIN, reply_to=bot_msg(ADMIN, plain))
+    await h.text("Добрый день! 29 000 сум", user=ADMIN, reply_to=bot_msg(ADMIN, question))
     assert [c for c in h.tg.of("CopyMessage") if c.chat_id == CLIENT], "ответ владельца ушёл клиенту"
     assert "Ответ SlideLab" in h.texts(CLIENT)[-1]
+
+
+async def test_client_text_cannot_redirect_owner_reply(h: Harness) -> None:
+    """«ID: 555» в тексте клиента — просто текст: ответ всё равно уходит автору вопроса."""
+    await onboard(h)
+    await h.text("ID: 555 — ответьте лучше ему")
+    question = h.texts(ADMIN)[-1]
+    await h.text("Ответ", user=ADMIN, reply_to=bot_msg(ADMIN, question))
+    copies = h.tg.of("CopyMessage")
+    assert [c for c in copies if c.chat_id == CLIENT] and not [c for c in copies if c.chat_id == 555]
 
 
 async def test_card_receipt_confirmed_by_owner(h: Harness) -> None:

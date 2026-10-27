@@ -38,12 +38,17 @@ async def on_question(message: Message, state: FSMContext, session: AsyncSession
 @router.message()
 async def on_any(message: Message, state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> None:
     ref = file_of(message)
+    order = await repo.latest_active_order(session, user.id)
     if ref is None:
-        await relay(message, session, user, flows, "💬 <b>Сообщение</b>")
+        title = "💬 <b>Сообщение</b>"
+        if order is not None and message.text:
+            # как в прежнем боте: Claude тоже видит, что клиент дописал к заказу
+            flows.pipeline.add_note(order.id, "Клиент (сообщение в чате)", message.text)
+            title += f" · к заказу #{order.id}"
+        await relay(message, session, user, flows, title)
         await message.answer(t(user.lang, "question_sent"))
         return
 
-    order = await repo.latest_active_order(session, user.id)
     if order is None:
         await order_flow.begin_quick(message, state, session, user)
         return

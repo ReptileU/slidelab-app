@@ -70,6 +70,7 @@ export interface Catalog {
   faq: { q: string; a: string }[];
   bot_username: string;
   channel_username: string;
+  stars: boolean;
 }
 
 export interface Quote {

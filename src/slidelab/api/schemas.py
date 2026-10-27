@@ -88,6 +88,7 @@ class CatalogOut(BaseModel):
     faq: list[FaqOut]
     bot_username: str
     channel_username: str
+    stars: bool  # STARS=0 — оплата звёздами выключена
 
 
 class QuoteIn(BaseModel):
