@@ -2067,6 +2067,123 @@ async def watch_for_changes(bot: Bot, dp: Dispatcher) -> None:
         return
 
 
+# ───────────── СИНХРОНИЗАЦИЯ С GITHUB ─────────────
+# GitHub — главное место кода. Раз в несколько минут бот сверяет папку bot/ в репозитории
+# с файлами на этом компьютере и подтягивает изменения: bot.py, publisher.py и посты (posts/*.txt).
+# Секреты (settings.txt), заказы и state.json не трогаются — их в репозитории нет.
+GH_REPO = os.getenv("GH_REPO", "ReptileU/slidelab-app").strip()
+GH_BRANCH = os.getenv("GH_BRANCH", "main").strip()
+GH_SYNC_MIN = int(os.getenv("GH_SYNC_MIN", "3") or 0)   # 0 — выключить
+GH_SYNC_STATE = Path(__file__).with_name(".gh_sync.json")
+
+
+def _git_blob_sha(data: bytes) -> str:
+    import hashlib
+    return hashlib.sha1(b"blob " + str(len(data)).encode() + b"\0" + data).hexdigest()
+
+
+def _gh_wanted(path: str) -> str | None:
+    """bot/… в репозитории → путь относительно папки бота, или None, если файл не синхронизируем."""
+    if not path.startswith("bot/"):
+        return None
+    rel = path[4:]
+    if rel in ("bot.py", "publisher.py"):
+        return rel
+    if rel.startswith("posts/") and rel.endswith(".txt") and rel.count("/") == 1:
+        return rel
+    return None
+
+
+async def github_sync_once(bot: Bot | None = None) -> list[str]:
+    import aiohttp
+    base = Path(__file__).parent
+    try:
+        state = json.loads(GH_SYNC_STATE.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        state = {}
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "slidelab-bot"}
+    tree_url = f"https://api.github.com/repos/{GH_REPO}/git/trees/{GH_BRANCH}?recursive=1"
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=40)) as http:
+        async with http.get(tree_url, headers=headers) as r:
+            if r.status != 200:
+                logging.warning("GitHub sync: дерево не получено (%s)", r.status)
+                return []
+            tree = (await r.json()).get("tree", [])
+        updated = []
+        for item in tree:
+            rel = _gh_wanted(item.get("path", "")) if item.get("type") == "blob" else None
+            if not rel:
+                continue
+            remote_sha = item["sha"]
+            if state.get(rel) == remote_sha:
+                continue   # с прошлой синхронизации на GitHub ничего не менялось
+            local = base / rel
+            if local.exists() and _git_blob_sha(local.read_bytes()) == remote_sha:
+                state[rel] = remote_sha
+                continue
+            raw = f"https://raw.githubusercontent.com/{GH_REPO}/{GH_BRANCH}/{item['path']}"
+            async with http.get(raw) as r:
+                if r.status != 200:
+                    continue
+                data = await r.read()
+            if _git_blob_sha(data) != remote_sha:
+                continue   # кэш raw ещё старый — попробуем в следующий раз
+            if rel.endswith(".py"):
+                tmp = base / (rel + ".gh_new")
+                tmp.write_bytes(data)
+                try:
+                    py_compile.compile(str(tmp), doraise=True)
+                except py_compile.PyCompileError as e:
+                    tmp.unlink(missing_ok=True)
+                    state[rel] = remote_sha   # эту версию не берём, ждём исправленную
+                    if bot and ADMIN_ID:
+                        try:
+                            await bot.send_message(ADMIN_ID, f"⚠️ На GitHub в {rel} ошибка — не обновляю:\n<code>"
+                                                   + html.escape(e.msg[-300:]) + "</code>")
+                        except Exception:  # noqa: BLE001
+                            pass
+                    continue
+                tmp.unlink(missing_ok=True)
+            local.parent.mkdir(parents=True, exist_ok=True)
+            local.write_bytes(data)
+            state[rel] = remote_sha
+            updated.append(rel)
+    GH_SYNC_STATE.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
+    if updated:
+        logging.info("GitHub sync: обновлено %s", updated)
+        if bot and ADMIN_ID:
+            try:
+                await bot.send_message(ADMIN_ID, "🔄 Подтянул с GitHub: " + ", ".join(updated))
+            except Exception:  # noqa: BLE001
+                pass
+    return updated
+
+
+async def github_sync_loop(bot: Bot) -> None:
+    if not GH_SYNC_MIN:
+        return
+    await asyncio.sleep(20)
+    while True:
+        try:
+            await github_sync_once(bot)
+        except Exception as e:  # noqa: BLE001
+            logging.warning("GitHub sync: %s", e)
+        await asyncio.sleep(GH_SYNC_MIN * 60)
+
+
+@admin_router.message(Command("sync"))
+async def cmd_sync(message: Message, bot: Bot):
+    """/sync — подтянуть изменения с GitHub прямо сейчас."""
+    if message.from_user.id != ADMIN_ID:
+        return
+    try:
+        upd = await github_sync_once(None)
+    except Exception as e:  # noqa: BLE001
+        await message.answer(f"⚠️ Не получилось: <code>{html.escape(str(e))[:200]}</code>")
+        return
+    await message.answer(("🔄 Подтянул с GitHub: " + ", ".join(upd)) if upd else "✅ С GitHub всё совпадает.")
+
+
 # ───────────── ОТВЕТ ВЛАДЕЛЬЦА КЛИЕНТУ (REPLY) ─────────────
 _ID_RE = re.compile(r"ID:?\s*(\d{5,})")
 
@@ -2394,6 +2511,9 @@ async def deliver_formats(bot: Bot, oid: str, choice: str) -> bool:
     return True
 
 
+_FMT_RECENT: dict = {}
+
+
 @router.callback_query(F.data.startswith("fmt:"))
 async def format_pick(cb: CallbackQuery, bot: Bot):
     _, oid, choice = cb.data.split(":")
@@ -2401,6 +2521,13 @@ async def format_pick(cb: CallbackQuery, bot: Bot):
     if o.get("uid") != cb.from_user.id:
         await cb.answer()
         return
+    # защита от двойного нажатия: тот же формат не шлём повторно в течение 2 минут
+    key = (cb.from_user.id, oid, choice)
+    now = asyncio.get_event_loop().time()
+    if now - _FMT_RECENT.get(key, -1e9) < 120:
+        await cb.answer(T[o.get("lang", "ru")]["fmt_sending"])
+        return
+    _FMT_RECENT[key] = now
     await cb.answer(T[o.get("lang", "ru")]["fmt_sending"])
     if not await deliver_formats(bot, oid, choice):
         await cb.message.answer(T[o.get("lang", "ru")]["fmt_none"])
@@ -2650,6 +2777,7 @@ async def main():
     dp.include_router(router)
     watcher = asyncio.create_task(watch_for_changes(bot, dp))
     review_task = asyncio.create_task(watch_reviews(bot))  # noqa: F841
+    sync_task = asyncio.create_task(github_sync_loop(bot))  # noqa: F841
     if POST_CHANNEL:
         asyncio.create_task(setup_branding(bot))
     try:  # описание бота: до «Старт» и в профиле (ru по умолчанию, uz для узбекского Telegram)
