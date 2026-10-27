@@ -894,8 +894,10 @@ def app_url(lang: str, uid: int | None) -> str:
         mine = []
         for o in user_orders(uid)[:8]:
             row = [o["id"], o["topic"][:32], o["slides"], o["status"], o["price"]]
-            if o.get("link") or o.get("has_file"):
-                row += [(o.get("link") or "")[:120], 1 if o.get("has_file") else 0]
+            view = (o.get("deliver_links") or {}).get("view", "")
+            if o.get("link") or o.get("has_file") or view:
+                row += [(o.get("link") or "")[:120], 1 if o.get("has_file") else 0, view[:160],
+                        ",".join(_app_formats(o))]
             mine.append(row)
         if mine:
             raw = json.dumps(mine, ensure_ascii=False, separators=(",", ":")).encode()
@@ -906,6 +908,16 @@ def app_url(lang: str, uid: int | None) -> str:
         if sub:
             url += f"&s={sub['plan']}.{sub['left']}.{sub['limit']}.{sub['end']}"
     return url
+
+
+def _app_formats(o: dict) -> list[str]:
+    """Какие кнопки «Скачать» показать в приложении у готового заказа."""
+    if not o.get("deliver_dir"):
+        return []
+    fm = [x for x in formats_of([Path(n) for n in o.get("deliver_files", [])]) if x != "docx"]
+    links = o.get("deliver_links") or {}
+    fm += [k for k in ("gslides", "canva") if k in links or "pptx" in fm]
+    return fm
 
 
 def main_menu(lang: str, uid: int | None = None) -> ReplyKeyboardMarkup:
@@ -977,6 +989,11 @@ def all_button_texts(key: str) -> set[str]:
 async def cmd_start(message: Message, state: FSMContext, command: CommandObject):
     if (command.args or "").startswith("edit_") and (command.args or "")[5:].isdigit():
         if await start_edit(message, state, int(command.args[5:]), message.from_user.id):
+            return
+    if (command.args or "").startswith("get_"):
+        parts = command.args.split("_")
+        if len(parts) == 3:
+            await app_get_format(message, parts[1], parts[2])
             return
     if (command.args or "").startswith("sub_") and command.args[4:] in PLANS:
         await request_sub(message, state, command.args[4:])
@@ -1092,7 +1109,27 @@ async def order_from_app(message: Message, state: FSMContext):
     if d.get("type") == "q":
         await send_question(message, state, str(d.get("text", ""))[:1500], d.get("lang"))
         return
+    if d.get("type") == "get":
+        await app_get_format(message, str(d.get("id", "")), str(d.get("fmt", "")))
+        return
     await handle_app_order(message, state, d)
+
+
+async def app_get_format(message: Message, oid: str, choice: str) -> None:
+    """Кнопка «Скачать» в приложении → бот присылает файл/ссылку в нужном формате."""
+    o = load_orders()["orders"].get(oid) or {}
+    if not oid.isdigit() or o.get("uid") != message.from_user.id or choice not in (
+            "pptx", "pdf", "png", "gslides", "canva", "all"):
+        return
+    t = T[o.get("lang", "ru")]
+    key = (message.from_user.id, oid, choice)
+    now = asyncio.get_event_loop().time()
+    if now - _FMT_RECENT.get(key, -1e9) < 60:
+        return
+    _FMT_RECENT[key] = now
+    await message.answer(t["fmt_sending"])
+    if not await deliver_formats(message.bot, oid, choice):
+        await message.answer(t["fmt_none"])
 
 
 async def send_question(message: Message, state: FSMContext, text: str, lang: str | None = None):
@@ -2467,7 +2504,7 @@ async def review_action(cb: CallbackQuery, bot: Bot):
             files = [arch / f.name for f in files]
             man_sent = arch / "review.sent.json"
             links = json.loads(man_sent.read_text(encoding="utf-8")).get("links", {}) if man_sent.exists() else {}
-            links = {k: v for k, v in links.items() if k in ("gslides", "canva") and str(v).startswith("https://")}
+            links = {k: v for k, v in links.items() if k in ("gslides", "canva", "view") and str(v).startswith("https://")}
             set_stage(oid, "done", status="done", has_file=True, deliver_dir=str(arch.relative_to(WORK_DIR)),
                       deliver_files=[f.name for f in files], deliver_links=links,
                       **({"link": links.get("gslides") or links.get("canva")} if links else {}))
@@ -2528,7 +2565,7 @@ async def deliver_formats(bot: Bot, oid: str, choice: str) -> bool:
         return False
     d = WORK_DIR / o["deliver_dir"]
     files = [d / n for n in o.get("deliver_files", []) if (d / n).exists()]
-    links = o.get("deliver_links", {})
+    links = {k: v for k, v in o.get("deliver_links", {}).items() if k != "view"}
     first = not o.get("delivered")
     howto = []
     if choice in ("gslides", "canva") and choice not in links:
@@ -2597,12 +2634,19 @@ async def review_canva_link(message: Message):
     if not url or not o:
         return
     url = url.group(0).rstrip(").,;")
+    key = "view" if re.search(r"/view(\?|$|/)", url) else "canva"
     if str(o.get("stage", "")).endswith("_review"):
         man = WORK_DIR / oid / "review" / "review.sent.json"
         r = json.loads(man.read_text(encoding="utf-8")) if man.exists() else {}
-        r.setdefault("links", {})["canva"] = url
+        r.setdefault("links", {})[key] = url
         man.write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
-        await message.reply(f"🎨 Ссылку Canva добавил к #{oid} — клиент увидит её среди форматов.")
+        await message.reply(f"👀 Ссылку для просмотра добавил к #{oid} — клиент сможет листать презентацию в приложении."
+                            if key == "view" else f"🎨 Ссылку Canva добавил к #{oid} — клиент увидит её среди форматов.")
+    elif o.get("deliver_dir") and key == "view":
+        db = load_orders()
+        db["orders"][oid].setdefault("deliver_links", {})["view"] = url
+        save_orders(db)
+        await message.reply(f"👀 Ссылку для просмотра добавил к #{oid} — в приложении у клиента появилась кнопка «Листать презентацию».")
     elif o.get("deliver_dir"):
         db = load_orders()
         db["orders"][oid].setdefault("deliver_links", {})["canva"] = url

@@ -164,6 +164,14 @@ body:not(.onHome) .helper,body.scrolled .helper{opacity:0;pointer-events:none;tr
   padding:14px 16px;margin-bottom:8px;font:700 15px Manrope,system-ui,sans-serif}
 .opt-list button.on{border-color:var(--v);background:var(--card2)}
 .opt-list button.on:after{content:"✓";color:var(--v2)}
+.dbtn.pri{background:var(--v);color:#0F1B2D;border-color:var(--v)}
+.dl{margin-top:14px}.dl b{display:block;font-size:14px;margin-bottom:2px}.dl small{display:block;color:var(--muted);font-size:12px;margin-bottom:8px}
+.dl .g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.dl .g button{border:1px solid var(--line);background:var(--card);color:#fff;border-radius:12px;padding:12px 8px;font:700 13px Manrope,system-ui,sans-serif}
+.dl .g button.all{grid-column:1/-1;border-color:var(--v);color:var(--v2)}
+.viewer{position:fixed;inset:0;z-index:60;background:#05080f;display:none;flex-direction:column}.viewer.on{display:flex}
+.viewer .vt{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;color:#fff;font:700 14px Manrope,system-ui,sans-serif}
+.viewer .vt button{border:0;background:var(--card2);color:#fff;border-radius:10px;padding:8px 12px;font:700 13px Manrope,system-ui,sans-serif}
+.viewer iframe{flex:1;width:100%;border:0;background:#05080f}
 .dbtn{width:100%;border:1px solid var(--v);background:transparent;color:var(--v2);font:700 14px Manrope,system-ui,sans-serif;padding:12px;border-radius:12px;margin-top:8px}
 nav.tabs{position:sticky;top:var(--top);z-index:5;background:var(--bg);display:flex;gap:6px;padding:8px 0 12px}
 nav.tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);font:700 14px Manrope,system-ui,sans-serif;padding:11px 6px;border-radius:14px;white-space:nowrap}
@@ -576,6 +584,7 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
   <button data-tab="packs"><svg viewBox="0 0 24 24"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg><span data-t="tab_packs"></span></button>
   <button data-tab="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-t="tab_me"></span></button>
 </nav>
+<div class="viewer" id="viewer"><div class="vt"><span id="vTitle"></span><button id="vClose">✕</button></div><iframe id="vFrame" allow="fullscreen" allowfullscreen></iframe></div>
 <div class="sheet" id="sheet"><div class="sh-bg" id="shBg"></div><div class="sh-in"><div class="sh-grip"></div><div id="shBody"></div></div></div>
 
 <script>
@@ -603,7 +612,7 @@ ru:{
  qa:[["files","🎞","Мои","файлы"],["packs","📦","Пакеты","дешевле"],["price","💰","Прайс","цены"],["works","🖼","Примеры","работ"],["ask","💬","Задать","вопрос"],["channel","📢","Наш","канал"]],
  how_t:"Как это работает", how:[["📝","Оформляете заказ","тема, слайды, срок — 1 минута"],["🎨","Бесплатная обложка","смотрите стиль — пока без оплаты"],["💳","Оплата","картой или звёздами Telegram"],["🎉","Готовая презентация","в любом формате + 2 правки бесплатно"]],
  help_t:"🟢 МЕНЕДЖЕР НА СВЯЗИ", help_x:"Ответит человек, а не бот — спросите", cont_t:"Продолжить", show_all:"Все",
- files_t:"🎞 Мои работы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате",
+ files_t:"🎞 Мои работы", files_new:"Новая презентация", files_new_x:"обложка бесплатно", files_empty:"Здесь будут все ваши презентации — со статусом и правками.", d_files:"Получить файлы в чате", v_btn:"Листать презентацию", dl_t:"⬇️ Скачать", dl_hint:"Нажмите формат — бот сразу пришлёт его в чат.", dl_all:"📦 Все форматы сразу", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Картинки",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Закрыть",
  set_packs:"Пакеты и оплата", set_files:"Мои работы", set_faq:"Вопросы и помощь", set_review:"Оставить отзыв", set_lang:"Язык", set_channel:"Канал SlideLab", set_none:"нет",
  rv_t:"⭐ Ваш отзыв", rv_x:"Что понравилось, что улучшить? Это очень помогает нам.", rv_ph:"Напишите пару слов…", rv_send:"Отправить отзыв", rv_pop:"Приложение закроется, отзыв уйдёт менеджеру. Спасибо!", rv_tag:"Отзыв",
  fwd_pop:"Откроется чат с ботом. Перешлите туда файл лекции или задания из любого чата — бот оформит заказ в 2 нажатия.",
@@ -676,7 +685,7 @@ en:{
  qa:[["files","🎞","My","files"],["packs","📦","Packs","cheaper"],["price","💰","Prices","list"],["works","🖼","Our","work"],["ask","💬","Ask a","question"],["channel","📢","Our","channel"]],
  how_t:"How it works", how:[["📝","You place an order","topic, slides, deadline — 1 minute"],["🎨","Free cover","see the style — no payment yet"],["💳","Payment","by card or Telegram Stars"],["🎉","Finished presentation","in any format + 2 rounds of edits free"]],
  help_t:"🟢 MANAGER ONLINE", help_x:"A real person replies, not a bot — ask", cont_t:"Continue", show_all:"All",
- files_t:"🎞 My work", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat",
+ files_t:"🎞 My work", files_new:"New presentation", files_new_x:"free cover", files_empty:"All your presentations will be here — with status and edits.", d_files:"Get the files in the chat", v_btn:"Flip through the presentation", dl_t:"⬇️ Download", dl_hint:"Tap a format — the bot sends it to the chat right away.", dl_all:"📦 All formats at once", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Images",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Close",
  set_packs:"Packs & payment", set_files:"My work", set_faq:"Questions & help", set_review:"Leave a review", set_lang:"Language", set_channel:"SlideLab channel", set_none:"none",
  rv_t:"⭐ Your review", rv_x:"What did you like, what can we improve? It really helps us.", rv_ph:"Write a few words…", rv_send:"Send review", rv_pop:"The app will close and your review will go to the manager. Thank you!", rv_tag:"Review",
  fwd_pop:"The bot chat will open. Forward a lecture or assignment file there from any chat — the bot will place the order in 2 taps.",
@@ -749,7 +758,7 @@ uz:{
  qa:[["files","🎞","Mening","fayllarim"],["packs","📦","Paketlar","arzonroq"],["price","💰","Narxlar","ro‘yxati"],["works","🖼","Ishlar","namunasi"],["ask","💬","Savol","berish"],["channel","📢","Bizning","kanal"]],
  how_t:"Bu qanday ishlaydi", how:[["📝","Buyurtma berasiz","mavzu, slaydlar, muddat — 1 daqiqa"],["🎨","Bepul muqova","uslubni ko‘rasiz — hali to‘lovsiz"],["💳","To‘lov","karta yoki Telegram yulduzlari"],["🎉","Tayyor taqdimot","istalgan formatda + 2 tuzatish bepul"]],
  help_t:"🟢 MENEJER ALOQADA", help_x:"Bot emas, odam javob beradi — so‘rang", cont_t:"Davom ettirish", show_all:"Hammasi",
- files_t:"🎞 Ishlarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish",
+ files_t:"🎞 Ishlarim", files_new:"Yangi taqdimot", files_new_x:"muqova bepul", files_empty:"Bu yerda barcha taqdimotlaringiz bo‘ladi — holati va tuzatishlari bilan.", d_files:"Fayllarni chatda olish", v_btn:"Taqdimotni varaqlash", dl_t:"⬇️ Yuklab olish", dl_hint:"Formatni bosing — bot uni darhol chatga yuboradi.", dl_all:"📦 Barcha formatlar", dl_names:{pptx:"📊 PowerPoint",pdf:"📄 PDF",png:"🖼 Rasmlar",gslides:"🟢 Google Slides",canva:"🎨 Canva"}, v_close:"Yopish",
  set_packs:"Paketlar va to‘lov", set_files:"Ishlarim", set_faq:"Savollar va yordam", set_review:"Fikr qoldirish", set_lang:"Til", set_channel:"SlideLab kanali", set_none:"yo‘q",
  rv_t:"⭐ Fikringiz", rv_x:"Nima yoqdi, nimani yaxshilash kerak? Bu bizga juda yordam beradi.", rv_ph:"Bir-ikki so‘z yozing…", rv_send:"Fikrni yuborish", rv_pop:"Ilova yopiladi, fikringiz menejerga ketadi. Rahmat!", rv_tag:"Fikr",
  fwd_pop:"Bot bilan chat ochiladi. U yerga istalgan chatdan ma’ruza yoki topshiriq faylini forward qiling — bot 2 bosishda buyurtma qiladi.",
@@ -1194,7 +1203,8 @@ function renderFiles(t, esc){
 }
 function openFile(id){
   const t = T[L], o = ORDERS.find(x => x[0] === id); if (!o) return;
-  const [, topic, sl, status, price, link] = o, n = stepOf(status);
+  const [, topic, sl, status, price, link, , view, fm] = o, n = stepOf(status);
+  const fmts = String(fm || "").split(",").filter(Boolean);
   const esc = x => String(x).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const ready = ["done","edit"].includes(status);
   openSheet(`<div class="fthumb" style="background:${THUMBS[id % THUMBS.length]};aspect-ratio:16/8;font-size:17px"><span>${esc(topic)}</span></div>
@@ -1203,8 +1213,12 @@ function openFile(id){
     ${status==="cancel" ? "" : `<div class="steps">${STEPS.map((x,i)=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`}
     <div class="st">${t.st[status] || status}</div>
     ${ready ? `<div class="edit" data-id="${id}"><button>${t.ed_btn}</button><textarea rows="3" maxlength="1500" placeholder="${t.ed_ph}"></textarea><small>${t.ed_note}</small></div>` : ""}</div>
+    ${view && /^https:\/\/(www\.)?canva\.com\//.test(view) ? `<button class="dbtn pri" id="dView">👀 ${t.v_btn}</button>` : ""}
+    ${ready && fmts.length ? `<div class="dl"><b>${t.dl_t}</b><small>${t.dl_hint}</small><div class="g">${fmts.map(f => `<button data-f="${f}">${t.dl_names[f] || f.toUpperCase()}</button>`).join("")}${fmts.length > 1 ? `<button class="all" data-f="all">${t.dl_all}</button>` : ""}</div></div>` : ""}
     ${link && /^https:\/\//.test(link) ? `<button class="dbtn" id="dOpen">🔗 ${t.open}</button>` : ""}
-    <button class="dbtn" id="dChat">💬 ${ready ? t.d_files : t.go_chat}</button>`);
+    <button class="dbtn" id="dChat">💬 ${ready && !fmts.length ? t.d_files : t.go_chat}</button>`);
+  const vb = $("#dView"); if (vb) vb.onclick = () => { haptic(); openViewer(view, topic); };
+  document.querySelectorAll("#shBody .dl [data-f]").forEach(b => b.onclick = () => { haptic(); getFormat(id, b.dataset.f); });
   const box = document.querySelector("#shBody .edit");
   if (box){
     const btn = box.querySelector("button"), ta = box.querySelector("textarea");
@@ -1220,6 +1234,17 @@ function openFile(id){
   }
   const op = $("#dOpen"); if (op) op.onclick = () => { tg ? tg.openLink(link) : window.open(link); };
   $("#dChat").onclick = toChat;
+}
+function openViewer(url, title){
+  const u = url.split("#")[0];
+  $("#vFrame").src = u + (u.includes("?") ? "&" : "?") + "embed";
+  $("#vTitle").textContent = title; $("#viewer").classList.add("on");
+}
+function closeViewer(){ $("#viewer").classList.remove("on"); $("#vFrame").src = "about:blank"; }
+function getFormat(id, f){
+  if (!inTg){ alert(T[L].no_tg); return; }
+  if (linkMode){ tg.openTelegramLink(`https://t.me/${BOT}?start=get_${id}_${f}`); setTimeout(() => tg.close(), 300); return; }
+  tg.sendData(JSON.stringify({type:"get", id, fmt:f}));
 }
 function toChat(){ if (tg){ tg.openTelegramLink(`https://t.me/${BOT}`); setTimeout(() => tg.close(), 300); } }
 function renderHome(t){
@@ -1320,6 +1345,7 @@ function go(tab){
   renderForm();
 }
 function openSheet(html){ $("#shBody").innerHTML = html; $("#sheet").classList.add("on"); if (inTg) tg.BackButton.show(); }
+document.addEventListener("click", e => { if (e.target && e.target.id === "vClose") closeViewer(); });
 function closeSheet(){ $("#sheet").classList.remove("on"); }
 $("#shBg").onclick = closeSheet;
 window.addEventListener("scroll", () => document.body.classList.toggle("scrolled", window.scrollY > 160), {passive:true});
@@ -1346,7 +1372,7 @@ if (inTg){
   try { tg.isVersionAtLeast && tg.isVersionAtLeast("7.7") || tg.enableClosingConfirmation && tg.enableClosingConfirmation(); } catch(e){}
   try { tg.setHeaderColor("#0F1B2D"); tg.setBackgroundColor("#0F1B2D"); tg.setBottomBarColor && tg.setBottomBarColor("#0F1B2D"); } catch(e){}
   tg.MainButton.onClick(submit);
-  tg.BackButton.onClick(() => { if ($("#sheet").classList.contains("on")){ closeSheet(); if (TAB==="home") tg.BackButton.hide(); return; } go(TAB==="faq" ? "me" : "home"); });
+  tg.BackButton.onClick(() => { if ($("#viewer").classList.contains("on")){ closeViewer(); return; } if ($("#sheet").classList.contains("on")){ closeSheet(); if (TAB==="home") tg.BackButton.hide(); return; } go(TAB==="faq" ? "me" : "home"); });
 }
 render();
 initGallery();
