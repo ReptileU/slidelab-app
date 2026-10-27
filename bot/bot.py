@@ -2425,6 +2425,7 @@ def set_stage(oid, stage: str, **extra) -> dict | None:
     if not o:
         return None
     o["stage"] = stage
+    o["stage_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
     o.update(extra)
     save_orders(db)
     sync_brief(o)
@@ -2488,6 +2489,145 @@ async def watch_reviews(bot: Bot) -> None:
                 set_stage(oid, kind + "_review")
         except Exception as e:  # noqa: BLE001
             logging.exception("Проверка папки заказов: %s", e)
+
+
+# ───── СТОРОЖ: заказ застрял или не сделан → предупредить вас и дать кнопку «Переделать» ─────
+STUCK_HOURS = float(os.getenv("STUCK_HOURS", "3") or 3)      # сколько ждать результат по *_todo
+STUCK_REPEAT_H = 12                                           # повторное напоминание
+
+
+def _hours_since(o: dict) -> float:
+    try:
+        t = datetime.strptime(o.get("stage_at") or "", "%Y-%m-%d %H:%M")
+    except ValueError:
+        st = WORK_DIR / str(o["id"]) / "status.json"
+        if not st.exists():
+            return 0.0
+        t = datetime.fromtimestamp(st.stat().st_mtime)
+    return (datetime.now() - t).total_seconds() / 3600
+
+
+def stuck_reason(o: dict) -> tuple[str, str] | None:
+    """(ключ, текст) — что не так с заказом, или None, если всё идёт как надо."""
+    if o.get("hidden") or o.get("no_alert") or o.get("status") in ("done", "cancel") or o.get("stage") == "done":
+        return None
+    oid, stage = str(o["id"]), o.get("stage")
+    if not stage:
+        return ("legacy", "заказ не попал в автоматическую работу: создан до запуска конвейера, "
+                          "задания (brief.json) нет — Claude его не видит")
+    if stage in TODO_STAGES:
+        rv = WORK_DIR / oid / "review"
+        fail = rv / "failed.json"
+        if fail.exists():
+            try:
+                why = json.loads(fail.read_text(encoding="utf-8")).get("reason", "")
+            except Exception:  # noqa: BLE001
+                why = ""
+            return (f"{stage}|failed", f"Claude не смог сделать {KIND_ACC[TODO_STAGES[stage]]}: {why or 'причина не указана'}")
+        if (rv / "review.json").exists():
+            return None
+        h = _hours_since(o)
+        if h >= STUCK_HOURS:
+            return (f"{stage}|late", f"{KIND_RU[TODO_STAGES[stage]]}: результата нет уже {h:.0f} ч "
+                                     f"(Claude берёт заказы каждые 2 часа с 9:27 до 23:27)")
+    return None
+
+
+def stuck_kb(oid, legacy: bool) -> InlineKeyboardMarkup:
+    kb = InlineKeyboardBuilder()
+    if legacy:
+        kb.button(text="🎨 Сделать обложку", callback_data=f"stk:{oid}:cover_todo")
+        kb.button(text="📊 Сделать всю презентацию", callback_data=f"stk:{oid}:deck_todo")
+    else:
+        kb.button(text="🔁 Переделать", callback_data=f"stk:{oid}:redo")
+    kb.button(text="🙈 Не напоминать", callback_data=f"stk:{oid}:mute")
+    kb.adjust(1)
+    return kb.as_markup()
+
+
+async def watch_stuck(bot: Bot) -> None:
+    await asyncio.sleep(60)
+    while True:
+        try:
+            db = load_orders()
+            changed = False
+            for o in db["orders"].values():
+                r = stuck_reason(o)
+                if not r:
+                    continue
+                key, why = r
+                last = o.get("alerted_at", "")
+                again = True
+                if o.get("alerted") == key and last:
+                    try:
+                        again = (datetime.now() - datetime.strptime(last, "%Y-%m-%d %H:%M")).total_seconds() > STUCK_REPEAT_H * 3600
+                    except ValueError:
+                        pass
+                if not again:
+                    continue
+                await bot.send_message(
+                    ADMIN_ID, f"⚠️ <b>Заказ #{o['id']} не сделан</b>\n«{html.escape(str(o.get('topic', ''))[:80])}»\n\n"
+                              f"{html.escape(why)[:600]}", reply_markup=stuck_kb(o["id"], key == "legacy"))
+                o["alerted"], o["alerted_at"] = key, datetime.now().strftime("%Y-%m-%d %H:%M")
+                changed = True
+            if changed:
+                save_orders(db)
+        except Exception as e:  # noqa: BLE001
+            logging.exception("Сторож заказов: %s", e)
+        await asyncio.sleep(600)
+
+
+def ensure_brief(o: dict) -> None:
+    """Для старых заказов без задания — собрать brief.json из того, что есть в базе."""
+    f = odir(o["id"]) / "brief.json"
+    if f.exists():
+        return
+    t = T["ru"]
+    f.write_text(json.dumps({
+        "id": o["id"], "client_lang": o.get("lang", "ru"), "topic": o.get("topic", ""),
+        "slides": t["slides"].get(o.get("slides"), o.get("slides")), "deadline": "",
+        "presentation_lang": o.get("lang", "ru"), "design": "дизайн делаем мы по теме", "template_link": "",
+        "need_text": False, "need_notes": False, "need_humor": False,
+        "comment": "Старый заказ (до автоматизации): подробностей нет — делай по теме; что неясно — напиши Тимуру в message.",
+        "sources": "", "client_will_send_files": False, "client": "", "created": o.get("created", ""),
+    }, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+@router.callback_query(F.data.startswith("stk:"))
+async def stuck_action(cb: CallbackQuery):
+    if cb.from_user.id != ADMIN_ID:
+        await cb.answer()
+        return
+    _, oid, act = cb.data.split(":")
+    db = load_orders()
+    o = db["orders"].get(oid)
+    if not o:
+        await cb.answer("Заказ не найден", show_alert=True)
+        return
+    if act == "mute":
+        o["no_alert"] = True
+        save_orders(db)
+        await cb.message.edit_reply_markup(reply_markup=None)
+        await cb.answer("Больше не напоминаю об этом заказе")
+        return
+    stage = o.get("stage") if act == "redo" else act
+    if stage not in TODO_STAGES:
+        await cb.answer("Заказ уже в другом статусе", show_alert=True)
+        return
+    ensure_brief(o)
+    rv = WORK_DIR / oid / "review"
+    for n in ("failed.json", "claim.json"):
+        (rv / n).unlink(missing_ok=True)
+    add_note(oid, "Владелец (доработать)", "Предыдущая попытка не получилась — сделай заново.")
+    o2 = set_stage(oid, stage)
+    if o2:
+        db = load_orders()
+        db["orders"][oid].pop("alerted", None)
+        save_orders(db)
+    await cb.message.edit_reply_markup(reply_markup=None)
+    await cb.message.reply(f"🔁 #{oid} снова в работе ({KIND_ACC[TODO_STAGES[stage]]}). "
+                           f"Claude возьмёт его в ближайший запуск (каждые 2 часа, в :27).")
+    await cb.answer()
 
 
 def cover_kb(lang: str, oid) -> InlineKeyboardMarkup:
@@ -2899,6 +3039,7 @@ async def main():
     watcher = asyncio.create_task(watch_for_changes(bot, dp))
     review_task = asyncio.create_task(watch_reviews(bot))  # noqa: F841
     sync_task = asyncio.create_task(github_sync_loop(bot))  # noqa: F841
+    stuck_task = asyncio.create_task(watch_stuck(bot))  # noqa: F841
     if POST_CHANNEL:
         asyncio.create_task(setup_branding(bot))
     try:  # описание бота: до «Старт» и в профиле (ru по умолчанию, uz для узбекского Telegram)
