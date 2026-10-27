@@ -1,0 +1,25 @@
+# Этап 1: только инфраструктура для разработки.
+# Сервисы bot, api, worker и caddy добавляются на этапах 2–4.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: slidelab
+      POSTGRES_PASSWORD: slidelab
+      POSTGRES_DB: slidelab
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U slidelab"]
+      interval: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+
+volumes:
+  pgdata:

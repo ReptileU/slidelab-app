@@ -1,0 +1,18 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+dist/
+
+# Данные клиентов и состояние — только на компьютере/сервере, не в git
+data/
+orders/
+content/media/
+content/posts/state.json
+.idea/
+.DS_Store
+*.tsbuildinfo
