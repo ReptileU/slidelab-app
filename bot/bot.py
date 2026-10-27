@@ -2103,7 +2103,7 @@ async def github_sync_once(bot: Bot | None = None) -> list[str]:
         state = {}
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "slidelab-bot"}
     tree_url = f"https://api.github.com/repos/{GH_REPO}/git/trees/{GH_BRANCH}?recursive=1"
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=40)) as http:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=40), trust_env=True) as http:
         async with http.get(tree_url, headers=headers) as r:
             if r.status != 200:
                 logging.warning("GitHub sync: дерево не получено (%s)", r.status)
