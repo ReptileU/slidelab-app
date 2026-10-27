@@ -1082,7 +1082,8 @@ def decode_start_code(code: str) -> dict | None:
             "plang": {"r": "ru", "u": "uz", "e": "en"}[code[3]],
             "design": "own" if code[4] == "w" else "ours",
             "text": code[5] == "1", "notes": code[6] == "1",
-            "lang": {"u": "uz", "e": "en"}.get(code[7], "ru"),
+            "lang": {"u": "uz", "e": "en"}.get(code[7].lower(), "ru"),
+            "humor": code[7].isupper(),  # заглавная буква языка = «С юмором»
             "topic": topic + ("…" if len(code) >= 64 else ""),
         }
     except Exception:  # noqa: BLE001
@@ -1107,6 +1108,7 @@ async def handle_app_order(message: Message, state: FSMContext, d: dict):
         "plang": d.get("plang") if d.get("plang") in t["plang"] else lang,
         "design": "own" if d.get("design") == "own" else "ours",
         "need_text": bool(d.get("text")), "need_notes": bool(d.get("notes")),
+        "need_humor": bool(d.get("humor")),
         "contact": str(d.get("contact", "")).strip()[:60],
         "comment": ((f"Стиль из витрины: {str(d.get('style'))[:40]}. " if d.get("style") else "")
                     + str(d.get("comment", "")).strip())[:450],
@@ -1303,6 +1305,8 @@ async def build_summary(state: FSMContext, for_admin: bool = False) -> str:
         extras.append(t["extra_text"])
     if data.get("need_notes"):
         extras.append(t["extra_notes"])
+    if data.get("need_humor"):
+        extras.append({"uz": "😄 Hazil bilan", "en": "😄 With humor"}.get(lang, "😄 С юмором"))
     price_str = t["price_fmt_from" if is_from else "price_fmt"].format(n=fmt_sum(price))
     return t["summary"].format(
         topic=html.escape(data.get("topic", "")),
@@ -2276,7 +2280,9 @@ def write_brief(o: dict, data: dict, user) -> None:
         "presentation_lang": data.get("plang", o["lang"]),
         "design": "свой шаблон клиента" if data.get("design") == "own" else "дизайн делаем мы по теме",
         "template_link": data.get("dlink", ""), "need_text": bool(data.get("need_text")),
-        "need_notes": bool(data.get("need_notes")), "comment": data.get("comment", ""),
+        "need_notes": bool(data.get("need_notes")),
+        "need_humor": bool(data.get("need_humor")),  # стиль и база мемов — bot/memes.md на GitHub
+        "comment": data.get("comment", ""),
         "sources": data.get("sources", ""), "client_will_send_files": bool(data.get("srcfiles")),
         "client": user.full_name, "created": o["created"],
     }

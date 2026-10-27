@@ -533,6 +533,8 @@ details p{margin:0 0 15px;color:var(--muted);font-size:14px;line-height:1.5}
     <div class="q" data-t="q_extras"></div>
     <div class="tog" id="t_text"><span data-t="x_text"></span><span class="sw"></span></div>
     <div class="tog" id="t_notes"><span data-t="x_notes"></span><span class="sw"></span></div>
+    <div class="tog" id="t_humor"><span data-t="x_humor"></span><span class="sw"></span></div>
+    <div class="hint" data-t="humor_hint"></div>
 
     <div class="q lk"><span data-t="q_contact"></span> <small data-t="optional"></small></div>
     <input class="lk" id="contact" maxlength="60" inputmode="tel">
@@ -622,7 +624,7 @@ ru:{
  urgent_hint:"Срочно делаем только до 20 слайдов — чтобы не терять в качестве.",
  ready:"<b>Заполните поля со звёздочкой * — и можно отправлять.</b> Всё, что ниже, — по желанию: доп. услуги, телефон, пожелания, источники.", opt_title:"⚙️ Дополнительно", opt_tag:"НЕОБЯЗАТЕЛЬНО", q_plang:"Язык презентации", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
  q_design:"Дизайн", ds:{ours:["✨ Уникальный дизайн под мою тему","придумаем стиль специально для вас"],own:["📎 По моему шаблону","ссылка Canva, Google Slides, Figma — откуда угодно, или файл"]},
- q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +5 000", x_notes:"📝 Конспект для выступления · +5 000",
+ q_extras:"Доп. услуги", x_text:"✍️ Текст под ключ · +5 000", x_notes:"📝 Конспект для выступления · +5 000", x_humor:"😄 С юмором — актуальные мемы · бесплатно", humor_hint:"Добавим в рассказ уместные мемы и смешные примеры по теме. Без мата и пошлости — всё цензурно, но понятно. Для серьёзных тем (война, трагедии, болезни) юмор не добавляем.",
  q_contact:"Телефон", ph_contact:"+998 __ ___ __ __", optional:"(необязательно — напишем в Telegram)", optional2:"(необязательно)",
  q_comment:"Пожелания", ph_comment:"Требования преподавателя, цвета, примеры…",
  files_hint:"📎 Сохранять файлы на телефон не нужно: после заявки просто перешлите их боту из любого чата — группы, канала, лички. Подходят PDF, Word, PowerPoint, Excel, фото, видео, аудио, архивы и ссылки.",
@@ -695,7 +697,7 @@ en:{
  urgent_hint:"Urgent orders are up to 20 slides only — so quality doesn't suffer.",
  ready:"<b>Fill in the fields marked * — and you can send.</b> Everything below is optional: extras, phone, wishes, sources.", opt_title:"⚙️ Additional", opt_tag:"OPTIONAL", q_plang:"Presentation language", pl:{ru:"Русский",uz:"O‘zbek",en:"English"},
  q_design:"Design", ds:{ours:["✨ A unique design for my topic","we'll create a style just for you"],own:["📎 In my template","a Canva, Google Slides, Figma link — from anywhere — or a file"]},
- q_extras:"Extras", x_text:"✍️ Full text written for you · +5 000", x_notes:"📝 Speaker notes · +5 000",
+ q_extras:"Extras", x_text:"✍️ Full text written for you · +5 000", x_notes:"📝 Speaker notes · +5 000", x_humor:"😄 With humor — trending memes · free", humor_hint:"We weave fitting memes and funny real-life examples into the story. No swearing or vulgarity — clean but recognizable. No humor for serious topics (war, tragedies, illness).",
  q_contact:"Phone", ph_contact:"+998 __ ___ __ __", optional:"(optional — we'll message you in Telegram)", optional2:"(optional)",
  q_comment:"Wishes", ph_comment:"Teacher's requirements, colours, examples…",
  files_hint:"📎 No need to save files to your phone: after the request, just forward them to the bot from any chat — group, channel, DM. PDF, Word, PowerPoint, Excel, photos, video, audio, archives and links all work.",
@@ -768,7 +770,7 @@ uz:{
  urgent_hint:"Shoshilinch faqat 20 slaydgacha — sifatni yo‘qotmaslik uchun.",
  ready:"<b>Yulduzchali * maydonlarni to‘ldiring — va yuborish mumkin.</b> Pastdagilar — ixtiyoriy: qo‘shimcha xizmatlar, telefon, istaklar, manbalar.", opt_title:"⚙️ Qo‘shimcha", opt_tag:"IXTIYORIY", q_plang:"Taqdimot tili", pl:{ru:"Rus",uz:"O‘zbek",en:"Ingliz"},
  q_design:"Dizayn", ds:{ours:["✨ Mavzuimga noyob dizayn","uslubni aynan siz uchun o‘ylab topamiz"],own:["📎 Mening shablonim bo‘yicha","Canva, Google Slides, Figma havolasi — istalgan joydan, yoki fayl"]},
- q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +5 000", x_notes:"📝 Chiqish uchun konspekt · +5 000",
+ q_extras:"Qo‘shimcha xizmatlar", x_text:"✍️ Matnni yozib berish · +5 000", x_notes:"📝 Chiqish uchun konspekt · +5 000", x_humor:"😄 Hazil bilan — dolzarb memlar · bepul", humor_hint:"Mavzuga mos memlar va kulgili misollar qo‘shamiz. So‘kinish va odobsizliksiz — hammasi senzurali, lekin tushunarli. Jiddiy mavzularda (urush, fojialar, kasalliklar) hazil qo‘shilmaydi.",
  q_contact:"Telefon", ph_contact:"+998 __ ___ __ __", optional:"(ixtiyoriy — Telegramda yozamiz)", optional2:"(ixtiyoriy)",
  q_comment:"Istaklar", ph_comment:"O‘qituvchi talablari, ranglar, namunalar…",
  files_hint:"📎 Fayllarni telefonga saqlash shart emas: arizadan so‘ng ularni istalgan chatdan — guruh, kanal, shaxsiy — botga forward qiling. PDF, Word, PowerPoint, Excel, rasm, video, audio, arxiv va havolalar mos.",
@@ -981,7 +983,7 @@ function renderTracker(t){
   const m = document.querySelector("#tracker .more"); if (m) m.onclick = () => go("files");
 }
 const stepOf = x => x === "edit" ? 2 : STEPS.indexOf(x);
-const st = {style:null, srcfiles:false, slides:null, deadline:null, plang:null, design:null, text:false, notes:false};
+const st = {style:null, srcfiles:false, slides:null, deadline:null, plang:null, design:null, text:false, notes:false, humor:false};
 const $ = s => document.querySelector(s);
 const fmt = n => n.toLocaleString("ru-RU").replace(/ |,/g," ");
 const haptic = () => { try { tg && tg.HapticFeedback && tg.HapticFeedback.selectionChanged(); } catch(e){} };
@@ -1053,6 +1055,7 @@ function renderForm(){
   $("#ownBox").style.display = st.design === "own" ? "block" : "none";
   $("#t_text").classList.toggle("on", st.text);
   $("#t_notes").classList.toggle("on", st.notes);
+  $("#t_humor").classList.toggle("on", st.humor);
   $("#t_srcfiles").classList.toggle("on", st.srcfiles);
   const p = price();
   $("#sum").textContent = p === null ? "—" : (bySub() ? (p ? "+"+fmt(p)+t.sum : "0"+t.sum) : fmt(p)+t.sum);
@@ -1079,7 +1082,7 @@ function updateButton(){
 // Код заявки для /start (до 64 символов): o + выбор + тема в base64url
 function startCode(d){
   const code = "o" + {s10:1,s20:2,s30:3}[d.slides] + {d1:1,d2:2,d3:3}[d.deadline] +
-    {ru:"r",uz:"u",en:"e"}[d.plang] + (d.design==="own"?"w":"o") + (d.text?1:0) + (d.notes?1:0) + ({uz:"u",en:"e"}[d.lang]||"r");
+    {ru:"r",uz:"u",en:"e"}[d.plang] + (d.design==="own"?"w":"o") + (d.text?1:0) + (d.notes?1:0) + (l => d.humor ? l.toUpperCase() : l)({uz:"u",en:"e"}[d.lang]||"r");
   let bytes = new TextEncoder().encode(d.topic), max = Math.floor((64 - code.length) * 6 / 8);
   if (bytes.length > max){ bytes = bytes.slice(0, max); while (bytes.length && (bytes[bytes.length-1] & 0xC0) === 0x80) bytes = bytes.slice(0,-1); if (bytes.length && bytes[bytes.length-1] >= 0xC0) bytes = bytes.slice(0,-1); }
   let bin = ""; bytes.forEach(b => bin += String.fromCharCode(b));
@@ -1090,7 +1093,7 @@ function submit(){
   const t = T[L];
   if (!valid()) { showMissing(); return; }
   const data = {v:1, lang:L, topic:$("#topic").value.trim().slice(0,300), slides:st.slides, deadline:st.deadline,
-    plang:st.plang, design:st.design, text:st.text, notes:st.notes,
+    plang:st.plang, design:st.design, text:st.text, notes:st.notes, humor:st.humor,
     contact:$("#contact").value.trim().slice(0,60), comment:$("#comment").value.trim().slice(0,400),
     sources:$("#sources").value.trim().slice(0,1500), srcfiles:st.srcfiles, style: st.style ? T.ru.styles[st.style][0] : "", dlink: st.design==="own" ? $("#dlink").value.trim().slice(0,500) : ""};
   if (!inTg){ alert(t.no_tg); return; }
@@ -1327,6 +1330,7 @@ document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.datas
 document.querySelectorAll(".lang button").forEach(b => b.onclick = () => { L = b.dataset.l; haptic(); render(); });
 $("#t_text").onclick = () => { st.text=!st.text; haptic(); renderForm(); };
 $("#t_notes").onclick = () => { st.notes=!st.notes; haptic(); renderForm(); };
+$("#t_humor").onclick = () => { st.humor=!st.humor; haptic(); renderForm(); };
 $("#t_srcfiles").onclick = () => { st.srcfiles=!st.srcfiles; haptic(); renderForm(); };
 $("#topic").oninput = updateButton;
 $("#fallbackBtn").onclick = submit;
