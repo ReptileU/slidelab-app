@@ -57,8 +57,9 @@ tests/             113 тестов: правила, конвейер, API, ск
 Остановить всё — `Ctrl+C` или закрыть окно. Логи — в `data/logs/` (`bot.log`, `api.log`, `tunnel.log`).
 Временная ссылка живёт, пока открыто окно; при следующем запуске будет новая — кнопка меню обновится сама.
 
-**Windows:** двойной клик по `start_windows.bat` — то же самое, кроме временной ссылки
-(бот работает со старой витриной на GitHub Pages, `LEGACY_WEBAPP=true`).
+**Windows:** двойной клик по `start_windows.bat` — делает всё то же самое (сама работа — в `start_windows.ps1`,
+PowerShell есть в любой Windows 10/11). Для временной ссылки: `winget install Cloudflare.cloudflared`,
+для PostgreSQL — Docker Desktop, для сборки Mini App — Node.js. Без них бот всё равно запустится на SQLite.
 
 ### Перенос данных из прежнего бота
 
