@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     # true — старая витрина index.html (кнопка у клавиатуры + sendData), false — новая Mini App
     legacy_webapp: bool = True
     api_cors_origins: Annotated[list[str], NoDecode] = Field(default_factory=list)
-    menu_button: str = "📊 SlideLab"  # кнопка меню слева от поля ввода: значок — эмодзи в начале подписи
+    menu_button: str = "SlideLab"  # кнопка меню слева от поля ввода (открывает Mini App)
     dev_tg_id: int | None = None  # только для разработки в браузере без Telegram
     init_data_ttl: int = 24 * 60 * 60
 
