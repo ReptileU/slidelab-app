@@ -54,7 +54,7 @@ if ((EnvValue "DATABASE_URL") -like "*postgresql*" -and (Has "docker")) {
 
 Step "Библиотеки и база..."
 uv sync --python 3.12 --no-dev -q
-uv run alembic upgrade head | Out-Null
+uv run --no-dev python -m alembic upgrade head | Out-Null
 uv run python -m slidelab.core.seed
 
 # Mini App: собираем, если сборки нет или код новее неё

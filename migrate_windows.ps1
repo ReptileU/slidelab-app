@@ -77,10 +77,10 @@ Step "Библиотеки..."
 uv sync --python 3.12 --no-dev -q
 if ($LASTEXITCODE -ne 0) { Fail "Библиотеки не установились (нужен интернет)" }
 Step "База..."
-uv run alembic upgrade head
-uv run python -m slidelab.core.seed
+uv run --no-dev python -m alembic upgrade head
+uv run --no-dev python -m slidelab.core.seed
 Step "Переношу заказы, клиентов и пакеты из старого бота..."
-uv run python -m slidelab.tools.import_legacy "$Old"
+uv run --no-dev python -m slidelab.tools.import_legacy "$Old"
 if ($LASTEXITCODE -ne 0) { Fail "Перенос заказов не удался — старый бот не тронут, можно вернуть start_bot.bat" }
 
 # 4) Посты канала и картинки
