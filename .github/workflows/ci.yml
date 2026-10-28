@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "rewrite/**"]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: slidelab
+          POSTGRES_PASSWORD: slidelab
+          POSTGRES_DB: slidelab_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U slidelab"
+          --health-interval 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --python 3.12
+      - run: uv run ruff check src tests alembic
+      - run: uv run ruff format --check src tests alembic
+      - run: uv run mypy src
+      - name: Тесты на SQLite
+        run: uv run pytest -q
+      - name: Тесты на PostgreSQL
+        run: uv run pytest -q
+        env:
+          TEST_DATABASE_URL: postgresql+asyncpg://slidelab:slidelab@localhost:5432/slidelab_test
+      - name: Миграции совпадают с моделями
+        run: uv run alembic upgrade head && uv run alembic check
+        env:
+          DATABASE_URL: postgresql+asyncpg://slidelab:slidelab@localhost:5432/slidelab_test
+
+  webapp:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: webapp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+      - run: npm ci
+      - run: npm run build

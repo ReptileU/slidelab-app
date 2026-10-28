@@ -1,7 +1,7 @@
 # Секреты и данные клиентов — никогда не загружать
-bot/settings.txt
-settings.txt
 .env
+settings.txt
+bot/settings.txt
 bot/orders/
 bot/orders.json
 bot/orders.csv
@@ -9,5 +9,19 @@ bot/subs.json
 bot/posts/state.json
 bot/media/
 bot/.venv/
+data/
+orders/
+content/media/
+content/posts/state.json
+
+.venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+dist/
+.idea/
+.DS_Store
+*.tsbuildinfo

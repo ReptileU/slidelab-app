@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <title>SlideLab</title>
+    <script>
+      // Если приложение упадёт до или во время запуска — показываем причину на экране
+      // и отправляем её на сервер, а не оставляем пустой экран.
+      (function () {
+        function report(message) {
+          try {
+            var root = document.getElementById("root");
+            if (root && !root.childElementCount) {
+              root.innerHTML =
+                '<div style="padding:24px;font:15px -apple-system,sans-serif;color:#888;white-space:pre-wrap">' +
+                "SlideLab не запустился.\n\n" + String(message).replace(/</g, "&lt;") + "</div>";
+            }
+            var tg = window.Telegram && window.Telegram.WebApp;
+            fetch("./api/client-errors", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                message: String(message).slice(0, 2000),
+                ua: navigator.userAgent,
+                tg_version: tg ? tg.version : null,
+                platform: tg ? tg.platform : null,
+                url: location.href.slice(0, 300),
+              }),
+            });
+          } catch (e) {}
+        }
+        window.addEventListener("error", function (e) {
+          report((e.error && e.error.stack) || e.message);
+        });
+        window.addEventListener("unhandledrejection", function (e) {
+          report((e.reason && e.reason.stack) || e.reason);
+        });
+        window.__slReport = report;
+      })();
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
