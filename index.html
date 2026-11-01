@@ -44,6 +44,11 @@
   const tr = code.startsWith("uz") ? L.uz : code.startsWith("en") ? L.en : null;
   if (tr) { document.getElementById("t").textContent = tr[0]; document.getElementById("d").textContent = tr[1]; document.getElementById("b").textContent = tr[2]; }
   try { if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#000000"); tg.setBackgroundColor("#000000"); } } catch (e) {}
+  // Внутри Telegram страница не задерживается: сразу закрывается, и человек остаётся в чате с ботом,
+  // где новое приложение открывается кнопкой «SlideLab».
+  if (tg && tg.initData) {
+    try { tg.close(); } catch (e) {}
+  }
   document.getElementById("b").onclick = () => {
     if (tg && tg.openTelegramLink) { tg.openTelegramLink(BOT); setTimeout(() => tg.close(), 300); }
     else { location.href = BOT; }
