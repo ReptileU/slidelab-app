@@ -166,8 +166,10 @@ async def show_examples(message: Message, user: User, flows: Flows) -> None:
     folder = flows.settings.content_dir / "portfolio"
     images = sorted(p for p in folder.iterdir() if p.suffix.lower() in IMAGE_EXT)[:10] if folder.is_dir() else []
     if images:
-        media = [InputMediaPhoto(media=FSInputFile(p)) for p in images]
-        media[0].caption = t(user.lang, "examples")
+        media = [
+            InputMediaPhoto(media=FSInputFile(p), caption=t(user.lang, "examples") if n == 0 else None)
+            for n, p in enumerate(images)
+        ]
         try:
             await message.answer_media_group(media)  # type: ignore[arg-type]
         except Exception as e:

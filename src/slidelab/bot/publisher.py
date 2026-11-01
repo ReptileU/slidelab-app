@@ -24,6 +24,7 @@
 
 import asyncio
 import hashlib
+import html
 import json
 import logging
 from datetime import datetime
@@ -205,9 +206,11 @@ async def send_post(bot: Bot, chat_id, post: dict, reply_markup=None) -> dict:
         m = await bot.send_message(chat_id, text, reply_markup=reply_markup)
         return {"ids": [p.message_id, m.message_id], "kind": "photo+text", "text_id": m.message_id}
 
-    media = [InputMediaPhoto(media=FSInputFile(i)) for i in imgs]
-    if fits:
-        media[0].caption = text
+    # InputMediaPhoto в aiogram 3 неизменяемый — подпись задаём сразу при создании
+    media = [
+        InputMediaPhoto(media=FSInputFile(i), caption=text if (fits and n == 0) else None)
+        for n, i in enumerate(imgs)
+    ]
     msgs = await bot.send_media_group(chat_id, media)
     ids = [m.message_id for m in msgs]
     if fits and reply_markup is None:
@@ -357,7 +360,7 @@ async def tick(bot: Bot) -> None:
                 state[pid] = {**st, "error": str(e)}
                 await bot.send_message(
                     admin,
-                    f"⚠️ Не удалось опубликовать <code>{pid}</code>: {e}\n"
+                    f"⚠️ Не удалось опубликовать <code>{html.escape(pid)}</code>: {html.escape(str(e))}\n"
                     "Проверьте, что бот — админ канала с правом публикации.",
                 )
             changed = True
@@ -431,7 +434,7 @@ async def on_review(cb: CallbackQuery, bot: Bot):
             except Exception as e:
                 logging.exception("Ошибка редактирования")
                 st["status"] = "published"
-                await cb.message.answer(f"⚠️ Не удалось изменить пост: {e}")
+                await cb.message.answer(f"⚠️ Не удалось изменить пост: {html.escape(str(e))}")
         state[pid] = st
         save_state(state)
         await cb.answer()
@@ -462,7 +465,7 @@ async def on_review(cb: CallbackQuery, bot: Bot):
         except Exception as e:
             logging.exception("Ошибка публикации")
             await cb.message.answer(
-                f"⚠️ Не удалось опубликовать: {e}\nПроверьте, что бот — админ канала с правом публикации."
+                f"⚠️ Не удалось опубликовать: {html.escape(str(e))}\nПроверьте, что бот — админ канала с правом публикации."
             )
     save_state(state)
     await cb.answer()
