@@ -153,6 +153,28 @@ async def set_profile(bot: Bot, settings: Settings) -> None:
             await bot.set_my_short_description(short_description=short, language_code=code)
 
 
+async def reset_menu_buttons(bot: Bot, sm: "async_sessionmaker[AsyncSession]", settings: Settings) -> None:
+    """Прежний бот ставил каждому (и админу) личную кнопку меню со старой витриной.
+    Личная кнопка важнее общей, поэтому при запуске сбрасываем их — у всех будет общая кнопка новой Mini App."""
+    from sqlalchemy import select
+
+    from slidelab.core.models.user import User
+
+    ids: set[int] = {settings.admin_id} if settings.admin_id else set()
+    try:
+        async with sm() as session:
+            ids |= set((await session.scalars(select(User.tg_id))).all())
+    except Exception as e:
+        log.warning("Не удалось прочитать клиентов для сброса кнопки меню: %s", e)
+    done = 0
+    for tg_id in ids:
+        with contextlib.suppress(Exception):
+            await bot.set_chat_menu_button(chat_id=tg_id)
+            done += 1
+        await asyncio.sleep(0.05)
+    log.info("Кнопка меню сброшена на общую у %s чатов", done)
+
+
 def start_background(bot: Bot, dp: Dispatcher, settings: Settings) -> list["asyncio.Task[None]"]:
     sm: async_sessionmaker[AsyncSession] = dp["sessionmaker"]
     jobs = [
@@ -195,6 +217,7 @@ def main() -> None:
         except Exception as e:
             log.warning("Профиль бота не обновлён: %s", e)
         dp["jobs"] = start_background(bot, dp, settings)
+        dp["jobs"].append(asyncio.create_task(reset_menu_buttons(bot, dp["sessionmaker"], settings)))
 
     async def on_shutdown() -> None:
         jobs = dp.workflow_data.get("jobs", [])
