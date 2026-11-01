@@ -849,3 +849,12 @@ img, video, svg { max-width: 100%; height: auto; }
 .offer .offer-t { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: rgba(245,245,247,.7); display: flex; align-items: center; gap: 6px; }
 .offer .offer-s { font-size: 13px; color: rgba(245,245,247,.55); margin-top: 2px; }
 .hero .offer .price-new { color: #fff; }
+
+/* «Назад» на странице — когда своей кнопки Telegram нет (открыто через «Открыть») */
+.page-back {
+  position: fixed; z-index: 30; left: 12px; top: calc(var(--safe-top) + 10px);
+  width: 36px; height: 36px; border-radius: 50%; font-size: 26px; line-height: 32px; padding-bottom: 3px;
+  background: var(--glass, rgba(40,40,42,.8)); color: inherit; border: 0.5px solid var(--separator, rgba(255,255,255,.12));
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.sl-via .page { padding-top: calc(var(--safe-top) + 54px); }

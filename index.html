@@ -77,7 +77,9 @@
   readLink().then((url) => {
     if (!url) return fallback();
     const target = new URL(url);
-    target.search = location.search;
+    const params = new URLSearchParams(location.search);
+    params.set("sl_via", "open");
+    target.search = params.toString();
     target.hash = location.hash;
     location.replace(target.toString());
   });

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
-import { haptic, tg } from "../lib/tg";
+import { haptic, nativeButtons, tg } from "../lib/tg";
 
 /** Главная кнопка экрана. В Telegram — нативная MainButton, в браузере — кнопка внизу. */
 export function MainButton({
@@ -25,7 +25,7 @@ export function MainButton({
   blocked.current = disabled || loading;
 
   useEffect(() => {
-    if (!tg) return;
+    if (!tg || !nativeButtons) return;
     const mb = tg.MainButton;
     const click = () => {
       if (blocked.current) {
@@ -43,7 +43,7 @@ export function MainButton({
   }, []);
 
   useEffect(() => {
-    if (!tg) return;
+    if (!tg || !nativeButtons) return;
     const css = getComputedStyle(document.documentElement);
     tg.MainButton.setParams({
       text,
@@ -56,7 +56,7 @@ export function MainButton({
     else tg.MainButton.hideProgress();
   }, [text, disabled, muted, loading]);
 
-  if (tg) return null;
+  if (nativeButtons) return null;
   return createPortal(
     <div className="bottom-bar">
       <button
@@ -77,7 +77,7 @@ export function BackButton({ onClick }: { onClick: () => void }) {
   const handler = useRef(onClick);
   handler.current = onClick;
   useEffect(() => {
-    if (!tg) return;
+    if (!tg || !nativeButtons) return;
     const click = () => handler.current();
     tg.BackButton.onClick(click);
     tg.BackButton.show();
@@ -86,5 +86,12 @@ export function BackButton({ onClick }: { onClick: () => void }) {
       tg?.BackButton.hide();
     };
   }, []);
-  return null;
+  if (nativeButtons || !tg) return null;
+  // Открыто через «Открыть»: своей кнопки «Назад» у Telegram нет — показываем на странице
+  return createPortal(
+    <button className="page-back" aria-label="Назад" onClick={() => handler.current()}>
+      ‹
+    </button>,
+    document.body,
+  );
 }

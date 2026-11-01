@@ -65,6 +65,31 @@ export function closeApp(): void {
   }
 }
 export const tg: WebApp | undefined = inTelegram ? webApp : undefined;
+
+/**
+ * Открыто кнопкой «Открыть» (главное приложение в BotFather): страница на GitHub перешла сюда по временной ссылке.
+ * После такого перехода Telegram не показывает свои кнопки (MainButton, «Назад»), поэтому рисуем их на странице.
+ */
+export const redirected: boolean = (() => {
+  try {
+    if (new URLSearchParams(location.search).has("sl_via")) {
+      sessionStorage.setItem("sl_via", "1");
+      return true;
+    }
+    return sessionStorage.getItem("sl_via") === "1";
+  } catch {
+    return new URLSearchParams(location.search).has("sl_via");
+  }
+})();
+/** Свои кнопки Telegram работают: открыто напрямую из Telegram, без перехода. */
+export const nativeButtons = !!tg && !redirected;
+if (tg && redirected) {
+  try {
+    document.documentElement.classList.add("sl-via");
+  } catch {
+    /* без класса — просто без отступа под «Назад» */
+  }
+}
 export const initData = tg?.initData ?? "";
 
 export const haptic = {
