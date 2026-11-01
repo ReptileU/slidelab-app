@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from slidelab.bot.routers import legacy as legacy_router
 from slidelab.bot.routers import order as order_flow
 from slidelab.bot.routers import orders as my_orders
+from slidelab.config import Settings
 from slidelab.core import repositories as repo
 from slidelab.core.enums import Lang, PlanCode
 from slidelab.core.i18n import DEFAULT, t
@@ -34,11 +35,24 @@ IMAGE_EXT = (".jpg", ".jpeg", ".png", ".webp")
 
 @router.message(CommandStart())
 async def cmd_start(
-    message: Message, command: CommandObject, state: FSMContext, session: AsyncSession, user: User, flows: Flows
+    message: Message,
+    command: CommandObject,
+    state: FSMContext,
+    session: AsyncSession,
+    user: User,
+    flows: Flows,
+    settings: Settings,
 ) -> None:
     await state.clear()
     await legacy_router.reset_menu_button(message)
     payload = command.args or ""
+
+    # Пришли из кнопки «Открыть» (старое главное приложение в BotFather) — даём кнопку на актуальное приложение
+    if payload == "app" and settings.webapp_url:
+        await message.answer(
+            t(user.lang, "open_app_hint"), reply_markup=kb.open_app(user.lang or Lang.RU, settings.webapp_url)
+        )
+        return
 
     action = legacy.parse_start_payload(payload)
     if isinstance(action, legacy.LegacyOrder):

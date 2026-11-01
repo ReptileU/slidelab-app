@@ -21,6 +21,7 @@ TEXTS: dict[str, str] = {
     "btn_examples": "Examples",
     "btn_help": "Questions",
     "btn_open_app": "Open SlideLab",
+    "open_app_hint": "Open SlideLab with the button below. Next time use the “SlideLab” button next to the message field.",
     # --- prices and packs ---
     "prices": (
         "⟦price⟧<b>Prices</b>\n\n"

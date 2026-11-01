@@ -49,7 +49,7 @@
   // Внутри Telegram страница не задерживается: сразу закрывается, и человек остаётся в чате с ботом,
   // где новое приложение открывается кнопкой «SlideLab».
   if (tg && tg.initData) {
-    try { tg.close(); } catch (e) {}
+    try { tg.openTelegramLink(BOT + "?start=app"); setTimeout(() => tg.close(), 400); } catch (e) {}
   }
   document.getElementById("b").onclick = () => {
     if (tg && tg.openTelegramLink) { tg.openTelegramLink(BOT); setTimeout(() => tg.close(), 300); }
