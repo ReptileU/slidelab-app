@@ -71,6 +71,17 @@ def staff_card(order: Order, user: User, style_name: str | None = None) -> str:
     for label, value in (("Контакт", order.contact), ("Пожелания", order.comment), ("Источники", order.sources)):
         if value:
             lines.append(f"{label}: {e(value)}")
+    plate = [
+        f"{label} {e(value)}"
+        for label, value in (
+            ("выполнил", order.title_author),
+            ("группа", order.title_group),
+            ("принял", order.title_teacher),
+        )
+        if value
+    ]
+    if plate:
+        lines.append("Титульный: " + " · ".join(plate))
     if order.has_source_files:
         lines.append("Клиент пришлёт материалы в чат")
     lines.append("")

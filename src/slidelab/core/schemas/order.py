@@ -9,6 +9,8 @@ from slidelab.core.models.order import (
     REVISION_MAX,
     SOURCES_MAX,
     TEMPLATE_URL_MAX,
+    TITLE_GROUP_MAX,
+    TITLE_NAME_MAX,
     TOPIC_MAX,
 )
 from slidelab.core.services.pricing import QuoteRequest
@@ -18,6 +20,8 @@ TemplateUrl = Annotated[str, StringConstraints(strip_whitespace=True, max_length
 Contact = Annotated[str, StringConstraints(strip_whitespace=True, max_length=CONTACT_MAX)]
 Comment = Annotated[str, StringConstraints(strip_whitespace=True, max_length=COMMENT_MAX)]
 Sources = Annotated[str, StringConstraints(strip_whitespace=True, max_length=SOURCES_MAX)]
+TitleName = Annotated[str, StringConstraints(strip_whitespace=True, max_length=TITLE_NAME_MAX)]
+TitleGroup = Annotated[str, StringConstraints(strip_whitespace=True, max_length=TITLE_GROUP_MAX)]
 RevisionText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=REVISION_MAX)]
 
 
@@ -40,6 +44,10 @@ class OrderDraft(BaseModel):
     sources: Sources | None = None
     has_source_files: bool = False
     need_humor: bool = False  # «С юмором»: мемы и смешные примеры по теме
+    # Плашка на титульном слайде (необязательно): «Выполнил(а)», «Группа», «Принял(а)»
+    title_author: TitleName | None = None
+    title_group: TitleGroup | None = None
+    title_teacher: TitleName | None = None
 
     @model_validator(mode="after")
     def _template_only_for_own(self) -> "OrderDraft":

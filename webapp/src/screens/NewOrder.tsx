@@ -17,6 +17,7 @@ type Draft = Omit<OrderDraft, "slides" | "deadline"> & {
   slides: OrderDraft["slides"] | null;
   deadline: OrderDraft["deadline"] | null;
   key: string; // ключ идемпотентности: повторная отправка не создаст второй заказ
+  title_plate?: boolean; // показать поля плашки на титульном
 };
 
 function newKey(): string {
@@ -36,6 +37,10 @@ function emptyDraft(lang: Lang): Draft {
     extra_text: false,
     extra_notes: false,
     need_humor: false,
+    title_plate: false,
+    title_author: "",
+    title_group: "",
+    title_teacher: "",
     contact: "",
     comment: "",
     sources: "",
@@ -115,7 +120,8 @@ export function NewOrder() {
 
   const submit = useMutation({
     mutationFn: () => {
-      const { key, ...fields } = draft;
+      const { key, title_plate, ...fields } = draft;
+      const plate = (v?: string | null) => (title_plate ? v?.trim() || null : null);
       const body: OrderDraft = {
         ...fields,
         slides: draft.slides!,
@@ -126,6 +132,9 @@ export function NewOrder() {
         contact: draft.contact?.trim() || null,
         comment: draft.comment?.trim() || null,
         sources: draft.sources?.trim() || null,
+        title_author: plate(draft.title_author),
+        title_group: plate(draft.title_group),
+        title_teacher: plate(draft.title_teacher),
       };
       return api.createOrder(body, key);
     },
@@ -290,6 +299,14 @@ export function NewOrder() {
                 on={draft.need_humor}
                 onChange={(v) => set("need_humor", v)}
               />
+              <ToggleCell title={t("x_plate")} subtitle={t("x_plate_x")} on={!!draft.title_plate} onChange={(v) => set("title_plate", v)} />
+              {draft.title_plate && (
+                <>
+                  <TextInput value={draft.title_author ?? ""} onChange={(v) => set("title_author", v)} label={t("f_author")} placeholder={t("f_author_ph")} maxLength={120} />
+                  <TextInput value={draft.title_group ?? ""} onChange={(v) => set("title_group", v)} label={t("f_group")} placeholder={t("f_group_ph")} maxLength={60} />
+                  <TextInput value={draft.title_teacher ?? ""} onChange={(v) => set("title_teacher", v)} label={t("f_teacher")} placeholder={t("f_teacher_ph")} maxLength={120} />
+                </>
+              )}
             </Group>
           </Section>
           {shown && <PriceCard q={shown} old={full} />}
@@ -309,6 +326,13 @@ export function NewOrder() {
                 value={draft.design === "own" ? t("ds_own") : style?.name ?? t("ds_ours")}
                 onClick={() => setStep(1)}
               />
+              {draft.title_plate && (draft.title_author || draft.title_group || draft.title_teacher) && (
+                <Cell
+                  title={t("x_plate")}
+                  subtitle={[draft.title_author, draft.title_group, draft.title_teacher].filter((x) => x?.trim()).join(" · ")}
+                  onClick={() => setStep(2)}
+                />
+              )}
             </Group>
           </Section>
 
@@ -376,7 +400,7 @@ function PriceCard({ q, old }: { q: Quote; old?: number | null }) {
             )}
           </>
         ) : (
-          <div className="row spread">
+          <div className="row spread" style={{ flexWrap: "wrap", gap: 8 }}>
             <span className="title2 tabular">
               <PriceTag now={money(q.price)} old={q.first_order_discount && old && old > q.price ? money(old) : null} sum={t("sum")} />
             </span>

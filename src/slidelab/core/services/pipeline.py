@@ -84,6 +84,12 @@ def formats_of(files: list[Path]) -> list[str]:
     return [x for x in FORMAT_ORDER if x in found] + sorted(found - set(FORMAT_ORDER))
 
 
+def title_plate(order: Order) -> dict[str, str]:
+    """{"Выполнил(а)": …, "Группа": …, "Принял(а)": …} — только заполненные клиентом строки."""
+    rows = (("Выполнил(а)", order.title_author), ("Группа", order.title_group), ("Принял(а)", order.title_teacher))
+    return {label: value for label, value in rows if value}
+
+
 class Pipeline:
     def __init__(self, work_dir: Path) -> None:
         self.root = work_dir
@@ -112,6 +118,8 @@ class Pipeline:
             "need_notes": order.extra_notes,
             "need_humor": order.need_humor,  # стиль и база мемов — bot/memes.md на GitHub
             "comment": comment,
+            # Плашка на титульном: ставить, только если есть хоть одно поле; пустые строки не показывать
+            "title_plate": title_plate(order),
             "sources": order.sources or "",
             "client_will_send_files": order.has_source_files,
             "client": client_name,

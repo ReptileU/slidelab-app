@@ -17,6 +17,7 @@ from test_orders import draft
 
 BRIEF_KEYS = {
     "id",
+    "title_plate",
     "client_lang",
     "topic",
     "slides",

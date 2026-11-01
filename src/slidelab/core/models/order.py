@@ -24,6 +24,8 @@ CONTACT_MAX = 60
 COMMENT_MAX = 400
 SOURCES_MAX = 1500
 REVISION_MAX = 1500
+TITLE_NAME_MAX = 120  # плашка на титульном: «Выполнил», «Принял»
+TITLE_GROUP_MAX = 60
 FREE_REVISIONS = 2
 
 
@@ -47,6 +49,10 @@ class Order(CreatedAtMixin, Base):
     sources: Mapped[str | None] = mapped_column(String(SOURCES_MAX))
     has_source_files: Mapped[bool] = mapped_column(default=False)
     need_humor: Mapped[bool] = mapped_column(default=False)  # «С юмором»: мемы по теме
+    # Плашка на титульном слайде — только если клиент её заполнил
+    title_author: Mapped[str | None] = mapped_column(String(TITLE_NAME_MAX))  # Выполнил(а)
+    title_group: Mapped[str | None] = mapped_column(String(TITLE_GROUP_MAX))  # Группа
+    title_teacher: Mapped[str | None] = mapped_column(String(TITLE_NAME_MAX))  # Принял(а)
     source: Mapped[OrderSource] = mapped_column(str_enum(OrderSource), default=OrderSource.CHAT)
     ui_lang: Mapped[Lang] = mapped_column(str_enum(Lang), default=Lang.RU)  # язык общения с клиентом
 

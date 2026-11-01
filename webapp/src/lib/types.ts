@@ -92,6 +92,9 @@ export interface OrderDraft {
   extra_text: boolean;
   extra_notes: boolean;
   need_humor: boolean;
+  title_author?: string | null;
+  title_group?: string | null;
+  title_teacher?: string | null;
   contact?: string | null;
   comment?: string | null;
   sources?: string | null;
