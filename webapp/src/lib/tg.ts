@@ -154,6 +154,20 @@ export function initTelegram(): void {
   safe(() => webApp.expand());
   // Свайп вниз не закрывает и не сворачивает приложение — закрыть можно только крестиком (Telegram 7.7+)
   if (webApp.isVersionAtLeast("7.7")) safe(() => webApp.disableVerticalSwipes?.());
+  // Запасной вариант для iOS и старых версий: страница всегда прокручиваемая и никогда не стоит в самом верху,
+  // поэтому жест вниз прокручивает страницу, а не утаскивает окно приложения.
+  safe(() => {
+    const root = document.documentElement;
+    root.style.minHeight = "calc(100% + 2px)";
+    const nudge = () => {
+      if (window.scrollY <= 0) window.scrollTo(0, 1);
+    };
+    window.addEventListener("touchstart", nudge, { passive: true });
+    window.addEventListener("scroll", () => {
+      if (window.scrollY <= 0) requestAnimationFrame(nudge);
+    }, { passive: true });
+    setTimeout(nudge, 300);
+  });
   // Высота видимой области от Telegram — для экранов на всю высоту на любых устройствах
   const setVh = () => {
     const h = (webApp as unknown as { viewportStableHeight?: number }).viewportStableHeight;
