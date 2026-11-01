@@ -382,3 +382,15 @@ export function Logo({ center = false, size = 34 }: { center?: boolean; size?: n
     </div>
   );
 }
+
+/** Цена: новая жирно, старая — зачёркнута красным рядом (скидка на первую презентацию). */
+export function PriceTag({ now, old, sum, big = false }: { now: string; old?: string | null; sum: string; big?: boolean }) {
+  return (
+    <span className={big ? "price-tag big" : "price-tag"}>
+      {old && <s className="price-old">{old}</s>}
+      <span className={old ? "price-new hot" : "price-new"}>
+        {now} {sum}
+      </span>
+    </span>
+  );
+}

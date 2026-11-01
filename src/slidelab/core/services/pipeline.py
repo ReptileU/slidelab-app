@@ -39,7 +39,7 @@ KIND_RU = {"cover": "Обложка", "deck": "Презентация", "edit": 
 KIND_ACC = {"cover": "обложку", "deck": "презентацию", "edit": "правки"}
 
 # Значения brief.json — по-русски, как их ждёт сессия Claude
-SLIDES_RU = {SlideTier.S10: "до 10", SlideTier.S20: "11–20", SlideTier.S30: "21–30"}
+SLIDES_RU = {SlideTier.S10: "до 15", SlideTier.S20: "16–20", SlideTier.S30: "21–30"}
 DEADLINE_RU = {
     Deadline.URGENT: "⚡ Срочно (+50%)",
     Deadline.NORMAL: "📅 Обычно — срок обсудим в чате",

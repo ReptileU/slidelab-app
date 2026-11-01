@@ -32,6 +32,11 @@ export function stepState(step: OrderStatus, status: OrderStatus): "done" | "now
   return a === b ? "now" : "todo";
 }
 
+/** Старая цена для зачёркивания: есть, только если действует скидка на первую презентацию. */
+export function tierOld(prices: Prices, tier: SlideTier, firstOrderPrice: number | null): number | null {
+  return tier === "s10" && firstOrderPrice && firstOrderPrice < prices.s10 ? prices.s10 : null;
+}
+
 /** Цена объёма для показа на шаге 2; итог всё равно считает сервер. */
 export function tierPrice(prices: Prices, tier: SlideTier, firstOrderPrice: number | null): number {
   if (tier === "s10" && firstOrderPrice) return firstOrderPrice;

@@ -8,6 +8,7 @@ TEXTS: dict[str, str] = {
         "First — a free cover. Pay only if you like it.\n\n"
         "Forward a lecture or assignment here — I'll set up the order in two taps."
     ),
+    "first_offer": "\n\n🔥 <b>First presentation — {first} UZS</b> instead of <s>{s10} UZS</s>",
     "welcome_back": "⟦logo⟧<b>SlideLab</b>\nHow can I help?",
     "error": "Something went wrong. Try again — or message @{admin}.",
     "use_buttons": "Please choose an option with the buttons above.",
@@ -25,10 +26,10 @@ TEXTS: dict[str, str] = {
     # --- prices and packs ---
     "prices": (
         "⟦price⟧<b>Prices</b>\n\n"
-        "Up to 10 slides — {s10} UZS\n"
-        "11–20 slides — {s20} UZS\n"
+        "Up to 15 slides — {s10} UZS\n"
+        "16–20 slides — {s20} UZS\n"
         "21–30 slides — {s30} UZS\n\n"
-        "First order up to 10 slides — <b>{first} UZS</b>\n\n"
+        "🔥 <b>First presentation — {first} UZS</b> instead of <s>{s10} UZS</s>\n(up to 15 slides, new clients)\n\n"
         "Urgent — +{urgent}% (up to 20 slides)\n"
         "Full text written for you — +{text}\n"
         "Speaker notes — +{notes}\n\n"
@@ -67,8 +68,8 @@ TEXTS: dict[str, str] = {
     "topic_short": "The topic is too short — at least 3 characters.",
     "topic_long": "The topic is longer than 300 characters — please shorten it.",
     "ask_slides": "<b>How many slides?</b>",
-    "slides_s10": "Up to 10",
-    "slides_s20": "11–20",
+    "slides_s10": "Up to 15",
+    "slides_s20": "16–20",
     "slides_s30": "21–30",
     "ask_deadline": "<b>Deadline</b>",
     "dl_urgent": "Urgent · +50%",

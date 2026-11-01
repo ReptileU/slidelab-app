@@ -16,7 +16,7 @@ from slidelab.bot.routers import orders as my_orders
 from slidelab.config import Settings
 from slidelab.core import repositories as repo
 from slidelab.core.enums import Lang, PlanCode
-from slidelab.core.i18n import DEFAULT, t
+from slidelab.core.i18n import DEFAULT, money, t
 from slidelab.core.models import FaqItem, PackagePlan, User
 from slidelab.core.models.base import utcnow
 from slidelab.telegram import keyboards as kb
@@ -84,7 +84,21 @@ async def route(
 
 
 async def greet(message: Message, user: User, notifier: Notifier, *, back: bool = False) -> None:
-    await message.answer(t(user.lang, "welcome_back" if back else "welcome"), reply_markup=await notifier.menu(user))
+    text = t(user.lang, "welcome_back" if back else "welcome")
+    if not back:
+        text += await first_offer(notifier, user)
+    await message.answer(text, reply_markup=await notifier.menu(user))
+
+
+async def first_offer(notifier: Notifier, user: User) -> str:
+    """Строка о скидке на первую презентацию — только новому клиенту без заказов."""
+    session = notifier.session
+    if await repo.has_orders(session, user.id):
+        return ""
+    rule = await repo.get_price_rule_row(session)
+    if not rule.first_order_s10 or rule.first_order_s10 >= rule.s10:
+        return ""
+    return t(user.lang, "first_offer", first=money(rule.first_order_s10), s10=money(rule.s10))
 
 
 @router.message(Command("cancel"))

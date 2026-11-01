@@ -8,6 +8,7 @@ TEXTS: dict[str, str] = {
         "Avval — bepul muqova. Yoqsagina to‘laysiz.\n\n"
         "Ma’ruza yoki topshiriqni shu yerga forward qiling — ikki bosishda buyurtma qilaman."
     ),
+    "first_offer": "\n\n🔥 <b>Birinchi taqdimot — {first} so‘m</b>, <s>{s10} so‘m</s> o‘rniga",
     "welcome_back": "⟦logo⟧<b>SlideLab</b>\nNima yordam kerak?",
     "error": "Nimadir xato ketdi. Qaytadan urinib ko‘ring — yoki @{admin} ga yozing.",
     "use_buttons": "Yuqoridagi tugmalardan birini tanlang.",
@@ -25,10 +26,10 @@ TEXTS: dict[str, str] = {
     # --- narxlar va paketlar ---
     "prices": (
         "⟦price⟧<b>Narxlar</b>\n\n"
-        "10 slaydgacha — {s10} so‘m\n"
-        "11–20 slayd — {s20} so‘m\n"
+        "15 slaydgacha — {s10} so‘m\n"
+        "16–20 slayd — {s20} so‘m\n"
         "21–30 slayd — {s30} so‘m\n\n"
-        "10 slaydgacha birinchi buyurtma — <b>{first} so‘m</b>\n\n"
+        "🔥 <b>Birinchi taqdimot — {first} so‘m</b>, <s>{s10} so‘m</s> o‘rniga\n(15 slaydgacha, yangi mijozlar uchun chegirma)\n\n"
         "Shoshilinch — +{urgent}% (20 slaydgacha)\n"
         "Matnni yozib berish — +{text}\n"
         "Chiqish uchun konspekt — +{notes}\n\n"
@@ -67,8 +68,8 @@ TEXTS: dict[str, str] = {
     "topic_short": "Mavzu juda qisqa — kamida 3 ta belgi.",
     "topic_long": "Mavzu 300 belgidan uzun — qisqartiring, iltimos.",
     "ask_slides": "<b>Nechta slayd?</b>",
-    "slides_s10": "10 gacha",
-    "slides_s20": "11–20",
+    "slides_s10": "15 gacha",
+    "slides_s20": "16–20",
     "slides_s30": "21–30",
     "ask_deadline": "<b>Muddat</b>",
     "dl_urgent": "Shoshilinch · +50%",

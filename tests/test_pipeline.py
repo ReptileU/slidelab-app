@@ -51,7 +51,7 @@ async def test_brief_and_status_match_old_format(
 
     brief = json.loads((tmp_path / str(order.id) / "brief.json").read_text(encoding="utf-8"))
     assert set(brief) == BRIEF_KEYS
-    assert brief["slides"] == "11–20"
+    assert brief["slides"] == "16–20"
     assert brief["design"] == "свой шаблон клиента"
     assert brief["template_link"] == "https://canva.com/t"
     assert brief["need_humor"] is True

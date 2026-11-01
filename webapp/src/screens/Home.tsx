@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import { useCatalog, useMe, useOrders, useT } from "../lib/app";
 import { money } from "../lib/i18n";
-import { hintKey, slidesKey, STATUS_BADGE, statusKey, TIERS, tierPrice } from "../lib/order";
+import { hintKey, slidesKey, STATUS_BADGE, statusKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { haptic } from "../lib/tg";
-import { Cell, Group, Img, Logo, Section, Skeleton, useGlare } from "../ui";
+import { Cell, Group, Img, Logo, PriceTag, Section, Skeleton, useGlare } from "../ui";
 
 export function Home() {
   const t = useT();
@@ -29,11 +29,15 @@ export function Home() {
         <button className="btn btn-inverse" onClick={() => go("ours")}>
           {t("cta_order")}
         </button>
-        {first && (
-          <div className="center" style={{ marginTop: 14 }}>
-            <span className="badge gold">
-              <Gift size={13} /> {t("first_badge", { price: `${money(first)} ${t("sum")}` })}
-            </span>
+        {first && c && first < c.prices.s10 && (
+          <div className="offer">
+            <div className="offer-t">
+              <Gift size={14} /> {t("first_badge")} · {t("slides_s10")}
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <PriceTag big now={money(first)} old={money(c.prices.s10)} sum={t("sum")} />
+            </div>
+            <div className="offer-s">{t("price_first")}</div>
           </div>
         )}
       </header>
@@ -120,7 +124,13 @@ export function Home() {
               <Cell
                 key={tier}
                 title={t(slidesKey(tier))}
-                value={`${money(tierPrice(c.prices, tier, first))} ${t("sum")}`}
+                value={
+                  <PriceTag
+                    now={money(tierPrice(c.prices, tier, first))}
+                    old={tierOld(c.prices, tier, first) ? money(tierOld(c.prices, tier, first)!) : null}
+                    sum={t("sum")}
+                  />
+                }
                 onClick={() => nav("/order")}
               />
             ))}

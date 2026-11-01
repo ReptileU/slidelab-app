@@ -5,11 +5,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
-import { DEADLINES, deadlineKey, estimate, slidesKey, TIERS, tierPrice } from "../lib/order";
+import { DEADLINES, deadlineKey, estimate, slidesKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { alert, haptic } from "../lib/tg";
 import type { Design, Lang, OrderDraft, Quote } from "../lib/types";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
-import { Cell, Group, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
+import { Cell, Group, PriceTag, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
 
 const DRAFT_KEY = "sl_draft";
 
@@ -109,6 +109,9 @@ export function NewOrder() {
   const local: Quote | null =
     c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, first, me.data?.package ?? null, notesFree) : null;
   const shown = (step2Ok && quote.data) || local;
+  // Цена без скидки — чтобы зачеркнуть её рядом со скидочной
+  const full: number | null =
+    c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, null, null, notesFree).price : null;
 
   const submit = useMutation({
     mutationFn: () => {
@@ -238,7 +241,13 @@ export function NewOrder() {
                 <Cell
                   key={tier}
                   title={t(slidesKey(tier))}
-                  value={`${money(tierPrice(c.prices, tier, first))} ${t("sum")}`}
+                  value={
+                    <PriceTag
+                      now={money(tierPrice(c.prices, tier, first))}
+                      old={tierOld(c.prices, tier, first) ? money(tierOld(c.prices, tier, first)!) : null}
+                      sum={t("sum")}
+                    />
+                  }
                   checked={draft.slides === tier}
                   onClick={() =>
                     setDraft((d) => ({ ...d, slides: tier, deadline: tier === "s30" && d.deadline === "urgent" ? null : d.deadline }))
@@ -283,7 +292,7 @@ export function NewOrder() {
               />
             </Group>
           </Section>
-          {shown && <PriceCard q={shown} />}
+          {shown && <PriceCard q={shown} old={full} />}
         </>
       )}
 
@@ -316,7 +325,7 @@ export function NewOrder() {
             </div>
           </Section>
 
-          {shown ? <PriceCard q={shown} /> : <Skeleton height={28} width={140} />}
+          {shown ? <PriceCard q={shown} old={full} /> : <Skeleton height={28} width={140} />}
         </>
       )}
 
@@ -352,7 +361,7 @@ export function NewOrder() {
   );
 }
 
-function PriceCard({ q }: { q: Quote }) {
+function PriceCard({ q, old }: { q: Quote; old?: number | null }) {
   const t = useT();
   return (
     <Section title={t("price_t")} footer={t("price_free_now")}>
@@ -369,7 +378,7 @@ function PriceCard({ q }: { q: Quote }) {
         ) : (
           <div className="row spread">
             <span className="title2 tabular">
-              {money(q.price)} {t("sum")}
+              <PriceTag now={money(q.price)} old={q.first_order_discount && old && old > q.price ? money(old) : null} sum={t("sum")} />
             </span>
             {q.first_order_discount && <span className="badge gold">{t("price_first")}</span>}
           </div>
