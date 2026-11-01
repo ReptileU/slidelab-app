@@ -86,7 +86,7 @@ body {
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
 }
-body { background: transparent; min-height: 100vh; }
+body { background: transparent; min-height: 100vh; min-height: var(--app-h, 100dvh); overflow-x: hidden; }
 
 button,
 input,
@@ -518,6 +518,7 @@ button.card:active, .style-card:active { transform: scale(0.97); transition-dura
   max-width: 600px;
   margin: 0 auto;
   max-height: 92vh;
+  max-height: calc(var(--app-h, 100dvh) * 0.92);
   overflow-y: auto;
   background: var(--bg);
   border-radius: 16px 16px 0 0;
@@ -792,4 +793,44 @@ body::before {
   40% { transform: translateX(5px); }
   60% { transform: translateX(-3px); }
   80% { transform: translateX(2px); }
+}
+
+/* ---------- адаптив: маленькие телефоны, планшеты, компьютер ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, video, svg { max-width: 100%; height: auto; }
+.page, .card, .sheet { overflow-wrap: anywhere; }
+
+/* узкие телефоны (iPhone SE, старые Android) */
+@media (max-width: 360px) {
+  .page { padding-left: 12px; padding-right: 12px; }
+  .large-title { font-size: 28px; line-height: 34px; }
+  .title1 { font-size: 24px; line-height: 30px; }
+  .title2 { font-size: 20px; line-height: 25px; }
+  .way-grid, .style-grid { gap: 10px 8px; }
+  .tabbar { grid-template-columns: 1fr 1fr 64px 1fr 1fr; }
+  .sheet { padding-left: 12px; padding-right: 12px; }
+}
+/* совсем узкие (до 320px) — сетки в одну колонку */
+@media (max-width: 320px) {
+  .way-grid { grid-template-columns: 1fr; }
+}
+/* планшеты и Telegram Desktop — шире контент, больше колонок */
+@media (min-width: 700px) {
+  .page { max-width: 720px; padding-left: 24px; padding-right: 24px; }
+  .sheet { max-width: 640px; border-radius: 16px; bottom: 16px; }
+  .bottom-bar .btn { max-width: 672px; }
+  .style-grid { grid-template-columns: repeat(3, 1fr); }
+  .tabbar { max-width: 720px; margin: 0 auto; border-radius: 18px 18px 0 0; }
+}
+@media (min-width: 1024px) {
+  .page { max-width: 860px; }
+  .bottom-bar .btn { max-width: 812px; }
+  .style-grid { grid-template-columns: repeat(4, 1fr); }
+  .tabbar { max-width: 860px; }
+}
+/* телефон боком — меньше отступов по высоте */
+@media (orientation: landscape) and (max-height: 500px) {
+  .page { padding-top: calc(var(--safe-top) + 6px); }
+  .hero { margin-bottom: 16px !important; }
+  .sheet { max-height: 96vh; }
 }

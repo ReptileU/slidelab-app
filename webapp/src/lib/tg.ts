@@ -152,5 +152,14 @@ export function initTelegram(): void {
   const webApp = tg;
   safe(() => webApp.ready());
   safe(() => webApp.expand());
+  // Свайп вниз не закрывает и не сворачивает приложение — закрыть можно только крестиком (Telegram 7.7+)
+  if (webApp.isVersionAtLeast("7.7")) safe(() => webApp.disableVerticalSwipes?.());
+  // Высота видимой области от Telegram — для экранов на всю высоту на любых устройствах
+  const setVh = () => {
+    const h = (webApp as unknown as { viewportStableHeight?: number }).viewportStableHeight;
+    if (h) document.documentElement.style.setProperty("--app-h", `${h}px`);
+  };
+  safe(setVh);
+  safe(() => webApp.onEvent("viewportChanged", setVh));
   safe(() => webApp.onEvent("themeChanged", applyTheme));
 }

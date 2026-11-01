@@ -102,7 +102,7 @@ function OutsideTelegram() {
   const catalog = useCatalog();
   if (inTelegramWithoutUser) {
     return (
-      <div className="page no-tabbar" style={{ display: "grid", minHeight: "100vh", alignContent: "center" }}>
+      <div className="page no-tabbar" style={{ display: "grid", minHeight: "var(--app-h, 100dvh)", alignContent: "center" }}>
         <Empty
           icon={<Presentation />}
           title={t("wrong_button_t")}
@@ -113,7 +113,7 @@ function OutsideTelegram() {
     );
   }
   return (
-    <div className="page no-tabbar" style={{ display: "grid", minHeight: "100vh", alignContent: "center" }}>
+    <div className="page no-tabbar" style={{ display: "grid", minHeight: "var(--app-h, 100dvh)", alignContent: "center" }}>
       <Empty
         icon={<Presentation />}
         title={t("outside_tg")}

@@ -11,7 +11,7 @@ const LANGS: { code: Lang; name: string; hello: string }[] = [
 export function LangPick() {
   const { lang, setLang } = useLang();
   return (
-    <div className="page no-tabbar" style={{ display: "grid", minHeight: "100vh", alignContent: "center" }}>
+    <div className="page no-tabbar" style={{ display: "grid", minHeight: "var(--app-h, 100dvh)", alignContent: "center" }}>
       <div className="center" style={{ marginBottom: 32 }}>
         <Logo center />
         <h1 className="title1 mt-8">Выберите язык</h1>
