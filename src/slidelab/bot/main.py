@@ -30,7 +30,7 @@ from slidelab.bot.middlewares import ContextMiddleware, DbSessionMiddleware, Ser
 from slidelab.bot.routers import build_router
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
-from slidelab.telegram import premium
+from slidelab.telegram import app_link, premium
 
 log = logging.getLogger(__name__)
 WEBHOOK_PATH = "/telegram/webhook"
@@ -222,6 +222,7 @@ def main() -> None:
             log.warning("Профиль бота не обновлён: %s", e)
         dp["jobs"] = start_background(bot, dp, settings)
         dp["jobs"].append(asyncio.create_task(reset_menu_buttons(bot, dp["sessionmaker"], settings)))
+        dp["jobs"].append(asyncio.create_task(app_link.publish(settings)))
 
     async def on_shutdown() -> None:
         jobs = dp.workflow_data.get("jobs", [])

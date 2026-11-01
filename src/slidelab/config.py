@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     menu_button: str = "SlideLab"  # кнопка меню слева от поля ввода (открывает Mini App)
     dev_tg_id: int | None = None  # только для разработки в браузере без Telegram
     init_data_ttl: int = 24 * 60 * 60
+    # Кнопка «Открыть» (Main App в BotFather) ведёт на постоянную страницу GitHub Pages, а она — на текущую
+    # временную ссылку. Бот при запуске записывает эту ссылку в app.json репозитория. Пусто — не записывать.
+    github_token: SecretStr | None = None
+    github_repo: str = "ReptileU/slidelab-app"
+    github_branch: str = "main"
 
     # --- Хранилище ---
     # Сервер: PostgreSQL. Домашний компьютер: sqlite+aiosqlite:///data/slidelab.db

@@ -23,11 +23,14 @@
   p { margin: 0 0 28px; font-size: 16px; line-height: 1.5; color: rgba(245,245,247,.6); }
   button { width: 100%; border: 0; border-radius: 999px; padding: 16px; font: 600 17px inherit; font-family: inherit; color: #000; cursor: pointer;
     background: linear-gradient(180deg, #fff 0%, #e8e8ed 55%, #c7c7cc 100%); box-shadow: inset 0 1px 0 #fff; }
+  .wait h1, .wait p, .wait button, .wait small { visibility: hidden; }
+  .wait .ic { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .55; } }
   small { display: block; margin-top: 18px; font-size: 13px; color: rgba(245,245,247,.4); }
 </style>
 </head>
 <body>
-<div class="box">
+<div class="box wait">
   <div class="ic"><span class="sil">S</span><i><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg></i></div>
   <h1 id="t">SlideLab обновился</h1>
   <p id="d">Новое приложение открывается кнопкой «SlideLab» слева от поля ввода в чате с ботом.</p>
@@ -46,11 +49,38 @@
   const tr = code.startsWith("uz") ? L.uz : code.startsWith("en") ? L.en : null;
   if (tr) { document.getElementById("t").textContent = tr[0]; document.getElementById("d").textContent = tr[1]; document.getElementById("b").textContent = tr[2]; }
   try { if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#000000"); tg.setBackgroundColor("#000000"); } } catch (e) {}
-  // Внутри Telegram страница не задерживается: сразу закрывается, и человек остаётся в чате с ботом,
-  // где новое приложение открывается кнопкой «SlideLab».
-  if (tg && tg.initData) {
-    try { tg.openTelegramLink(BOT + "?start=app"); setTimeout(() => tg.close(), 400); } catch (e) {}
+  // Кнопка «Открыть»: новое приложение работает по временной ссылке, бот при запуске пишет её в app.json.
+  // Читаем её и сразу переходим, сохраняя данные Telegram (#tgWebAppData…). Не вышло — ведём в чат с ботом.
+  const box = document.querySelector(".box");
+  function fallback() {
+    box.classList.remove("wait");
+    if (tg && tg.initData) {
+      try { tg.openTelegramLink(BOT + "?start=app"); setTimeout(() => tg.close(), 400); } catch (e) {}
+    }
   }
+  function timeout(ms) { return new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms)); }
+  async function readLink() {
+    const sources = [
+      ["https://api.github.com/repos/ReptileU/slidelab-app/contents/app.json?ref=main", { headers: { Accept: "application/vnd.github.raw+json" }, cache: "no-store" }],
+      ["./app.json?t=" + Date.now(), { cache: "no-store" }],
+    ];
+    for (const [src, opts] of sources) {
+      try {
+        const r = await Promise.race([fetch(src, opts), timeout(4000)]);
+        if (!r.ok) continue;
+        const data = await r.json();
+        if (data && typeof data.url === "string" && data.url.startsWith("https://")) return data.url;
+      } catch (e) {}
+    }
+    return null;
+  }
+  readLink().then((url) => {
+    if (!url) return fallback();
+    const target = new URL(url);
+    target.search = location.search;
+    target.hash = location.hash;
+    location.replace(target.toString());
+  });
   document.getElementById("b").onclick = () => {
     if (tg && tg.openTelegramLink) { tg.openTelegramLink(BOT); setTimeout(() => tg.close(), 300); }
     else { location.href = BOT; }
