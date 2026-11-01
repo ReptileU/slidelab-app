@@ -334,3 +334,33 @@ export function useGlare() {
     });
   };
 }
+
+/** Логотип SlideLab: тёмная плитка «S.» и серебряная надпись. */
+export function Logo({ center = false, size = 34 }: { center?: boolean; size?: number }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: center ? "center" : "flex-start" }}>
+      <span
+        aria-hidden
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size * 0.26,
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "linear-gradient(160deg, #3a3a3c, #000)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,.22), 0 0 0 1px rgba(255,255,255,.1)",
+          fontWeight: 800,
+          fontSize: size * 0.62,
+          lineHeight: 1,
+        }}
+      >
+        <span style={{ background: "linear-gradient(100deg,#8e8e93,#f5f5f7 35%,#a1a1a6 65%,#fff)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>S</span>
+        <span style={{ color: "#fff" }}>.</span>
+      </span>
+      <span className="footnote silver-text" style={{ fontWeight: 700, letterSpacing: 3 }}>
+        SLIDELAB
+      </span>
+    </div>
+  );
+}

@@ -1,12 +1,13 @@
-time: 2026-11-03 19:00
-images: https://d2ol7oe51mr4n9.cloudfront.net/user_3Kg776n2YVTxhk4uIcG7vcKL8Pt/36d7257c-c011-40fc-847d-ff8bad9fdeb7.png
+time: 2026-11-06 12:00
+images: media/post_pakety.png
 ---
-🎁 <b>Пакеты + подарок до 30 ноября</b> 👆
-Впервые у нас? Первая «Мини» — со скидкой.
+<b>Пакеты — дешевле</b>
+Каждая презентация выходит дешевле, остаток не сгорает. До 30 ноября — подарок в Telegram за любой пакет.
+Впервые у нас? Первая «Мини» — 9 900 сум.
 
 ———
 
-🎁 <b>Paketlar + 30-noyabrgacha sovg‘a</b> 👆
-Birinchi Mini — chegirma bilan.
+<b>Paketlar — arzonroq</b>
+30-noyabrgacha har qanday paketga Telegramda sovg‘a.
 
-📩 @slidelab_order_bot → «Пакеты»
+@slidelab_order_bot → «Пакеты»

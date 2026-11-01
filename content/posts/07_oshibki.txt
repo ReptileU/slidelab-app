@@ -1,10 +1,12 @@
-time: 2026-10-31 19:00
-images: https://d2ol7oe51mr4n9.cloudfront.net/user_3Kg776n2YVTxhk4uIcG7vcKL8Pt/d26630d4-ee60-4987-ba4d-1247f9661e64.png
+time: 2026-11-05 12:00
+images: media/post_oshibki.png
 ---
-🚫 Сохраните 📌 — пригодится перед защитой.
+<b>5 ошибок в презентациях</b>
+Сохраните — пригодится перед защитой.
 
 ———
 
-🚫 Saqlab qo‘ying 📌 — himoyadan oldin kerak bo‘ladi.
+<b>Taqdimotlardagi 5 xato</b>
+Saqlab qo‘ying — himoyadan oldin kerak bo‘ladi.
 
-📩 @slidelab_order_bot
+@slidelab_order_bot

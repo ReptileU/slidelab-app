@@ -5,7 +5,7 @@ import { useCatalog, useMe, useOrders, useT } from "../lib/app";
 import { money } from "../lib/i18n";
 import { hintKey, slidesKey, STATUS_BADGE, statusKey, TIERS, tierPrice } from "../lib/order";
 import { haptic } from "../lib/tg";
-import { Cell, Group, Img, Section, Skeleton, useGlare } from "../ui";
+import { Cell, Group, Img, Logo, Section, Skeleton, useGlare } from "../ui";
 
 export function Home() {
   const t = useT();
@@ -21,9 +21,7 @@ export function Home() {
   return (
     <div className="page">
       <header className="hero" style={{ margin: "8px 0 28px" }} onPointerMove={glare} onPointerDown={glare}>
-        <div className="footnote eyebrow" style={{ fontWeight: 600, letterSpacing: 3 }}>
-          SLIDELAB
-        </div>
+        <Logo />
         <h1 className="large-title mt-8 silver-text">{t("hero_title")}</h1>
         <p className="subhead" style={{ margin: "10px 0 22px" }}>
           {t("hero_sub")}

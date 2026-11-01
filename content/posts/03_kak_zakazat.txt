@@ -1,12 +1,13 @@
-time: 2026-10-27 10:00
-video: media/kak_zakazat.mp4
+time: 2026-11-03 18:00
+images: media/post_kak_zakazat.png
 ---
-🎬 <b>Как заказать презентацию — за 1 минуту</b>
-Обложка бесплатно. Перед сессией очередь — пишите заранее.
+<b>Как заказать — за 1 минуту</b>
+Откройте бота и нажмите «SlideLab» внизу чата. Обложка — бесплатно.
+Перед сессией очередь — пишите заранее.
 
 ———
 
-🎬 <b>Taqdimotga 1 daqiqada buyurtma</b>
-Muqova bepul. Sessiya oldidan navbat — oldindan yozing.
+<b>1 daqiqada buyurtma</b>
+Botni oching va pastdagi «SlideLab» tugmasini bosing. Muqova bepul.
 
-📩 @slidelab_order_bot
+@slidelab_order_bot

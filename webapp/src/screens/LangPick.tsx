@@ -1,6 +1,6 @@
 import { useLang } from "../lib/app";
 import type { Lang } from "../lib/types";
-import { Cell, Group } from "../ui";
+import { Cell, Group, Logo } from "../ui";
 
 const LANGS: { code: Lang; name: string; hello: string }[] = [
   { code: "ru", name: "Русский", hello: "Привет!" },
@@ -13,9 +13,7 @@ export function LangPick() {
   return (
     <div className="page no-tabbar" style={{ display: "grid", minHeight: "100vh", alignContent: "center" }}>
       <div className="center" style={{ marginBottom: 32 }}>
-        <div className="footnote accent" style={{ fontWeight: 600, letterSpacing: 2 }}>
-          SLIDELAB
-        </div>
+        <Logo center />
         <h1 className="title1 mt-8">Выберите язык</h1>
         <p className="subhead secondary">Tilni tanlang · Choose language</p>
       </div>

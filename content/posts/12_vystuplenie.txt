@@ -1,10 +1,12 @@
-time: 2026-11-05 19:00
-images: https://d2ol7oe51mr4n9.cloudfront.net/user_3Kg776n2YVTxhk4uIcG7vcKL8Pt/1ea72c70-545d-4073-8590-1b33c2e177ce.png
+time: 2026-11-07 12:00
+images: media/post_vystuplenie.png
 ---
-🎤 Сохраните перед выступлением 📌
+<b>Как выступить за 7 минут</b>
+Сохраните перед выступлением.
 
 ———
 
-🎤 Chiqishdan oldin saqlab qo‘ying 📌
+<b>7 daqiqada qanday chiqish qilish</b>
+Chiqishdan oldin saqlab qo‘ying.
 
-📩 @slidelab_order_bot
+@slidelab_order_bot
