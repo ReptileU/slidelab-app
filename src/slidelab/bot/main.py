@@ -30,6 +30,7 @@ from slidelab.bot.middlewares import ContextMiddleware, DbSessionMiddleware, Ser
 from slidelab.bot.routers import build_router
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
+from slidelab.telegram import premium
 
 log = logging.getLogger(__name__)
 WEBHOOK_PATH = "/telegram/webhook"
@@ -74,6 +75,7 @@ STAFF_COMMANDS = [
     ("refund", "Вернуть звёзды: /refund 12"),
     ("posts", "Посты канала"),
     ("repost", "Опубликовать пост заново"),
+    ("emoji", "Премиум-эмодзи бота"),
     ("id", "Мой Telegram ID"),
 ]
 
@@ -209,6 +211,7 @@ def main() -> None:
     if not settings.admin_id:
         log.warning("ADMIN_ID не задан — заявки некуда отправлять. Напишите боту /id и впишите число в .env")
     bot = Bot(settings.bot_token.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    premium.install(bot, settings.content_dir)
     dp = build_dispatcher(settings, extra_router=make_publisher_router(bot, settings))
 
     async def on_startup(bot: Bot) -> None:

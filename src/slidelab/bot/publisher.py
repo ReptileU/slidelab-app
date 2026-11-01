@@ -208,8 +208,7 @@ async def send_post(bot: Bot, chat_id, post: dict, reply_markup=None) -> dict:
 
     # InputMediaPhoto в aiogram 3 неизменяемый — подпись задаём сразу при создании
     media = [
-        InputMediaPhoto(media=FSInputFile(i), caption=text if (fits and n == 0) else None)
-        for n, i in enumerate(imgs)
+        InputMediaPhoto(media=FSInputFile(i), caption=text if (fits and n == 0) else None) for n, i in enumerate(imgs)
     ]
     msgs = await bot.send_media_group(chat_id, media)
     ids = [m.message_id for m in msgs]
@@ -465,7 +464,8 @@ async def on_review(cb: CallbackQuery, bot: Bot):
         except Exception as e:
             logging.exception("Ошибка публикации")
             await cb.message.answer(
-                f"⚠️ Не удалось опубликовать: {html.escape(str(e))}\nПроверьте, что бот — админ канала с правом публикации."
+                f"⚠️ Не удалось опубликовать: {html.escape(str(e))}\n"
+                "Проверьте, что бот — админ канала с правом публикации."
             )
     save_state(state)
     await cb.answer()

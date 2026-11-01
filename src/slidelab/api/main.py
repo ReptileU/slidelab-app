@@ -70,6 +70,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.bot = Bot(
             settings.bot_token.get_secret_value(), default=DefaultBotProperties(parse_mode=ParseMode.HTML)
         )
+        from slidelab.telegram import premium
+
+        premium.install(app.state.bot, settings.content_dir)
         app.state.storage = RedisStorage.from_url(settings.redis_url) if settings.redis_url else MemoryStorage()
         yield
         await app.state.bot.session.close()

@@ -70,5 +70,11 @@ class FakeSession(BaseSession):
 
 
 def make_bot() -> tuple[Bot, FakeSession]:
+    from pathlib import Path
+
+    from slidelab.telegram import premium
+
     session = FakeSession()
-    return Bot(TOKEN, session=session), session
+    bot = Bot(TOKEN, session=session)
+    premium.install(bot, Path("/nonexistent-slidelab-content"))  # как в проде: метки ⟦…⟧ не доходят до клиента
+    return bot, session

@@ -3,12 +3,12 @@ TEXTS: dict[str, str] = {
     "lang_pick": "Выберите язык · Tilni tanlang · Choose language",
     "lang_name": "English",
     "welcome": (
-        "<b>SlideLab</b>\n"
+        "⟦logo⟧<b>SlideLab</b>\n"
         "Presentations designed for your topic.\n\n"
         "First — a free cover. Pay only if you like it.\n\n"
         "Forward a lecture or assignment here — I'll set up the order in two taps."
     ),
-    "welcome_back": "<b>SlideLab</b>\nHow can I help?",
+    "welcome_back": "⟦logo⟧<b>SlideLab</b>\nHow can I help?",
     "error": "Something went wrong. Try again — or message @{admin}.",
     "use_buttons": "Please choose an option with the buttons above.",
     "send_text": "Please type it as text.",
@@ -23,7 +23,7 @@ TEXTS: dict[str, str] = {
     "btn_open_app": "Open SlideLab",
     # --- prices and packs ---
     "prices": (
-        "<b>Prices</b>\n\n"
+        "⟦price⟧<b>Prices</b>\n\n"
         "Up to 10 slides — {s10} UZS\n"
         "11–20 slides — {s20} UZS\n"
         "21–30 slides — {s30} UZS\n\n"
@@ -34,7 +34,7 @@ TEXTS: dict[str, str] = {
         "<i>Included: design for your topic, photos and charts, PPTX and PDF, two rounds of edits.</i>"
     ),
     "btn_packages": "Packs — cheaper",
-    "packages": "<b>Packs</b>\nEach presentation is cheaper. The balance doesn't expire — it carries over to a new pack.",
+    "packages": "⟦pack⟧<b>Packs</b>\nEach presentation is cheaper. The balance doesn't expire — it carries over to a new pack.",
     "package_line": "<b>{name}</b> — {price} UZS · {per} each · {days} days",
     "plan_week": "2 presentations",
     "plan_month": "4 presentations",
@@ -42,23 +42,23 @@ TEXTS: dict[str, str] = {
     "packages_note": "<i>21–30 slides use two presentations. Urgency and full text are paid separately.</i>",
     "my_package": "\n\n<b>Your pack</b>: {left} of {total} left, until {date}.",
     "btn_buy": "{plan} — {price} UZS",
-    "gift_promo": "\n\n🎁 Until {date} — a Telegram gift with any pack.",
+    "gift_promo": "\n\n⟦gift|🎁⟧Until {date} — a Telegram gift with any pack.",
     "pkg_requested": "Pack «{plan}». Payment details below — I'll turn it on as soon as it's paid.",
-    "pkg_on": "<b>Pack «{plan}» is on</b>\nAvailable: {left} · until {date}.\nOrder as usual — it's deducted from the pack.",
+    "pkg_on": "⟦pack⟧<b>Pack «{plan}» is on</b>\nAvailable: {left} · until {date}.\nOrder as usual — it's deducted from the pack.",
     "gift_text": "Thank you for choosing SlideLab! May your presentations get top marks.",
-    "gift_sent": "🎁 Your pack gift is already in your Telegram profile.",
+    "gift_sent": "⟦gift|🎁⟧Your pack gift is already in your Telegram profile.",
     # --- examples and questions ---
-    "examples": "<b>Our work</b>\nEach presentation has its own style for the topic.",
+    "examples": "⟦works⟧<b>Our work</b>\nEach presentation has its own style for the topic.",
     "examples_channel": "All work and styles — in the channel {channel}",
     "examples_soon": "Examples are coming soon. Meanwhile, order — the cover in your topic's style is free.",
-    "help": "<b>Questions</b>",
+    "help": "⟦help⟧<b>Questions</b>",
     "btn_ask": "Ask the manager",
     "btn_language": "Language",
     "ask_prompt": "Write your question in one message — I'll pass it to the manager. The answer will come here.",
     "question_sent": "Sent. We'll reply right here in the chat.",
     "menu_updated": "The menu has been updated — buttons are below.",
     "stale_button": "This button is from the previous version of the bot. Open the order in “My orders” for the current buttons.",
-    "manager_reply": "<b>SlideLab reply</b>",
+    "manager_reply": "⟦help⟧<b>SlideLab reply</b>",
     "paysupport": "About payments and refunds — write here or to @{admin}. If an order is cancelled before work starts, we refund the Stars.",
     # --- order form ---
     "step": "<i>Step {n} of {total}</i>",
@@ -115,7 +115,7 @@ TEXTS: dict[str, str] = {
     "text_label": "full text",
     "notes_label": "speaker notes",
     # --- request received ---
-    "order_created": ("<b>Order #{id} received</b>\nWe're making a free cover — I'll send it here.{package}"),
+    "order_created": ("⟦order⟧<b>Order #{id} received</b>\nWe're making a free cover — I'll send it here.{package}"),
     "order_created_files": "\n\nHave materials? Forward them here from any chat — no need to save them to your phone.",
     "order_created_tpl": "\n\nSend your template: a file or a link with open access.",
     "package_used": "\n\n{cost} deducted from your pack, {left} left.",
@@ -128,7 +128,7 @@ TEXTS: dict[str, str] = {
     "quick_more": "File added — {n} in total. Choose an option with the buttons above.",
     "quick_topic": "From file: {name}",
     # --- cover ---
-    "cover_ready": "<b>Cover for order #{id}</b>\nIt's free. Do you like it?",
+    "cover_ready": "⟦cover⟧<b>Cover for order #{id}</b>\nIt's free. Do you like it?",
     "btn_cover_ok": "I like it",
     "btn_cover_change": "Change it",
     "cover_change_prompt": "What should we change in the cover — colour, style, photo, text? A screenshot of an example helps.",
@@ -136,8 +136,8 @@ TEXTS: dict[str, str] = {
     "cover_go": "<b>Great!</b>\nStarting the full presentation — I'll send it when it's ready.",
     "cover_pay": "<b>Great!</b>\nOnly payment is left — then we start right away.",
     # --- payment ---
-    "pay_order": "<b>Payment for order #{id}</b>\n{price} UZS",
-    "pay_package": "<b>Pack «{plan}»</b>\n{price} UZS",
+    "pay_order": "⟦price⟧<b>Payment for order #{id}</b>\n{price} UZS",
+    "pay_package": "⟦pack⟧<b>Pack «{plan}»</b>\n{price} UZS",
     "pay_credit": "\n<i>Order #{id} counted: −{amount} UZS.</i>",
     "pay_early": "\n\n<i>The cover is free. You can pay now or after you see it.</i>",
     "pay_cards": "\n\nTransfer to a card — tap the number to copy it:\n{cards}{name}\n\nThen tap «I've paid» and send the receipt.",
@@ -154,13 +154,13 @@ TEXTS: dict[str, str] = {
     "invoice_package": "SlideLab · {plan}",
     "invoice_package_desc": "{count} presentations for {days} days. The balance doesn't expire.",
     "already_paid": "Already paid.",
-    "paid_go": "<b>Payment received</b>\nStarting the full presentation for order #{id}.",
-    "paid_early": "<b>Payment received</b>\nFirst I'll send the cover — after your «I like it» we make the full presentation.",
+    "paid_go": "⟦paid⟧<b>Payment received</b>\nStarting the full presentation for order #{id}.",
+    "paid_early": "⟦paid⟧<b>Payment received</b>\nFirst I'll send the cover — after your «I like it» we make the full presentation.",
     "payment_not_found": "I couldn't find the payment for {what}. If you've already paid, write here and we'll sort it out.",
     "what_order": "order #{id}",
     "what_package": "the «{plan}» pack",
     # --- done ---
-    "formats_ask": "<b>Presentation #{id} is ready</b>\nWhich format would you like?",
+    "formats_ask": "⟦done⟧<b>Presentation #{id} is ready</b>\nWhich format would you like?",
     "fmt_pptx": "PowerPoint",
     "fmt_pdf": "PDF",
     "fmt_png": "Images",
@@ -169,7 +169,7 @@ TEXTS: dict[str, str] = {
     "fmt_all": "All formats",
     "fmt_sending": "Sending…",
     "fmt_none": "That format isn't available — write to us and we'll send it.",
-    "deck_ready": "<b>Presentation #{id} is ready</b>",
+    "deck_ready": "⟦done⟧<b>Presentation #{id} is ready</b>",
     "link_gslides": "<b>Google Slides</b> — your own copy:\n{url}\n\nTap «Make a copy» — it will appear in your Google Drive.",
     "link_canva": "<b>Canva</b> — your own copy:\n{url}\n\nTap «Use template» — a copy will appear in your Canva account.",
     "how_gslides": (
@@ -185,7 +185,7 @@ TEXTS: dict[str, str] = {
     "btn_revise": "Request edits",
     "btn_all_good": "All good",
     "revise_prompt": (
-        "<b>Edits for order #{id}</b>\n"
+        "⟦revise⟧<b>Edits for order #{id}</b>\n"
         "Write what to change — e.g. «slide 3: another chart». Screenshots and files are welcome. "
         "When you're done, tap «Send»."
     ),
@@ -205,7 +205,7 @@ TEXTS: dict[str, str] = {
     "btn_credit": "{plan} — {pay} UZS",
     "credit_expired": "The offer has expired — the pack is available at the regular price.",
     # --- my orders ---
-    "orders_title": "<b>My orders</b>",
+    "orders_title": "⟦orders⟧<b>My orders</b>",
     "orders_empty": "No orders yet. Tap «New presentation» — it takes a couple of minutes.",
     "order_row": "#{id} · {status} · {topic}",
     "order_card": "<b>Order #{id}</b> · {status}\n{topic}\n{slides} slides · {price}",
@@ -223,5 +223,5 @@ TEXTS: dict[str, str] = {
     "st_cancelled": "Cancelled",
     "status_changed": "<b>Order #{id}</b> · {status}\n{topic}",
     "order_cancelled": "<b>Order #{id} cancelled</b>",
-    "stars_refunded": "Refunded {amount} ⭐ for order #{id}.",
+    "stars_refunded": "Refunded {amount} ⟦star|⭐⟧for order #{id}.",
 }

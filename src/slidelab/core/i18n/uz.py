@@ -3,12 +3,12 @@ TEXTS: dict[str, str] = {
     "lang_pick": "Выберите язык · Tilni tanlang · Choose language",
     "lang_name": "O‘zbekcha",
     "welcome": (
-        "<b>SlideLab</b>\n"
+        "⟦logo⟧<b>SlideLab</b>\n"
         "Mavzuingizga mos dizayndagi taqdimotlar.\n\n"
         "Avval — bepul muqova. Yoqsagina to‘laysiz.\n\n"
         "Ma’ruza yoki topshiriqni shu yerga forward qiling — ikki bosishda buyurtma qilaman."
     ),
-    "welcome_back": "<b>SlideLab</b>\nNima yordam kerak?",
+    "welcome_back": "⟦logo⟧<b>SlideLab</b>\nNima yordam kerak?",
     "error": "Nimadir xato ketdi. Qaytadan urinib ko‘ring — yoki @{admin} ga yozing.",
     "use_buttons": "Yuqoridagi tugmalardan birini tanlang.",
     "send_text": "Iltimos, matn bilan yozing.",
@@ -23,7 +23,7 @@ TEXTS: dict[str, str] = {
     "btn_open_app": "SlideLab’ni ochish",
     # --- narxlar va paketlar ---
     "prices": (
-        "<b>Narxlar</b>\n\n"
+        "⟦price⟧<b>Narxlar</b>\n\n"
         "10 slaydgacha — {s10} so‘m\n"
         "11–20 slayd — {s20} so‘m\n"
         "21–30 slayd — {s30} so‘m\n\n"
@@ -34,7 +34,7 @@ TEXTS: dict[str, str] = {
         "<i>Narxga kiradi: mavzuga mos dizayn, rasm va grafiklar, PPTX va PDF, ikki tuzatish.</i>"
     ),
     "btn_packages": "Paketlar — arzonroq",
-    "packages": "<b>Paketlar</b>\nHar bir taqdimot arzonroq. Qoldiq yonmaydi — yangi paketga o‘tadi.",
+    "packages": "⟦pack⟧<b>Paketlar</b>\nHar bir taqdimot arzonroq. Qoldiq yonmaydi — yangi paketga o‘tadi.",
     "package_line": "<b>{name}</b> — {price} so‘m · donasi {per} · {days} kun",
     "plan_week": "2 ta taqdimot",
     "plan_month": "4 ta taqdimot",
@@ -42,23 +42,23 @@ TEXTS: dict[str, str] = {
     "packages_note": "<i>21–30 slayd paketdan 2 ta yechadi. Shoshilinch va matn alohida to‘lanadi.</i>",
     "my_package": "\n\n<b>Paketingiz</b>: {total} tadan {left} ta qoldi, {date} gacha.",
     "btn_buy": "{plan} — {price} so‘m",
-    "gift_promo": "\n\n🎁 {date} gacha — har qanday paketga Telegramda sovg‘a.",
+    "gift_promo": "\n\n⟦gift|🎁⟧{date} gacha — har qanday paketga Telegramda sovg‘a.",
     "pkg_requested": "«{plan}» paketi. Rekvizitlar quyida — to‘lovdan so‘ng o‘zim yoqaman.",
-    "pkg_on": "<b>«{plan}» paketi yoqildi</b>\nMavjud: {left} · {date} gacha.\nOdatdagidek buyurtma bering — paketdan yechiladi.",
+    "pkg_on": "⟦pack⟧<b>«{plan}» paketi yoqildi</b>\nMavjud: {left} · {date} gacha.\nOdatdagidek buyurtma bering — paketdan yechiladi.",
     "gift_text": "SlideLab’ni tanlaganingiz uchun rahmat! Taqdimotlaringiz a’lo bo‘lsin.",
-    "gift_sent": "🎁 Paket uchun sovg‘a — allaqachon Telegram profilingizda.",
+    "gift_sent": "⟦gift|🎁⟧Paket uchun sovg‘a — allaqachon Telegram profilingizda.",
     # --- namunalar va savollar ---
-    "examples": "<b>Ishlar namunasi</b>\nHar bir taqdimot — mavzuga mos o‘z uslubida.",
+    "examples": "⟦works⟧<b>Ishlar namunasi</b>\nHar bir taqdimot — mavzuga mos o‘z uslubida.",
     "examples_channel": "Barcha ishlar va uslublar — {channel} kanalida",
     "examples_soon": "Namunalar tez orada. Hozircha buyurtma bering — mavzuingiz uslubidagi muqova bepul.",
-    "help": "<b>Savollar</b>",
+    "help": "⟦help⟧<b>Savollar</b>",
     "btn_ask": "Menejerdan so‘rash",
     "btn_language": "Til",
     "ask_prompt": "Savolingizni bitta xabarda yozing — menejerga yetkazaman. Javob shu yerga keladi.",
     "question_sent": "Yubordim. Shu yerda, chatda javob beramiz.",
     "menu_updated": "Menyu yangilandi — tugmalar pastda.",
     "stale_button": "Bu tugma botning eski versiyasidan. Buyurtmani «Buyurtmalarim»da oching — u yerda yangi tugmalar bor.",
-    "manager_reply": "<b>SlideLab javobi</b>",
+    "manager_reply": "⟦help⟧<b>SlideLab javobi</b>",
     "paysupport": "To‘lov va qaytarish bo‘yicha — shu yerga yoki @{admin} ga yozing. Ish boshlanishidan oldin bekor qilinsa, yulduzlarni qaytaramiz.",
     # --- anketa ---
     "step": "<i>{total} qadamdan {n}-qadam</i>",
@@ -116,7 +116,7 @@ TEXTS: dict[str, str] = {
     "notes_label": "konspekt",
     # --- ariza qabul qilindi ---
     "order_created": (
-        "<b>#{id} buyurtma qabul qilindi</b>\nBepul muqova tayyorlayapmiz — shu yerga yuboraman.{package}"
+        "⟦order⟧<b>#{id} buyurtma qabul qilindi</b>\nBepul muqova tayyorlayapmiz — shu yerga yuboraman.{package}"
     ),
     "order_created_files": "\n\nMateriallar bormi? Istalgan chatdan shu yerga forward qiling — telefonga saqlash shart emas.",
     "order_created_tpl": "\n\nShabloningizni yuboring: fayl yoki ochiq havola.",
@@ -130,7 +130,7 @@ TEXTS: dict[str, str] = {
     "quick_more": "Fayl qo‘shildi — jami {n}. Yuqoridagi tugma bilan tanlang.",
     "quick_topic": "Fayl bo‘yicha: {name}",
     # --- muqova ---
-    "cover_ready": "<b>#{id} buyurtma muqovasi</b>\nBu bepul. Yoqdimi?",
+    "cover_ready": "⟦cover⟧<b>#{id} buyurtma muqovasi</b>\nBu bepul. Yoqdimi?",
     "btn_cover_ok": "Yoqdi",
     "btn_cover_change": "O‘zgartirish",
     "cover_change_prompt": "Muqovada nimani o‘zgartirish kerak — rang, uslub, rasm, matn? Namuna skrinshoti bilan ham bo‘ladi.",
@@ -138,8 +138,8 @@ TEXTS: dict[str, str] = {
     "cover_go": "<b>Ajoyib!</b>\nButun taqdimotni boshlaymiz — tayyor bo‘lgach yuboraman.",
     "cover_pay": "<b>Ajoyib!</b>\nTo‘lov qoldi — va darhol boshlaymiz.",
     # --- to‘lov ---
-    "pay_order": "<b>#{id} buyurtma to‘lovi</b>\n{price} so‘m",
-    "pay_package": "<b>«{plan}» paketi</b>\n{price} so‘m",
+    "pay_order": "⟦price⟧<b>#{id} buyurtma to‘lovi</b>\n{price} so‘m",
+    "pay_package": "⟦pack⟧<b>«{plan}» paketi</b>\n{price} so‘m",
     "pay_credit": "\n<i>#{id} buyurtma hisobga olindi: −{amount} so‘m.</i>",
     "pay_early": "\n\n<i>Muqova bepul. Hozir yoki muqovani ko‘rgach to‘lashingiz mumkin.</i>",
     "pay_cards": "\n\nKartaga o‘tkazing — raqamni bosing, nusxa olinadi:\n{cards}{name}\n\nSo‘ng «To‘ladim» ni bosing va chek yuboring.",
@@ -156,13 +156,13 @@ TEXTS: dict[str, str] = {
     "invoice_package": "SlideLab · {plan}",
     "invoice_package_desc": "{days} kunga {count} ta taqdimot. Qoldiq yonmaydi.",
     "already_paid": "Allaqachon to‘langan.",
-    "paid_go": "<b>To‘lov qabul qilindi</b>\n#{id} buyurtma bo‘yicha butun taqdimotni boshlaymiz.",
-    "paid_early": "<b>To‘lov qabul qilindi</b>\nAvval muqovani yuboraman — «Yoqdi» dan keyin darhol butun taqdimotni qilamiz.",
+    "paid_go": "⟦paid⟧<b>To‘lov qabul qilindi</b>\n#{id} buyurtma bo‘yicha butun taqdimotni boshlaymiz.",
+    "paid_early": "⟦paid⟧<b>To‘lov qabul qilindi</b>\nAvval muqovani yuboraman — «Yoqdi» dan keyin darhol butun taqdimotni qilamiz.",
     "payment_not_found": "{what} uchun to‘lov topilmadi. Agar o‘tkazgan bo‘lsangiz — shu yerga yozing, hal qilamiz.",
     "what_order": "#{id} buyurtma",
     "what_package": "«{plan}» paketi",
     # --- tayyor ---
-    "formats_ask": "<b>#{id} taqdimot tayyor</b>\nQaysi formatda yuboray?",
+    "formats_ask": "⟦done⟧<b>#{id} taqdimot tayyor</b>\nQaysi formatda yuboray?",
     "fmt_pptx": "PowerPoint",
     "fmt_pdf": "PDF",
     "fmt_png": "Rasmlar",
@@ -171,7 +171,7 @@ TEXTS: dict[str, str] = {
     "fmt_all": "Barcha formatlar",
     "fmt_sending": "Yuboryapman…",
     "fmt_none": "Bunday format yo‘q — yozing, yuboramiz.",
-    "deck_ready": "<b>#{id} taqdimot tayyor</b>",
+    "deck_ready": "⟦done⟧<b>#{id} taqdimot tayyor</b>",
     "link_gslides": "<b>Google Slides</b> — shaxsiy nusxangiz:\n{url}\n\n«Nusxa yaratish» ni bosing — Google Diskingizda paydo bo‘ladi.",
     "link_canva": "<b>Canva</b> — shaxsiy nusxangiz:\n{url}\n\n«Shablondan foydalanish» ni bosing — Canva akkauntingizda paydo bo‘ladi.",
     "how_gslides": (
@@ -187,7 +187,7 @@ TEXTS: dict[str, str] = {
     "btn_revise": "Tuzatish kiritish",
     "btn_all_good": "Hammasi zo‘r",
     "revise_prompt": (
-        "<b>#{id} buyurtmaga tuzatishlar</b>\n"
+        "⟦revise⟧<b>#{id} buyurtmaga tuzatishlar</b>\n"
         "Nimani o‘zgartirishni yozing — masalan, «3-slayd: boshqa grafik». Skrinshot va fayllar ham bo‘ladi. "
         "Tugatgach — «Yuborish» ni bosing."
     ),
@@ -207,7 +207,7 @@ TEXTS: dict[str, str] = {
     "btn_credit": "{plan} — {pay} so‘m",
     "credit_expired": "Hisoblash muddati o‘tdi — paketni odatiy narxda olish mumkin.",
     # --- buyurtmalarim ---
-    "orders_title": "<b>Buyurtmalarim</b>",
+    "orders_title": "⟦orders⟧<b>Buyurtmalarim</b>",
     "orders_empty": "Hali buyurtma yo‘q. «Yangi taqdimot» ni bosing — bir-ikki daqiqa.",
     "order_row": "#{id} · {status} · {topic}",
     "order_card": "<b>#{id} buyurtma</b> · {status}\n{topic}\n{slides} slayd · {price}",
@@ -225,5 +225,5 @@ TEXTS: dict[str, str] = {
     "st_cancelled": "Bekor qilindi",
     "status_changed": "<b>#{id} buyurtma</b> · {status}\n{topic}",
     "order_cancelled": "<b>#{id} buyurtma bekor qilindi</b>",
-    "stars_refunded": "#{id} buyurtma uchun {amount} ⭐ qaytarildi.",
+    "stars_refunded": "#{id} buyurtma uchun {amount} ⟦star|⭐⟧qaytarildi.",
 }

@@ -637,3 +637,61 @@ async def _remember_result(session: AsyncSession, client: User, src_text: str, m
         return ""
     order.result_link = link.group(0).rstrip(").,;")
     return f"\nСохранил ссылку в «Моих заказах» клиента (#{order.id})"
+
+
+@router.message(Command("emoji"))
+async def cmd_emoji(message: Message, command: CommandObject, settings: Settings) -> None:
+    """/emoji — премиум-эмодзи бота. /emoji <ключ> <премиум-эмодзи> — выбрать, /emoji <ключ> off — убрать."""
+    from slidelab.telegram.premium import MARKS, EmojiStore, button_keys
+
+    store = EmojiStore(settings.content_dir / "emoji.json")
+    data = store.data()
+    buttons = sorted(set(button_keys().values()))
+    parts = (command.args or "").split()
+    if not parts:
+        def row(key: str, about: str, group: str) -> str:
+            item = data[group].get(key)
+            if not item:
+                return f"— <code>{key}</code> · {about}"
+            alt = html.escape(item.get("alt") or "⭐")
+            mark = f'<tg-emoji emoji-id="{item["id"]}">{alt}</tg-emoji>'
+            return f"{mark} <code>{key}</code> · {about}"
+
+        lines = [row(k, v, "marks") for k, v in MARKS.items()]
+        lines += [row(k, html.escape(strip_btn(k)), "buttons") for k in buttons]
+        await message.answer(
+            "<b>Премиум-эмодзи</b>\nНужен Telegram Premium у владельца бота. Работают в личке с клиентами "
+            "(в канале Telegram их боту не разрешает).\n\n"
+            "Выбрать: <code>/emoji logo</code> и сразу за ним премиум-эмодзи из своих наборов.\n"
+            "Убрать: <code>/emoji logo off</code>\n\n" + "\n".join(lines)
+        )
+        return
+    key = parts[0]
+    group = "marks" if key in MARKS else "buttons" if key in buttons else ""
+    if not group:
+        await message.answer(f"Нет ключа <code>{html.escape(key)}</code>. Список — /emoji")
+        return
+    if len(parts) > 1 and parts[1].lower() == "off":
+        store.set(group, key, None)
+        await message.answer(f"Убрал эмодзи у <code>{key}</code>.")
+        return
+    found = next((e for e in (message.entities or []) if e.type == "custom_emoji" and e.custom_emoji_id), None)
+    if found is None:
+        await message.answer(
+            "Не вижу премиум-эмодзи в сообщении. Напишите <code>/emoji " + key + "</code> и вставьте эмодзи из "
+            "набора (обычные эмодзи не подойдут)."
+        )
+        return
+    alt = found.extract_from(message.text or "") if hasattr(found, "extract_from") else ""
+    store.set(group, key, found.custom_emoji_id, alt)
+    await message.answer(
+        f'Готово: <tg-emoji emoji-id="{found.custom_emoji_id}">{html.escape(alt or "⭐")}</tg-emoji> → '
+        f"<code>{key}</code>. Клиенты увидят его в следующих сообщениях."
+    )
+
+
+def strip_btn(key: str) -> str:
+    from slidelab.core.enums import Lang
+    from slidelab.core.i18n import TEXTS
+
+    return TEXTS[Lang.RU].get(key, key)
