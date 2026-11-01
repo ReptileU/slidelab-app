@@ -353,10 +353,28 @@ export function Logo({ center = false, size = 34 }: { center?: boolean; size?: n
           fontWeight: 800,
           fontSize: size * 0.62,
           lineHeight: 1,
+          position: "relative",
         }}
       >
         <span style={{ background: "linear-gradient(100deg,#8e8e93,#f5f5f7 35%,#a1a1a6 65%,#fff)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>S</span>
-        <span style={{ color: "#fff" }}>.</span>
+        <span
+          style={{
+            position: "absolute",
+            right: size * 0.07,
+            bottom: size * 0.07,
+            width: size * 0.3,
+            height: size * 0.3,
+            borderRadius: "50%",
+            background: "#e8e8ed",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg viewBox="0 0 24 24" width={size * 0.22} height={size * 0.22} fill="none" stroke="#000" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 1 }}>
+            <path d="M9.5 6l6 6-6 6" />
+          </svg>
+        </span>
       </span>
       <span className="footnote silver-text" style={{ fontWeight: 700, letterSpacing: 3 }}>
         SLIDELAB

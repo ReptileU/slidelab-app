@@ -14,7 +14,9 @@
   .box { max-width: 420px; width: 100%; text-align: center; }
   .ic { width: 88px; height: 88px; margin: 0 auto 28px; border-radius: 22px; display: flex; align-items: center; justify-content: center;
     background: linear-gradient(160deg, #3a3a3c, #000); box-shadow: inset 0 1.5px 0 rgba(255,255,255,.22), 0 0 0 1px rgba(255,255,255,.1);
-    font-weight: 800; font-size: 54px; }
+    font-weight: 800; font-size: 54px; position: relative; }
+  .ic i { position: absolute; right: 7px; bottom: 7px; width: 24px; height: 24px; border-radius: 50%; background: #e8e8ed; display: flex; align-items: center; justify-content: center; }
+  .ic i svg { width: 17px; height: 17px; margin-left: 1px; }
   .sil { background: linear-gradient(100deg, #8e8e93 0%, #f5f5f7 22%, #9a9a9f 42%, #fff 58%, #a1a1a6 76%, #f5f5f7 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent; }
   h1 { margin: 0 0 12px; font-size: 28px; line-height: 1.15; letter-spacing: -.02em; }
@@ -26,7 +28,7 @@
 </head>
 <body>
 <div class="box">
-  <div class="ic"><span class="sil">S</span></div>
+  <div class="ic"><span class="sil">S</span><i><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg></i></div>
   <h1 id="t">SlideLab обновился</h1>
   <p id="d">Новое приложение открывается кнопкой «SlideLab» слева от поля ввода в чате с ботом.</p>
   <button id="b">Перейти в бот</button>
