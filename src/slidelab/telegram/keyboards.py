@@ -25,7 +25,7 @@ from slidelab.telegram.callbacks import (
     RateCb,
 )
 
-MENU_KEYS = ("btn_new", "btn_app", "btn_orders", "btn_prices", "btn_examples", "btn_help")
+MENU_KEYS = ("btn_menu", "btn_new", "btn_app", "btn_orders", "btn_prices", "btn_examples", "btn_help")
 
 
 def menu_texts(key: str) -> set[str]:
@@ -62,9 +62,21 @@ def main_menu(lang: Lang, app_url: str | None) -> ReplyKeyboardMarkup:
     )
 
 
+def menu_button(lang: Lang) -> ReplyKeyboardMarkup:
+    """Одна кнопка «Меню» у поля ввода: присылает карточку заказа с разделами под ней."""
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text=t(lang, "btn_menu"))]],
+        resize_keyboard=True,
+        is_persistent=True,
+    )
+
+
 def card_nav(lang: Lang) -> InlineKeyboardMarkup:
     """Под карточкой заказа — навигация вместо серого меню у поля ввода."""
-    nav = lambda key, value: _btn(t(lang, key), FormCb(field="nav", value=value))  # noqa: E731
+
+    def nav(key: str, value: str) -> InlineKeyboardButton:
+        return _btn(t(lang, key), FormCb(field="nav", value=value))
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [nav("btn_orders", "orders"), nav("btn_prices", "prices")],

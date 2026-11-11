@@ -47,7 +47,7 @@ async def begin(message: Message, state: FSMContext, user: User) -> None:
 
 
 @router.message(Command("new", "order"))
-@router.message(F.text.in_(kb.menu_texts("btn_new")))
+@router.message(F.text.in_(kb.menu_texts("btn_new") | kb.menu_texts("btn_menu")))
 async def cmd_new(message: Message, state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> None:
     """Карточка-виджет «Новая презентация»; если Telegram её не принял — прежняя анкета в чате."""
     if not await send_card(state, session, user, flows):

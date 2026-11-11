@@ -66,10 +66,10 @@ class Notifier:
     async def menu(self, user: User) -> ReplyKeyboardMarkup | ReplyKeyboardRemove:
         """Меню у поля ввода — только в режиме старой витрины (в нём кнопка с заказами клиента).
 
-        С новой Mini App серое меню убрано: всё есть в кнопке «SlideLab», карточке заказа и командах «/».
+        С новой Mini App вместо большого меню одна кнопка «Меню» — она присылает карточку заказа с разделами.
         """
         if not self.settings.legacy_webapp:
-            return ReplyKeyboardRemove()
+            return kb.menu_button(lang_of(user))
         return kb.main_menu(lang_of(user), await self.app_url(user))
 
     async def app_url(self, user: User, tab: str | None = None) -> str:
