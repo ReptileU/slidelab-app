@@ -701,7 +701,7 @@ def strip_btn(key: str) -> str:
 
 @router.message(Command("logo"))
 async def cmd_logo(message: Message, command: CommandObject, settings: Settings) -> None:
-    """/logo — поставить новый логотип (content/media/avatar_mono.png) на аватар бота и канала."""
+    """/logo — логотип на аватар бота (avatar_bot.png, с подписью «Bot») и канала (avatar_mono.png)."""
     from aiogram.exceptions import TelegramAPIError
     from aiogram.types import FSInputFile, InputProfilePhotoStatic
 
@@ -709,11 +709,14 @@ async def cmd_logo(message: Message, command: CommandObject, settings: Settings)
     if not path.exists():
         await message.answer(f"Нет файла <code>{html.escape(str(path))}</code>.")
         return
+    bot_path = settings.content_dir / "media" / "avatar_bot.png"
+    if not bot_path.exists():
+        bot_path = path
     bot = message.bot
     assert bot is not None
     report = []
     try:
-        await bot.set_my_profile_photo(photo=InputProfilePhotoStatic(photo=FSInputFile(path)))
+        await bot.set_my_profile_photo(photo=InputProfilePhotoStatic(photo=FSInputFile(bot_path)))
         report.append("бот — готово")
     except TelegramAPIError as e:
         report.append(f"бот — не вышло ({html.escape(str(e))[:200]}). Можно вручную: @BotFather → /setuserpic")
