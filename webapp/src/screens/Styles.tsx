@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useCatalog, useT } from "../lib/app";
 import type { Key } from "../lib/i18n";
@@ -13,6 +13,9 @@ type Filter = (typeof FILTERS)[number];
 export function Styles() {
   const t = useT();
   const nav = useNavigate();
+  const location = useLocation();
+  // Открыли стили сразу (без предыдущего экрана) — «Назад» ведёт на главную, а не в никуда
+  const back = () => (location.key === "default" ? nav("/", { replace: true }) : nav(-1));
   const [params, setParams] = useSearchParams();
   const catalog = useCatalog();
   const [filter, setFilter] = useState<Filter>("all");
@@ -22,7 +25,7 @@ export function Styles() {
 
   return (
     <div className="page no-tabbar">
-      <BackButton onClick={() => (open ? setParams({}) : nav(-1))} />
+      <BackButton onClick={() => (open ? setParams({}, { replace: true }) : back())} />
       <h1 className="large-title" style={{ margin: "8px 0 16px" }}>
         {t("styles_t")}
       </h1>
@@ -36,7 +39,7 @@ export function Styles() {
       <div className="style-grid">
         {catalog.isLoading && [0, 1, 2, 3].map((i) => <Skeleton key={i} height={120} />)}
         {shown.map((s) => (
-          <button key={s.key} className="style-card" onClick={() => setParams({ open: s.key })}>
+          <button key={s.key} className="style-card" onClick={() => setParams({ open: s.key }, { replace: true })}>
             <Img src={s.images[0]} alt={s.name} />
             <div className="name">{s.name}</div>
             <div className="hint">{s.hint}</div>
@@ -44,7 +47,7 @@ export function Styles() {
         ))}
       </div>
 
-      <StyleSheet style={open} onClose={() => setParams({})} onPick={(key) => nav(`/order?style=${key}`, { replace: true })} />
+      <StyleSheet style={open} onClose={() => setParams({}, { replace: true })} onPick={(key) => nav(`/order?style=${key}`, { replace: true })} />
     </div>
   );
 }
