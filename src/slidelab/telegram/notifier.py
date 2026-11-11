@@ -10,7 +10,7 @@ from datetime import UTC, datetime
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
-from aiogram.types import InlineKeyboardMarkup, LabeledPrice, Message, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, LabeledPrice, Message, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.config import Settings
@@ -45,14 +45,17 @@ class Notifier:
         self,
         user: User,
         key: str,
-        markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | None = None,
+        markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | None = None,
         **kwargs: object,
     ) -> Message | None:
         text = t(user.lang, key, admin=self.settings.admin_username, **kwargs)
         return await self.client_text(user, text, markup)
 
     async def client_text(
-        self, user: User, text: str, markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | None = None
+        self,
+        user: User,
+        text: str,
+        markup: InlineKeyboardMarkup | ReplyKeyboardMarkup | ReplyKeyboardRemove | None = None,
     ) -> Message | None:
         try:
             return await self.bot.send_message(user.tg_id, text, reply_markup=markup)
@@ -60,10 +63,14 @@ class Notifier:
             log.warning("Не удалось написать клиенту %s: %s", user.tg_id, e)
             return None
 
-    async def menu(self, user: User) -> ReplyKeyboardMarkup:
-        """Меню у поля ввода; в режиме старой витрины в нём кнопка с актуальными заказами клиента."""
-        url = await self.app_url(user) if self.settings.legacy_webapp else None
-        return kb.main_menu(lang_of(user), url)
+    async def menu(self, user: User) -> ReplyKeyboardMarkup | ReplyKeyboardRemove:
+        """Меню у поля ввода — только в режиме старой витрины (в нём кнопка с заказами клиента).
+
+        С новой Mini App серое меню убрано: всё есть в кнопке «SlideLab», карточке заказа и командах «/».
+        """
+        if not self.settings.legacy_webapp:
+            return ReplyKeyboardRemove()
+        return kb.main_menu(lang_of(user), await self.app_url(user))
 
     async def app_url(self, user: User, tab: str | None = None) -> str:
         """Адрес старой витрины с заказами и пакетом клиента в параметрах."""
