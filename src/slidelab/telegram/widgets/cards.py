@@ -79,9 +79,9 @@ ORDER_TEXTS: dict[Lang, dict[str, object]] = {
 }
 
 STATUS_TEXTS: dict[Lang, dict[str, object]] = {
-    Lang.RU: {"no": "Заказ #", "steps": ["Принят", "Обложка", "В работе", "Готово"]},
-    Lang.UZ: {"no": "Buyurtma #", "steps": ["Qabul", "Muqova", "Ishda", "Tayyor"]},
-    Lang.EN: {"no": "Order #", "steps": ["Placed", "Cover", "In work", "Done"]},
+    Lang.RU: {"no": "Заказ #", "steps": ["Принят", "Обложка", "В работе", "Готово"], "view": "Посмотреть презентацию"},
+    Lang.UZ: {"no": "Buyurtma #", "steps": ["Qabul", "Muqova", "Ishda", "Tayyor"], "view": "Taqdimotni ko‘rish"},
+    Lang.EN: {"no": "Order #", "steps": ["Placed", "Cover", "In work", "Done"], "view": "View the presentation"},
 }
 
 # (шаг шкалы, заголовок, пояснение) по статусу/стадии заказа
@@ -203,13 +203,16 @@ def status_key(order: Order) -> tuple[int, str]:
     return 0, "cover"
 
 
-def status_state(order: Order, lang: Lang) -> str:
+def status_state(order: Order, lang: Lang, bot_username: str | None = None) -> str:
     step, key = status_key(order)
     title, sub = HINTS[lang][key]
     topic = order.topic if len(order.topic) <= 60 else order.topic[:59] + "…"
     data: dict[str, object] = {"n": order.id, "t": topic, "s": step, "h": title, "d": sub}
     if order.price:
         data["p"] = f"{money(order.price)} {ORDER_TEXTS[lang]['sum']}"
+    has_deck = any(str(n).lower().endswith(".pdf") for n in (order.deliver_files or []))
+    if bot_username and has_deck and step >= 2:
+        data["l"] = f"https://t.me/{bot_username}?startapp=order_{order.id}"  # просмотр слайдов в приложении
     return check_data(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
 
 

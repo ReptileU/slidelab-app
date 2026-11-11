@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { Catalog, Invoice, Lang, Me, Order, OrderDraft, PlanCode, Quote } from "./types";
+import type { Catalog, Invoice, Lang, Me, Order, OrderDraft, PlanCode, Quote, SlideMark } from "./types";
 
 export class ApiError extends Error {
   constructor(
@@ -40,7 +40,18 @@ export const api = {
   approveCover: (id: number) => post<Order>(`/orders/${id}/approve-cover`),
   redoCover: (id: number, text: string) => post(`/orders/${id}/redo-cover`, { text }),
   orderInvoice: (id: number, provider: "stars" | "card") => post<Invoice>(`/orders/${id}/invoice`, { provider }),
-  revise: (id: number, text: string) => post<Order>(`/orders/${id}/revisions`, { text }),
+  revise: (id: number, text: string, marks: SlideMark[] = [], shots: string[] = []) =>
+    post<Order>(`/orders/${id}/revisions`, { text, marks, shots }),
+  downloads: (id: number) => request<{ name: string; url: string }[]>(`/orders/${id}/downloads`),
+
+  /** PDF готовой презентации — байты для pdf.js. */
+  async deckPdf(id: number): Promise<ArrayBuffer> {
+    const headers = new Headers();
+    if (initData) headers.set("Authorization", `tma ${initData}`);
+    const res = await fetch(`./api/orders/${id}/deck.pdf`, { headers });
+    if (!res.ok) throw new ApiError(res.status, "deck", res.statusText);
+    return res.arrayBuffer();
+  },
   sendFiles: (id: number) => post(`/orders/${id}/send-files`),
 
   packageInvoice: (plan: PlanCode, provider: "stars" | "card") =>

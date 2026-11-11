@@ -158,9 +158,16 @@ async def order_placed(bot: Bot, session: AsyncSession, user: User, message_id: 
 # --- статус заказа ----------------------------------------------------------------
 
 
+async def _username(bot: Bot) -> str | None:
+    try:
+        return (await bot.me()).username
+    except TelegramAPIError:
+        return None
+
+
 async def send_status_card(bot: Bot, order: Order, user: User, store: CardStore) -> None:
     lang = cards.lang_or_ru(user.lang)
-    state = cards.status_state(order, lang)
+    state = cards.status_state(order, lang, await _username(bot))
     try:
         msg = await bot(
             SendWidget(
@@ -189,7 +196,7 @@ async def refresh_statuses(bot: Bot, session: AsyncSession, store: CardStore) ->
         if order is None:
             store.update(key, None)
             continue
-        state = cards.status_state(order, cards.lang_or_ru(card.get("lang")))
+        state = cards.status_state(order, cards.lang_or_ru(card.get("lang")), await _username(bot))
         if state != card.get("state"):
             ok = await edit_data(bot, card["chat_id"], card["message_id"], state)
             if not ok:

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from slidelab.core.enums import (
     Deadline,
@@ -14,7 +14,7 @@ from slidelab.core.enums import (
     PlanCode,
     SlideTier,
 )
-from slidelab.core.schemas.order import RevisionText
+from slidelab.core.models.order import REVISION_MAX
 
 
 class PackageOut(BaseModel):
@@ -126,6 +126,7 @@ class OrderOut(BaseModel):
     revisions_left: int
     has_cover: bool
     has_result: bool
+    has_deck: bool = False  # готовый PDF — можно листать слайды в приложении
     created_at: datetime
     events: list[EventOut] = Field(default_factory=list)
 
@@ -142,8 +143,43 @@ class InvoiceOut(BaseModel):
     # Для перевода: реквизиты отправлены в чат, чек клиент пришлёт туда же
 
 
+class SlideMark(BaseModel):
+    """Правка на конкретном слайде: где (доли ширины/высоты слайда) и что поменять."""
+
+    slide: Annotated[int, Field(ge=1, le=300)]
+    x: Annotated[float, Field(ge=0, le=1)]
+    y: Annotated[float, Field(ge=0, le=1)]
+    text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
+
+
 class RevisionIn(BaseModel):
-    text: RevisionText
+    text: Annotated[str, StringConstraints(strip_whitespace=True, max_length=REVISION_MAX)] = ""
+    marks: Annotated[list[SlideMark], Field(max_length=30)] = Field(default_factory=list)
+    # Снимки слайдов с отметками (JPEG/PNG в base64) — для Claude в папку edits/
+    shots: Annotated[list[Annotated[str, StringConstraints(max_length=2_000_000)]], Field(max_length=12)] = Field(
+        default_factory=list
+    )
+
+    @model_validator(mode="after")
+    def not_empty(self) -> "RevisionIn":
+        if not self.text and not self.marks:
+            raise ValueError("Опишите, что поменять")
+        return self
+
+    def full_text(self) -> str:
+        """Текст правок для менеджера и Claude: общий комментарий + по слайдам."""
+        lines = [self.text] if self.text else []
+        for i, m in enumerate(sorted(self.marks, key=lambda m: m.slide), 1):
+            where = f"{'слева' if m.x < 0.34 else 'справа' if m.x > 0.66 else 'по центру'}" + (
+                f", {'вверху' if m.y < 0.34 else 'внизу' if m.y > 0.66 else 'посередине'}"
+            )
+            lines.append(f"Слайд {m.slide} (метка {i}, {where}): {m.text}")
+        return "\n".join(lines)
+
+
+class DownloadOut(BaseModel):
+    name: str
+    url: str
 
 
 class SupportIn(BaseModel):

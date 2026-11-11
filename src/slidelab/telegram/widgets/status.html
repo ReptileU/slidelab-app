@@ -1,7 +1,7 @@
 <div class=w id=w></div>
 <style>
-.w{--t:var(--tg-theme-text-color,#f5f5f7);--h:var(--tg-theme-hint-color,#8e8e93);--c:rgba(255,255,255,.08);--cb:rgba(255,255,255,.1);--bar:linear-gradient(90deg,#c7c7cc,#fff);--off:rgba(255,255,255,.14);font:15px/1.3 system-ui,sans-serif;color:var(--t);padding:12px 14px 4px 20px}
-@media (prefers-color-scheme:light){.w{--c:rgba(0,0,0,.05);--cb:rgba(0,0,0,.08);--bar:linear-gradient(90deg,#3a3a3c,#000);--off:rgba(0,0,0,.1)}}
+.w{--t:var(--tg-theme-text-color,#f5f5f7);--h:var(--tg-theme-hint-color,#8e8e93);--c:rgba(255,255,255,.08);--cb:rgba(255,255,255,.1);--bar:linear-gradient(90deg,#c7c7cc,#fff);--off:rgba(255,255,255,.14);--btn:linear-gradient(180deg,#fff,#e5e5ea);--btnt:#000;font:15px/1.3 system-ui,sans-serif;color:var(--t);padding:12px 14px 4px 20px}
+@media (prefers-color-scheme:light){.w{--c:rgba(0,0,0,.05);--cb:rgba(0,0,0,.08);--bar:linear-gradient(90deg,#3a3a3c,#000);--off:rgba(0,0,0,.1);--btn:linear-gradient(180deg,#3a3a3c,#000);--btnt:#fff}}
 .n{font-weight:800;font-size:19px}
 .t{color:var(--h);font-size:13px;margin:3px 0 12px}
 .bar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
@@ -14,6 +14,7 @@
 .c{margin-top:12px;padding:11px 12px;border-radius:12px;background:var(--c);border:1px solid var(--cb)}
 .c b{display:block;font-size:15px}.c span{font-size:13px;color:var(--h)}
 .x{color:#ff453a}
+.v{display:block;width:100%;margin-top:12px;border:0;border-radius:999px;padding:12px;font:700 15px system-ui;background:var(--btn);color:var(--btnt)}
 </style>
 <script>
 const W=window.TelegramWidget,T=__T__;
@@ -22,6 +23,8 @@ const s=d.s??0,x=s<0;let h='<div class=n>'+T.no.replace('#','#'+(d.n||''))+'</di
 h+='<div class=bar>'+T.steps.map((_,i)=>'<i class="'+(!x&&i<=s?'on':'')+(!x&&i==s&&s<3?' now':'')+'"></i>').join('')+'</div>';
 h+='<div class=lb>'+T.steps.map((t,i)=>'<b class="'+(!x&&i<=s?'on':'')+'">'+t+'</b>').join('')+'</div>';
 h+='<div class=c><b class="'+(x?'x':'')+'">'+(d.h||'')+'</b><span>'+(d.d||'')+'</span></div>';
+if(d.l)h+='<button class=v id=v>'+T.view+'</button>';
 document.getElementById('w').innerHTML=h}
+document.getElementById('w').addEventListener('click',e=>{let b=e.target;while(b&&b.tagName!='BUTTON')b=b.parentElement;if(b&&b.id=='v'){let d={};try{d=JSON.parse(W.chatData||'{}')}catch(x){}if(d.l)W.openTelegramLink(d.l)}});
 W.onEvent('chatDataChanged',r);r();W.ready()
 </script>

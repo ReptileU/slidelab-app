@@ -12,7 +12,13 @@ initTelegram();
 
 // Telegram открывает приложение с данными в хэше (#tgWebAppData=…), а HashRouter принял бы их за маршрут
 // и показал пустой экран. telegram-web-app.js уже прочитал их — переводим адрес на главную.
-if (!location.hash.startsWith("#/")) history.replaceState(null, "", `${location.pathname}${location.search}#/`);
+// Ссылка t.me/<бот>?startapp=order_<номер> (кнопка «Посмотреть презентацию» в карточке статуса) — сразу в заказ.
+{
+  const start = (window.Telegram?.WebApp?.initDataUnsafe as { start_param?: string } | undefined)?.start_param ?? "";
+  const order = /^order_(\d+)$/.exec(start);
+  if (order) history.replaceState(null, "", `${location.pathname}${location.search}#/orders/${order[1]}`);
+  else if (!location.hash.startsWith("#/")) history.replaceState(null, "", `${location.pathname}${location.search}#/`);
+}
 
 declare global {
   interface Window {

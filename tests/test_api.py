@@ -203,3 +203,47 @@ async def test_package_invoice_and_support(env: dict[str, Any]) -> None:
     assert inv["amount"] == 415  # 64 000 / 155 → вверх до 5
     assert (await c.post("/api/support/messages", json={"text": "Когда будет?"}, headers=auth())).json() == {"ok": True}
     assert (await c.post("/api/reviews", json={"stars": 5}, headers=auth())).status_code == 200
+
+
+# --- готовая презентация: листать, скачать, правки по слайдам -------------------------
+
+
+async def test_deck_viewer_downloads_and_slide_marks(env: dict[str, Any]) -> None:
+    import base64
+
+    from slidelab.core.enums import OrderStatus
+
+    c: AsyncClient = env["client"]
+    oid = (await c.post("/api/orders", json=ORDER, headers=auth())).json()["id"]
+    sent = env["work"] / str(oid) / "sent_deck_1"
+    sent.mkdir(parents=True)
+    (sent / "Японии.pdf").write_bytes(b"%PDF-1.4 fake")
+    (sent / "Японии.pptx").write_bytes(b"PK fake")
+    async with env["sm"]() as s:
+        order = await s.get(Order, oid)
+        assert order is not None
+        order.status = OrderStatus.DONE
+        order.deliver_dir = f"{oid}/sent_deck_1"
+        order.deliver_files = ["Японии.pdf", "Японии.pptx"]
+        await s.commit()
+
+    assert (await c.get(f"/api/orders/{oid}", headers=auth())).json()["has_deck"] is True
+    pdf = await c.get(f"/api/orders/{oid}/deck.pdf", headers=auth())
+    assert pdf.status_code == 200 and pdf.content.startswith(b"%PDF")
+    assert (await c.get(f"/api/orders/{oid}/deck.pdf", headers=auth(999))).status_code == 404  # чужой заказ
+
+    links = (await c.get(f"/api/orders/{oid}/downloads", headers=auth())).json()
+    assert {item["name"] for item in links} == {"Японии.pdf", "Японии.pptx"}
+    url = links[0]["url"]
+    path = url[url.index("/api/") :]
+    assert (await c.get(path)).status_code == 200  # подписанная ссылка — без initData
+    assert (await c.get(path.replace("sig=", "sig=0"))).status_code == 403
+
+    png = "data:image/png;base64," + base64.b64encode(b"\x89PNG\r\n\x1a\n" + b"0" * 20).decode()
+    body = {"text": "", "marks": [{"slide": 3, "x": 0.8, "y": 0.1, "text": "Заменить график"}], "shots": [png]}
+    assert (await c.post(f"/api/orders/{oid}/revisions", json=body, headers=auth())).status_code == 200
+    notes = (env["work"] / str(oid) / "notes.md").read_text(encoding="utf-8")
+    assert "Слайд 3 (метка 1, справа, вверху): Заменить график" in notes and "edits/slide_marks_" in notes
+    assert list((env["work"] / str(oid) / "edits").glob("slide_marks_*.png"))
+    empty = {"text": "", "marks": []}
+    assert (await c.post(f"/api/orders/{oid}/revisions", json=empty, headers=auth())).status_code == 422

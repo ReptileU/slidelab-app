@@ -11,6 +11,7 @@ import { alert, haptic } from "../lib/tg";
 import type { Order } from "../lib/types";
 import { Button, Cell, Group, Img, Section, Sheet, Skeleton, TextArea, Toast } from "../ui";
 import { PaySheet } from "../ui/PaySheet";
+import { SlideViewer } from "../ui/SlideViewer";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 
 export function OrderDetail() {
@@ -124,7 +125,19 @@ function OrderView({ order }: { order: Order }) {
         </p>
       </div>
 
-      {order.has_cover && (
+      {order.has_deck && (
+        <Section title={t("v_title")}>
+          <SlideViewer
+            order={order}
+            onSent={(o) => {
+              refresh(o);
+              close(t("revise_sent"));
+            }}
+          />
+        </Section>
+      )}
+
+      {order.has_cover && !order.has_deck && (
         <Section title={t("cover_t")}>
           {cover ? <Img src={cover} alt="" className="cover-img" loading="eager" /> : <Skeleton height={190} />}
           {order.status === "cover" && (

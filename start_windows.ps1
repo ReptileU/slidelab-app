@@ -63,12 +63,15 @@ if (Has "npm") {
     $stale = -not (Test-Path $dist)
     if (-not $stale) {
         $built = (Get-Item $dist).LastWriteTime
-        $stale = [bool](Get-ChildItem -Recurse -File "webapp\src", "webapp\index.html" | Where-Object { $_.LastWriteTime -gt $built } | Select-Object -First 1)
+        $stale = [bool](Get-ChildItem -Recurse -File "webapp\src", "webapp\index.html", "webapp\package-lock.json" | Where-Object { $_.LastWriteTime -gt $built } | Select-Object -First 1)
     }
     if ($stale) {
         Step "Собираю Mini App..."
         Push-Location webapp
-        if (-not (Test-Path "node_modules")) { npm ci --silent }
+        # новые пакеты (package-lock.json новее установленных) — доустановить
+        $installed = "node_modules\.package-lock.json"
+        if (-not (Test-Path "node_modules") -or -not (Test-Path $installed) -or
+            (Get-Item "package-lock.json").LastWriteTime -gt (Get-Item $installed).LastWriteTime) { npm ci --silent }
         npm run build --silent | Out-Null
         Pop-Location
     }

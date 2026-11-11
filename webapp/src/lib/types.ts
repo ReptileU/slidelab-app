@@ -116,6 +116,7 @@ export interface Order {
   revisions_left: number;
   has_cover: boolean;
   has_result: boolean;
+  has_deck?: boolean;
   created_at: string;
   events: { status: OrderStatus; at: string }[];
 }
@@ -125,4 +126,12 @@ export interface Invoice {
   url: string | null;
   amount: number;
   currency: string;
+}
+
+/** Правка на слайде: номер слайда, место (доли 0–1) и что поменять. */
+export interface SlideMark {
+  slide: number;
+  x: number;
+  y: number;
+  text: string;
 }

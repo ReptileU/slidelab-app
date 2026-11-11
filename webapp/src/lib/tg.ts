@@ -33,6 +33,7 @@ interface WebApp {
   openInvoice(url: string, cb?: (status: "paid" | "cancelled" | "failed" | "pending") => void): void;
   openTelegramLink(url: string): void;
   openLink(url: string): void;
+  downloadFile?(params: { url: string; file_name: string }, cb?: (accepted: boolean) => void): void;
   showAlert(message: string, cb?: () => void): void;
   showConfirm(message: string, cb: (ok: boolean) => void): void;
   MainButton: BottomButton;
