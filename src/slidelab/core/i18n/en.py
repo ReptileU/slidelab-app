@@ -165,6 +165,8 @@ TEXTS: dict[str, str] = {
     "what_package": "the «{plan}» pack",
     # --- done ---
     "formats_ask": "⟦done⟧<b>Presentation #{id} is ready</b>\nWhich format would you like?",
+    "formats_ask_view": "⟦done⟧<b>Presentation #{id} is ready</b>\nView it right in the app — no download. Or pick a file format:",
+    "btn_view": "👀 View the presentation",
     "fmt_pptx": "PowerPoint",
     "fmt_pdf": "PDF",
     "fmt_png": "Images",

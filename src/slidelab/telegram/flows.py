@@ -169,10 +169,21 @@ class Flows:
         fmts += [k for k in ("gslides", "canva") if k in links or "pptx" in fmts]
         return fmts
 
+    def view_url(self, order: Order) -> str | None:
+        """Ссылка «Посмотреть»: приложение сразу открывает слайды заказа (нужен готовый PDF)."""
+        s = self.settings
+        if s.legacy_webapp or not s.webapp_url.startswith("https://"):
+            return None
+        if not any(p.suffix.lower() == ".pdf" for p in self.pipeline.delivered_files(order)):
+            return None
+        return f"{s.webapp_url.split('#')[0].split('?')[0].rstrip('/')}/?view={order.id}"
+
     async def offer_formats(self, order: Order, user: User) -> None:
         fmts = self.available_formats(order)
-        if len([f for f in fmts if f != "docx"]) > 1:
-            await self.n.client(user, "formats_ask", kb.formats(lang_of(user), order.id, fmts), id=order.id)
+        view = self.view_url(order)
+        if len([f for f in fmts if f != "docx"]) > 1 or view:
+            markup = kb.formats(lang_of(user), order.id, fmts, view_url=view)
+            await self.n.client(user, "formats_ask" if view is None else "formats_ask_view", markup, id=order.id)
         else:
             await self.deliver(order, user, "all")
 

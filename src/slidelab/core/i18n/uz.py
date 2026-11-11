@@ -167,6 +167,8 @@ TEXTS: dict[str, str] = {
     "what_package": "«{plan}» paketi",
     # --- tayyor ---
     "formats_ask": "⟦done⟧<b>#{id} taqdimot tayyor</b>\nQaysi formatda yuboray?",
+    "formats_ask_view": "⟦done⟧<b>#{id} taqdimot tayyor</b>\nIlovada yuklab olmasdan ko‘ring. Yoki fayl formatini tanlang:",
+    "btn_view": "👀 Taqdimotni ko‘rish",
     "fmt_pptx": "PowerPoint",
     "fmt_pdf": "PDF",
     "fmt_png": "Rasmlar",

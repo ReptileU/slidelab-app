@@ -248,7 +248,7 @@ def pay(
     return InlineKeyboardMarkup(inline_keyboard=rows) if rows else None
 
 
-def formats(lang: Lang, order_id: int, fmts: list[str]) -> InlineKeyboardMarkup:
+def formats(lang: Lang, order_id: int, fmts: list[str], view_url: str | None = None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for fmt in fmts:
         if fmt == "docx":  # конспект приходит вместе с любым форматом
@@ -258,7 +258,11 @@ def formats(lang: Lang, order_id: int, fmts: list[str]) -> InlineKeyboardMarkup:
         builder.button(text=label, callback_data=FmtCb(order_id=order_id, fmt=fmt))
     builder.button(text=t(lang, "fmt_all"), callback_data=FmtCb(order_id=order_id, fmt="all"))
     builder.adjust(2)
-    return builder.as_markup()
+    markup = builder.as_markup()
+    if view_url:  # «Посмотреть» — первой и во всю ширину: листать слайды в приложении без скачивания
+        view = InlineKeyboardButton(text=t(lang, "btn_view"), web_app=WebAppInfo(url=view_url))
+        markup.inline_keyboard.insert(0, [view])
+    return markup
 
 
 def after_delivery(lang: Lang, order_id: int) -> InlineKeyboardMarkup:
