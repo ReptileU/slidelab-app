@@ -9,6 +9,7 @@ from typing import Any
 
 from aiogram import Bot
 from aiogram.client.session.base import BaseSession
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.methods import TelegramMethod
 from aiogram.types import Chat, File, ForumTopic, Message, MessageId, TelegramObject, User
 
@@ -20,12 +21,15 @@ class FakeSession(BaseSession):
         super().__init__()
         self.calls: list[TelegramMethod[Any]] = []
         self._ids = count(100)
+        self.widgets = False  # виджеты Bot API 10.4: по умолчанию «не поддерживаются» — работает прежняя анкета
 
     def of(self, name: str) -> list[Any]:
         return [c for c in self.calls if type(c).__name__ == name]
 
     async def make_request(self, bot: Bot, method: TelegramMethod[Any], timeout: int | None = None) -> Any:
         self.calls.append(method)
+        if type(method).__name__ == "SendWidget" and not self.widgets:
+            raise TelegramBadRequest(method=method, message="Not Found: method not found")
         result = self._result(method, method.__returning__)
         # как в настоящем aiogram: ответы привязаны к боту (message.delete() и т.п. работают)
         return result.as_(bot) if isinstance(result, TelegramObject) else result

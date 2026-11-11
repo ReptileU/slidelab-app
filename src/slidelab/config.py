@@ -49,6 +49,8 @@ class Settings(BaseSettings):
     work_dir: Path = Path("orders")
     # Посты канала (posts/*.txt), картинки (media/), портфолио (portfolio/)
     content_dir: Path = Path("content")
+    # Служебные файлы бота (карточки-виджеты: data/widgets.json)
+    data_dir: Path = Path("data")
 
     # --- Оплата ---
     pay_uzum: str = ""

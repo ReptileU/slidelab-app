@@ -21,6 +21,7 @@ TEXTS: dict[str, str] = {
     "btn_prices": "Narxlar",
     "btn_examples": "Namunalar",
     "btn_help": "Savollar",
+    "btn_chat_form": "📝 Chatda to‘ldirish",
     "btn_open_app": "SlideLab’ni ochish",
     "open_app_hint": "SlideLab ilovasi — pastdagi tugma orqali. Keyingi safar kiritish maydoni chapidagi «SlideLab» tugmasidan ochish mumkin.",
     # --- narxlar va paketlar ---

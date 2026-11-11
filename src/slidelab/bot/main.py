@@ -31,6 +31,8 @@ from slidelab.bot.routers import build_router
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
 from slidelab.telegram import app_link, premium
+from slidelab.telegram.widgets import service as widgets
+from slidelab.telegram.widgets.dispatch import WidgetDispatcher
 
 log = logging.getLogger(__name__)
 WEBHOOK_PATH = "/telegram/webhook"
@@ -122,7 +124,7 @@ def build_dispatcher(
     extra_router: Router | None = None,
 ) -> Dispatcher:
     """storage и sessionmaker подменяются в тестах (память вместо Redis, SQLite вместо PostgreSQL)."""
-    dp = Dispatcher(storage=storage or make_storage(settings), settings=settings)
+    dp = WidgetDispatcher(storage=storage or make_storage(settings), settings=settings)
     if sessionmaker is None:
         engine = make_engine(settings.database_url)
         sessionmaker = make_sessionmaker(engine)
@@ -183,6 +185,7 @@ def start_background(bot: Bot, dp: Dispatcher, settings: Settings) -> list["asyn
     jobs = [
         asyncio.create_task(tasks.watch_reviews(bot, sm, settings)),
         asyncio.create_task(tasks.watch_stuck(bot, sm, settings)),
+        asyncio.create_task(widgets.watch_statuses(bot, sm, widgets.store_for(settings.data_dir))),
     ]
     if settings.admin_id and settings.channel:
         jobs.append(asyncio.create_task(publisher.loop(bot)))
@@ -240,7 +243,7 @@ def main() -> None:
 
         async def polling() -> None:
             await bot.delete_webhook(drop_pending_updates=False)
-            await dp.start_polling(bot)
+            await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
         asyncio.run(polling())
         return

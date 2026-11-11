@@ -17,6 +17,7 @@ from slidelab.core.services.pipeline import Pipeline, fmt_of, formats_of
 from slidelab.telegram import keyboards as kb
 from slidelab.telegram import views
 from slidelab.telegram.notifier import Notifier, lang_of
+from slidelab.telegram.widgets import service as widgets
 
 log = logging.getLogger(__name__)
 
@@ -66,6 +67,8 @@ class Flows:
         elif order.has_source_files:
             text += t(lang, "order_created_files")
         await self.n.client_text(user, text, await self.n.menu(user))
+        # Живая карточка статуса: сама обновляется по мере работы над заказом
+        await widgets.send_status_card(self.bot, order, user, widgets.store_for(self.settings.data_dir))
 
         if not order.is_paid and order.price > 0:
             await self.n.send_pay(user, amount=order.price, order=order, early=True)

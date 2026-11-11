@@ -163,6 +163,7 @@ async def h(tmp_path: Path) -> AsyncIterator[Harness]:
     PROXY.current = sm
     DP.fsm.storage = MemoryStorage()
     SETTINGS.work_dir = tmp_path
+    SETTINGS.data_dir = tmp_path / "data"
     bot, tg = make_bot()
     yield Harness(bot, tg, sm, tmp_path)
     await engine.dispose()
@@ -396,3 +397,57 @@ async def test_strangers_cannot_use_staff_buttons(h: Harness) -> None:
     order = await order_in_chat(h)
     await h.click(MgrCb(action="cancel_yes", order_id=order.id).pack())  # клиент жмёт кнопку владельца
     assert (await h.order()).status is OrderStatus.NEW
+
+
+# --- карточки-виджеты (Bot API 10.4) ------------------------------------------------
+
+
+async def test_widget_order_card_and_live_status(h: Harness) -> None:
+    from slidelab.telegram.widgets import service as widgets
+
+    h.tg.widgets = True
+    await onboard(h)
+    await h.text("Новая презентация")
+    card = h.sent("SendWidget", CLIENT)[-1]
+    assert card.allow_queries and "TelegramWidget" in card.html
+    state = json.loads(card.chat_data)
+    assert len(state["q"]) == 36 and state["q"][4] == 9900 and state["o"][4] == 19000  # скидка на первую
+    assert state["q"][2 * 12 + 0] == -1  # срочно 21–30 недоступно
+
+    # тап «Заказать»: 16–20 слайдов, обычно, английский, конспект + юмор (2 | 4)
+    query = {"id": "q1", "from": {"id": CLIENT, "is_bot": False, "first_name": "Аня"}, "data": "o:1126"}
+    query |= {"chat": {"id": CLIENT, "type": "private"}, "message_id": 100}
+    await h.send(Update.model_validate({"update_id": next(ids), "widget_query": query}))
+    assert h.tg.of("AnswerWidgetQuery")[-1].data == "ok"
+    assert json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)["st"] == 1
+    assert "тему" in h.texts(CLIENT)[-1]
+
+    await h.text("Нейросети в медицине")
+    order = await h.order()
+    assert (order.topic, order.slides.value, order.deadline.value, order.pres_lang.value) == (
+        "Нейросети в медицине",
+        "s20",
+        "normal",
+        "en",
+    )
+    assert order.extra_notes and order.need_humor and not order.extra_text
+    placed = json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)
+    assert (placed["st"], placed["id"]) == (2, order.id)
+    status = h.sent("SendWidget", CLIENT)[-1]
+    assert json.loads(status.chat_data)["s"] == 0 and not status.allow_queries
+
+    store = widgets.store_for(SETTINGS.data_dir)
+    async with h.sm() as s:
+        db_order = await s.get(Order, order.id)
+        assert db_order is not None
+        db_order.status = OrderStatus.WORK
+        await s.commit()
+        assert await widgets.refresh_statuses(h.bot, s, store) == 1
+        assert await widgets.refresh_statuses(h.bot, s, store) == 0  # без изменений — не трогаем
+    assert json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)["s"] == 2
+
+
+async def test_widget_falls_back_to_chat_form(h: Harness) -> None:
+    await onboard(h)
+    await h.text("Новая презентация")  # Telegram не принял карточку — прежняя анкета
+    assert "тем" in h.texts(CLIENT)[-1].lower()

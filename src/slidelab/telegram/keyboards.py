@@ -62,6 +62,11 @@ def main_menu(lang: Lang, app_url: str | None) -> ReplyKeyboardMarkup:
     )
 
 
+def chat_form(lang: Lang) -> InlineKeyboardMarkup:
+    """Под карточкой-виджетом: тем, у кого карточка не показалась, — анкета в чате."""
+    return _rows(_btn(t(lang, "btn_chat_form"), FormCb(field="action", value="chat")))
+
+
 def open_app(lang: Lang, url: str) -> InlineKeyboardMarkup:
     """Новая Mini App — только кнопкой в сообщении: так Telegram передаёт ей данные пользователя."""
     return _rows(InlineKeyboardButton(text=t(lang, "btn_open_app"), web_app=WebAppInfo(url=url)))

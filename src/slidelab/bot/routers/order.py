@@ -27,6 +27,7 @@ from slidelab.telegram.callbacks import FormCb, QuickCb
 from slidelab.telegram.flows import Flows, Material
 from slidelab.telegram.notifier import lang_of
 from slidelab.telegram.states import OrderForm, QuickForm
+from slidelab.telegram.widgets import service as widgets
 
 router = Router(name="order")
 router.message.filter(F.chat.type == "private")
@@ -47,12 +48,62 @@ async def begin(message: Message, state: FSMContext, user: User) -> None:
 
 @router.message(Command("new", "order"))
 @router.message(F.text.in_(kb.menu_texts("btn_new")))
-async def cmd_new(message: Message, state: FSMContext, user: User) -> None:
-    await begin(message, state, user)
+async def cmd_new(message: Message, state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> None:
+    """Карточка-виджет «Новая презентация»; если Telegram её не принял — прежняя анкета в чате."""
+    if not await send_card(state, session, user, flows):
+        await begin(message, state, user)
+
+
+async def send_card(state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> bool:
+    await state.clear()
+    store = widgets.store_for(flows.settings.data_dir)
+    return await widgets.send_order_card(flows.bot, session, user, store, kb.chat_form(lang_of(user)))
+
+
+# --- заказ из карточки: после «Заказать» клиент пишет тему -----------------------------
+
+
+@router.message(widgets.WidgetForm.topic, F.text, ~F.text.startswith("/"), ~F.text.in_(kb.ALL_MENU_TEXTS))
+async def on_widget_topic(message: Message, state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> None:
+    topic = (message.text or "").strip()
+    if len(topic) < 3:
+        await message.answer(t(user.lang, "topic_short"))
+        return
+    if len(topic) > TOPIC_MAX:
+        await message.answer(t(user.lang, "topic_long"))
+        return
+    data = await state.get_data()
+    draft = OrderDraft(
+        topic=topic,
+        slides=data["w_slides"],
+        deadline=data["w_deadline"],
+        pres_lang=data["w_plang"],
+        design=Design.OURS,
+        extra_text=bool(data.get("w_text")),
+        extra_notes=bool(data.get("w_notes")),
+        need_humor=bool(data.get("w_humor")),
+    )
+    key = f"widget:{user.tg_id}:{message.message_id}"
+    order = await OrderService(session).create(
+        user.id, draft, idempotency_key=key, source=OrderSource.CHAT, ui_lang=lang_of(user)
+    )
+    await state.clear()
+    await session.commit()
+    await widgets.order_placed(flows.bot, session, user, data.get("w_msg"), order)
+    await flows.order_created(order, user)
+    await session.commit()
 
 
 @router.callback_query(FormCb.filter((F.field == "action") & (F.value == "start")))
-async def on_start(callback: CallbackQuery, state: FSMContext, user: User) -> None:
+async def on_start(callback: CallbackQuery, state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> None:
+    await callback.answer()
+    if isinstance(callback.message, Message) and not await send_card(state, session, user, flows):
+        await begin(callback.message, state, user)
+
+
+@router.callback_query(FormCb.filter((F.field == "action") & (F.value == "chat")))
+async def on_chat_form(callback: CallbackQuery, state: FSMContext, user: User) -> None:
+    """Под карточкой: «Заполнить в чате» — прежняя анкета."""
     await callback.answer()
     if isinstance(callback.message, Message):
         await begin(callback.message, state, user)
