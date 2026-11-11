@@ -72,7 +72,8 @@ async def route(
 ) -> None:
     """Deep-link: order, sub_<тариф>, edit_<номер>, ask — или просто приветствие."""
     if payload == "order":
-        await order_flow.begin(message, state, user)
+        if not await order_flow.send_card(state, session, user, flows):
+            await order_flow.begin(message, state, user)
     elif payload.startswith("sub_") and payload[4:] in PlanCode._value2member_map_:
         await flows.plan_payment(user, PlanCode(payload[4:]))
     elif payload.startswith("edit_") and payload[5:].isdigit():
@@ -81,6 +82,8 @@ async def route(
         await begin_ask(message, state, user)
     else:
         await greet(message, user, flows.n)
+        # Сразу карточка «Новая презентация» — меню у поля ввода больше нет
+        await order_flow.send_card(state, session, user, flows)
 
 
 async def greet(message: Message, user: User, notifier: Notifier, *, back: bool = False) -> None:
