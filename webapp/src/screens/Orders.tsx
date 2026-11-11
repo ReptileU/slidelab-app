@@ -1,7 +1,10 @@
 import { Plus, Presentation } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { api } from "../lib/api";
 import { useLang, useOrders, useT } from "../lib/app";
+import type { Order } from "../lib/types";
 import { formatDate } from "../lib/i18n";
 import { STATUS_BADGE, statusKey } from "../lib/order";
 import { Button, Cell, Empty, Group, Section, Skeleton } from "../ui";
@@ -45,6 +48,7 @@ export function Orders() {
                 {group.map((o) => (
                   <Cell
                     key={o.id}
+                    leading={<Thumb order={o} />}
                     title={<span className="ellipsis" style={{ display: "block" }}>{o.topic}</span>}
                     subtitle={`#${o.id} · ${formatDate(o.created_at, lang)}`}
                     accessory={<span className={`badge ${STATUS_BADGE[o.status]}`}>{t(statusKey(o.status))}</span>}
@@ -57,5 +61,27 @@ export function Orders() {
           ),
       )}
     </div>
+  );
+}
+
+/** Первый слайд презентации (или обложка) слева от названия заказа. */
+function Thumb({ order }: { order: Order }) {
+  const has = order.has_deck || order.has_cover;
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (!has) return;
+    let alive = true;
+    api.thumbUrl(order.id).then(
+      (u) => alive && setUrl(u),
+      () => undefined,
+    );
+    return () => {
+      alive = false;
+    };
+  }, [order.id, has]);
+  return (
+    <span className="order-thumb">
+      {url ? <img src={url} alt="" draggable={false} /> : <Presentation size={18} strokeWidth={1.8} />}
+    </span>
   );
 }

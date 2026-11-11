@@ -16,6 +16,8 @@ dependencies = [
     "redis>=5.0",
     "arq>=0.26",
     "structlog>=24.1",
+    "pypdfium2>=4.30",
+    "pillow>=10",
 ]
 
 [dependency-groups]

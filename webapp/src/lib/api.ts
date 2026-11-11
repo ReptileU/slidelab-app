@@ -71,4 +71,22 @@ export const api = {
     if (!res.ok) throw new ApiError(res.status, "cover", res.statusText);
     return URL.createObjectURL(await res.blob());
   },
+
+  /** Миниатюра заказа (первый слайд или обложка). Кэш на время сессии — список не мигает при возврате. */
+  thumbUrl(id: number): Promise<string> {
+    let found = thumbs.get(id);
+    if (!found) {
+      const headers = new Headers();
+      if (initData) headers.set("Authorization", `tma ${initData}`);
+      found = fetch(`./api/orders/${id}/thumb`, { headers }).then(async (res) => {
+        if (!res.ok) throw new ApiError(res.status, "thumb", res.statusText);
+        return URL.createObjectURL(await res.blob());
+      });
+      found.catch(() => thumbs.delete(id));
+      thumbs.set(id, found);
+    }
+    return found;
+  },
 };
+
+const thumbs = new Map<number, Promise<string>>();

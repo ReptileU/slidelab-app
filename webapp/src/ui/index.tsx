@@ -40,6 +40,7 @@ export function Group({ children, icons }: { children: ReactNode; icons?: boolea
 }
 
 export function Cell({
+  leading,
   icon,
   iconBg,
   title,
@@ -51,6 +52,8 @@ export function Cell({
   disabled,
   onClick,
 }: {
+  /** Свой элемент слева (например, миниатюра слайда) — вместо маленькой иконки. */
+  leading?: ReactNode;
   icon?: ReactNode;
   iconBg?: string;
   title: ReactNode;
@@ -64,6 +67,7 @@ export function Cell({
 }) {
   const content = (
     <>
+      {leading}
       {icon && (
         <span className="cell-icon" style={iconBg ? { background: iconBg } : undefined}>
           {icon}

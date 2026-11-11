@@ -265,3 +265,26 @@ async def test_card_payment_in_app_with_receipt(env: dict[str, Any]) -> None:
     bad = await c.post(f"/api/orders/{oid}/receipt", json={"image": "data:text/plain;base64,aGVsbG8="}, headers=auth())
     assert bad.status_code >= 400
     assert (await c.post("/api/packages/month/receipt", json={"image": shot}, headers=auth())).status_code == 200
+
+
+async def test_order_thumb_is_first_slide(env: dict[str, Any]) -> None:
+    from PIL import Image
+
+    from slidelab.core.enums import OrderStatus
+
+    c: AsyncClient = env["client"]
+    oid = (await c.post("/api/orders", json=ORDER, headers=auth())).json()["id"]
+    assert (await c.get(f"/api/orders/{oid}/thumb", headers=auth())).status_code == 404  # ни обложки, ни PDF
+    sent = env["work"] / str(oid) / "sent_deck_1"
+    sent.mkdir(parents=True)
+    Image.new("RGB", (160, 90), (200, 30, 30)).save(sent / "deck.pdf")
+    async with env["sm"]() as s:
+        order = await s.get(Order, oid)
+        assert order is not None
+        order.status = OrderStatus.DONE
+        order.deliver_dir = f"{oid}/sent_deck_1"
+        order.deliver_files = ["deck.pdf"]
+        await s.commit()
+    r = await c.get(f"/api/orders/{oid}/thumb", headers=auth())
+    assert r.status_code == 200 and r.content[:2] == b"\xff\xd8"
+    assert (sent / ".thumb.jpg").exists()
