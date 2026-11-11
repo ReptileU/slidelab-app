@@ -20,6 +20,7 @@ from slidelab.telegram import views
 from slidelab.telegram.callbacks import PayCb
 from slidelab.telegram.flows import Flows
 from slidelab.telegram.states import ReceiptForm
+from slidelab.telegram.widgets import service as widgets
 
 router = Router(name="payments")
 log = logging.getLogger(__name__)
@@ -97,7 +98,9 @@ async def on_card_paid(callback: CallbackQuery, callback_data: PayCb, state: FSM
 
 @router.message(ReceiptForm.waiting, F.photo | F.document | (F.text & ~F.text.in_(kb.ALL_MENU_TEXTS)))
 async def on_receipt(message: Message, state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> None:
-    data = PayCb(action="card", **await state.get_data())
+    raw = await state.get_data()
+    card_msg = raw.pop("w_msg", None)  # «Я оплатил» нажали в карточке-виджете
+    data = PayCb(action="card", **raw)
     await state.clear()
     try:
         payment = await create_payment(session, user, data, PaymentProvider.MANUAL_CARD)
@@ -118,6 +121,10 @@ async def on_receipt(message: Message, state: FSMContext, session: AsyncSession,
         "Проверьте поступление на карту 👇",
         user=user,
     )
+    if card_msg:
+        store = widgets.store_for(flows.settings.data_dir)
+        await widgets.set_pay_step(flows.bot, store, message.chat.id, card_msg, 2)
+        widgets.remember_payment(store, payment.id, message.chat.id, card_msg)
     await flows.n.copy_to_staff(message, user)
     await flows.n.staff("Деньги пришли?", kb.staff_receipt(payment.id), user=user)
     await message.answer(t(user.lang, "receipt_sent"), reply_markup=await flows.n.menu(user))

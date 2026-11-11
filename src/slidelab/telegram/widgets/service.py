@@ -106,6 +106,9 @@ async def send_order_card(
 async def handle_query(dp: Dispatcher, bot: Bot, raw: dict[str, Any]) -> None:
     """Тап «Заказать» в карточке: запоминаем выбор, просим тему, карточка показывает «напишите тему»."""
     q = WidgetQuery.parse(raw)
+    if q.data.startswith("p:"):
+        await handle_pay_query(dp, bot, q)
+        return
     choice = cards.parse_order_request(q.data)
     tg = q.from_user
     if choice is None or tg is None or q.chat_id is None:
@@ -218,3 +221,100 @@ async def watch_statuses(bot: Bot, sessionmaker: async_sessionmaker[AsyncSession
                 await refresh_statuses(bot, session, store)
         except Exception:
             log.exception("Обновление карточек статуса")
+
+
+# --- оплата переводом на карту -------------------------------------------------------------
+
+
+async def send_pay_card(
+    bot: Bot,
+    user: User,
+    store: CardStore,
+    *,
+    title: str,
+    amount: str,
+    hint: str,
+    card_list: list[tuple[str, str]],
+    name: str,
+    kind: str,
+    ref: str,
+    credit: int,
+    markup: InlineKeyboardMarkup | None,
+) -> bool:
+    """Карточка оплаты: номера карт копируются касанием, «Я оплатил» → просим чек. False — не принята."""
+    lang = cards.lang_or_ru(user.lang)
+    data: dict[str, Any] = {
+        "t": title,
+        "a": amount,
+        "h": hint,
+        "cs": [[label, num] for label, num in card_list],
+        "n": name,
+        "k": kind,
+        "r": ref,
+        "c": credit,
+        "st": 0,
+    }
+    try:
+        msg = await bot(
+            SendWidget(
+                chat_id=user.tg_id,
+                html=cards.pay_html(lang),
+                caption=cards.PAY_TEXTS[lang]["caption"],
+                chat_data=cards.pay_state(data),
+                allow_queries=True,
+                reply_markup=markup,
+            )
+        )
+    except (TelegramAPIError, ValueError) as e:
+        log.warning("Карточка оплаты не отправилась: %s", e)
+        return False
+    store.update(f"pay:{user.tg_id}:{msg.message_id}", {"data": data})
+    return True
+
+
+async def set_pay_step(bot: Bot, store: CardStore, chat_id: int, message_id: int, st: int) -> None:
+    key = f"pay:{chat_id}:{message_id}"
+    card = store.load().get(key)
+    if not card:
+        return
+    data = dict(card["data"], st=st)
+    if await edit_data(bot, chat_id, message_id, cards.pay_state(data)):
+        store.update(key, {"data": data})
+
+
+async def handle_pay_query(dp: Dispatcher, bot: Bot, q: WidgetQuery) -> None:
+    """«Я оплатил» в карточке — как кнопка «Я оплатил картой»: ждём чек, карточка просит скриншот."""
+    from slidelab.core.i18n import t
+    from slidelab.telegram.states import ReceiptForm
+
+    parsed = cards.parse_pay_request(q.data)
+    tg = q.from_user
+    if parsed is None or tg is None or q.chat_id is None:
+        await bot(AnswerWidgetQuery(widget_query_id=q.id, data="bad"))
+        return
+    kind, ref, credit = parsed
+    state = dp.fsm.get_context(bot, chat_id=q.chat_id, user_id=tg.id)
+    await state.set_state(ReceiptForm.waiting)
+    await state.update_data(kind=kind, ref=ref, credit=credit, w_msg=q.message_id)
+    await bot(AnswerWidgetQuery(widget_query_id=q.id, data="ok"))
+    store = store_for(dp["settings"].data_dir)
+    if q.message_id:
+        await set_pay_step(bot, store, q.chat_id, q.message_id, 1)
+    sessionmaker: async_sessionmaker[AsyncSession] = dp["sessionmaker"]
+    async with sessionmaker() as session:
+        user = await repo.get_user_by_tg(session, tg.id)
+    await bot.send_message(q.chat_id, t(user.lang if user else None, "receipt_ask"))
+
+
+def remember_payment(store: CardStore, payment_id: int, chat_id: int, message_id: int) -> None:
+    """Чек получен: запоминаем, какую карточку отметить «оплата подтверждена»."""
+    store.update(f"payment:{payment_id}", {"chat_id": chat_id, "message_id": message_id})
+
+
+async def payment_confirmed(bot: Bot, store: CardStore, payment_id: int) -> None:
+    card = store.load().get(f"payment:{payment_id}")
+    if not card:
+        return
+    await set_pay_step(bot, store, card["chat_id"], card["message_id"], 3)
+    store.update(f"payment:{payment_id}", None)
+    store.update(f"pay:{card['chat_id']}:{card['message_id']}", None)

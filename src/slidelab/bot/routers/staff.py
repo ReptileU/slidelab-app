@@ -42,6 +42,7 @@ from slidelab.telegram.callbacks import MgrCb
 from slidelab.telegram.flows import Flows, Material
 from slidelab.telegram.notifier import lang_of
 from slidelab.telegram.states import StaffForm
+from slidelab.telegram.widgets import service as widgets
 
 ORDER_RE = re.compile(r"#(\d+)")
 URL_RE = re.compile(r"https://\S+")
@@ -153,6 +154,7 @@ async def on_receipt_ok(
         await callback.message.edit_text(f"✅ Оплата подтверждена · {html.escape(views.client_name(user))}")
     await flows.announce_paid(result, await repo.get_user(session, result.payment.user_id))
     await session.commit()
+    await widgets.payment_confirmed(flows.bot, widgets.store_for(flows.settings.data_dir), callback_data.payment_id)
 
 
 @router.callback_query(MgrCb.filter(F.action == "pay_no"))

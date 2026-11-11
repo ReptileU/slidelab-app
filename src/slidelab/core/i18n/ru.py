@@ -26,6 +26,7 @@ TEXTS: dict[str, str] = {
     "btn_prices": "Цены",
     "btn_examples": "Примеры",
     "btn_help": "Вопросы",
+    "menu_title": "<b>Меню SlideLab</b>\nЧто откроем?",
     "btn_menu": "☰ Меню",
     "btn_chat_form": "📝 Заполнить в чате",
     "btn_open_app": "Открыть SlideLab",

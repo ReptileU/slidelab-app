@@ -219,3 +219,70 @@ def status_state(order: Order, lang: Lang, bot_username: str | None = None) -> s
 def status_caption(order: Order, lang: Lang) -> str:
     _, key = status_key(order)
     return f"{STATUS_TEXTS[lang]['no']}".replace("#", f"#{order.id}") + f" — {HINTS[lang][key][0]}"
+
+
+# --- оплата переводом на карту ----------------------------------------------------------
+
+PAY_TEXTS: dict[Lang, dict[str, str]] = {
+    Lang.RU: {
+        "pay": "Оплата",
+        "cards": "Переведите на карту · номер копируется касанием",
+        "copy": "копировать",
+        "copied": "✓ скопировано",
+        "to": "Получатель:",
+        "paid": "Я оплатил",
+        "wait": "Секунду…",
+        "err": "Не получилось — нажмите ещё раз",
+        "s1": "📎 Пришлите скриншот оплаты сюда в чат",
+        "s2": "✅ Чек получен — проверяем поступление",
+        "s3": "✅ Оплата подтверждена. Спасибо!",
+        "caption": "После перевода нажмите «Я оплатил» и пришлите скриншот.",
+    },
+    Lang.UZ: {
+        "pay": "To‘lov",
+        "cards": "Kartaga o‘tkazing · raqam bosilganda nusxalanadi",
+        "copy": "nusxalash",
+        "copied": "✓ nusxalandi",
+        "to": "Qabul qiluvchi:",
+        "paid": "To‘ladim",
+        "wait": "Bir soniya…",
+        "err": "Bo‘lmadi — yana bosing",
+        "s1": "📎 To‘lov skrinshotini shu chatga yuboring",
+        "s2": "✅ Chek qabul qilindi — tushumni tekshiryapmiz",
+        "s3": "✅ To‘lov tasdiqlandi. Rahmat!",
+        "caption": "O‘tkazmadan so‘ng «To‘ladim» ni bosing va skrinshot yuboring.",
+    },
+    Lang.EN: {
+        "pay": "Payment",
+        "cards": "Transfer to a card · tap a number to copy",
+        "copy": "copy",
+        "copied": "✓ copied",
+        "to": "Recipient:",
+        "paid": "I’ve paid",
+        "wait": "One sec…",
+        "err": "Didn’t work — tap again",
+        "s1": "📎 Send a screenshot of the payment to this chat",
+        "s2": "✅ Receipt received — checking the transfer",
+        "s3": "✅ Payment confirmed. Thank you!",
+        "caption": "After the transfer, tap “I’ve paid” and send a screenshot.",
+    },
+}
+
+
+def pay_html(lang: Lang) -> str:
+    texts = {k: v for k, v in PAY_TEXTS[lang].items() if k != "caption"}
+    return check_html(_template("pay.html").replace("__T__", json.dumps(texts, ensure_ascii=False)))
+
+
+def pay_state(data: dict[str, object]) -> str:
+    return check_data(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+
+
+def parse_pay_request(data: str) -> tuple[str, str, int] | None:
+    """'p:<order|plan>:<номер или тариф>:<зачтённый заказ>' → (kind, ref, credit)."""
+    parts = data.split(":")
+    if len(parts) != 4 or parts[0] != "p" or parts[1] not in ("order", "plan") or not parts[3].isdigit():
+        return None
+    if not parts[2] or len(parts[2]) > 20 or not parts[2].replace("_", "").isalnum():
+        return None
+    return parts[1], parts[2], int(parts[3])

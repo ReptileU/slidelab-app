@@ -453,12 +453,54 @@ async def test_widget_falls_back_to_chat_form(h: Harness) -> None:
     assert "тем" in h.texts(CLIENT)[-1].lower()
 
 
-async def test_card_nav_buttons(h: Harness) -> None:
+async def test_menu_and_card_nav_buttons(h: Harness) -> None:
     h.tg.widgets = True
     await onboard(h)
-    card = h.sent("SendWidget", CLIENT)[-1]  # /start → приветствие и карточка
+    assert not h.sent("SendWidget", CLIENT)  # на /start заказ не навязываем
+    await h.text("☰ Меню")
+    menu = h.sent("SendMessage", CLIENT)[-1]
+    assert "Меню SlideLab" in menu.text
+    await h.click(FormCb(field="action", value="start").pack())  # «Новая презентация» → карточка
+    card = h.sent("SendWidget", CLIENT)[-1]
     buttons = [b.callback_data for row in card.reply_markup.inline_keyboard for b in row]
     assert buttons == [FormCb(field="nav", value=v).pack() for v in ("orders", "prices", "examples", "help")]
     before = len(h.texts(CLIENT))
     await h.click(FormCb(field="nav", value="prices").pack())
     assert len(h.texts(CLIENT)) == before + 1 and "<b>Цены</b>" in h.texts(CLIENT)[-1]
+
+
+async def test_pay_card_receipt_and_confirm(h: Harness) -> None:
+    from aiogram.types import PhotoSize
+
+    SETTINGS.legacy_webapp = False
+    try:
+        h.tg.widgets = True
+        await onboard(h)
+        await h.text("Новая презентация")
+        q = {"id": "q1", "from": {"id": CLIENT, "is_bot": False, "first_name": "Аня"}, "data": "o:1100"}
+        q |= {"chat": {"id": CLIENT, "type": "private"}, "message_id": 100}
+        await h.send(Update.model_validate({"update_id": next(ids), "widget_query": q}))
+        await h.text("Экономика Японии")
+        order = await h.order()
+        pay = [w for w in h.sent("SendWidget", CLIENT) if "Я оплатил" in w.html][-1]
+        state = json.loads(pay.chat_data)
+        assert state["k"] == "order" and state["r"] == str(order.id) and state["cs"][0][1] == "8600 1234 5678 9012"
+
+        # «Я оплатил» в карточке → просим чек, карточка «пришлите скриншот»
+        pq = {"id": "q2", "from": {"id": CLIENT, "is_bot": False, "first_name": "Аня"}, "data": f"p:order:{order.id}:0"}
+        pq |= {"chat": {"id": CLIENT, "type": "private"}, "message_id": 101}
+        widgets_store = __import__("slidelab.telegram.widgets.service", fromlist=["x"]).store_for(SETTINGS.data_dir)
+        widgets_store.update(f"pay:{CLIENT}:101", {"data": state})  # карточка оплаты — сообщение 101
+        await h.send(Update.model_validate({"update_id": next(ids), "widget_query": pq}))
+        assert json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)["st"] == 1
+        assert "чек" in h.texts(CLIENT)[-1].lower()
+
+        await h.message(photo=[PhotoSize(file_id="p", file_unique_id="p", width=10, height=10)])
+        assert json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)["st"] == 2
+        async with h.sm() as s:
+            payment = await s.scalar(select(Payment).order_by(Payment.id.desc()).limit(1))
+            assert payment is not None
+        await h.click(MgrCb(action="pay_ok", payment_id=payment.id).pack(), user=ADMIN)
+        assert json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)["st"] == 3
+    finally:
+        SETTINGS.legacy_webapp = True

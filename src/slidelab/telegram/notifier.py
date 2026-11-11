@@ -6,6 +6,7 @@
 
 import html
 import logging
+import re
 from datetime import UTC, datetime
 
 from aiogram import Bot
@@ -210,8 +211,71 @@ class Notifier:
     ) -> None:
         if amount <= 0:
             return
+        card_ok = self.settings.pay_cards and not self.settings.legacy_webapp
+        if card_ok and await self._pay_card(user, amount=amount, order=order, plan=plan, credit=credit, early=early):
+            return
         text, markup = await self.pay_block(user, amount=amount, order=order, plan=plan, credit=credit, early=early)
         await self.client_text(user, text, markup)
+
+    async def _pay_card(
+        self,
+        user: User,
+        *,
+        amount: int,
+        order: Order | None,
+        plan: PlanCode | None,
+        credit: Credit | None,
+        early: bool,
+    ) -> bool:
+        """Оплата карточкой-виджетом: номера карт копируются касанием, «Я оплатил» прямо в карточке."""
+        from slidelab.telegram import premium
+        from slidelab.telegram.widgets import service as widgets
+
+        def plain(text: str) -> str:
+            return re.sub(r"<[^>]+>", "", premium.strip(text)).strip()
+
+        lang = user.lang
+        hint = ""
+        if plan is not None:
+            head = plain(t(lang, "pay_package", plan=t(lang, "plan_" + plan.value), price=money(amount)))
+            if credit:
+                hint = plain(t(lang, "pay_credit", id=credit.order_id, amount=money(credit.amount)))
+            kind, ref = "plan", plan.value
+        else:
+            assert order is not None
+            head = plain(t(lang, "pay_order", id=order.id, price=money(amount)))
+            if early:
+                hint = plain(t(lang, "pay_early"))
+            kind, ref = "order", str(order.id)
+        title, _, amount_line = head.partition("\n")
+        stars_markup = None
+        if self.settings.stars:
+            rate = (await repo.get_price_rule_row(self.session)).uzs_per_star
+            stars = to_stars(amount, rate)
+            stars_url = await self._stars_link(user, kind, ref, credit)
+            stars_markup = kb.pay(
+                lang_of(user),
+                stars=stars,
+                stars_url=stars_url,
+                kind=kind,
+                ref=ref,
+                cards=False,
+                credit=credit.order_id if credit else 0,
+            )
+        return await widgets.send_pay_card(
+            self.bot,
+            user,
+            widgets.store_for(self.settings.data_dir),
+            title=title.strip(),
+            amount=amount_line.strip() or f"{money(amount)}",
+            hint=hint,
+            card_list=list(self.settings.pay_cards),
+            name=self.settings.pay_name,
+            kind=kind,
+            ref=ref,
+            credit=credit.order_id if credit else 0,
+            markup=stars_markup,
+        )
 
     async def _stars_link(self, user: User, kind: str, ref: str, credit: Credit | None) -> str | None:
         """Счёт в звёздах — ссылкой. Платёж создаём сразу: оплата найдёт его по payload."""

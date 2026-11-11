@@ -71,6 +71,21 @@ def menu_button(lang: Lang) -> ReplyKeyboardMarkup:
     )
 
 
+def main_inline(lang: Lang) -> InlineKeyboardMarkup:
+    """«☰ Меню»: все разделы бота. «Новая презентация» открывает карточку заказа."""
+
+    def nav(key: str, value: str) -> InlineKeyboardButton:
+        return _btn(t(lang, key), FormCb(field="nav", value=value))
+
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [_btn(t(lang, "btn_new"), FormCb(field="action", value="start"))],
+            [nav("btn_orders", "orders"), nav("btn_prices", "prices")],
+            [nav("btn_examples", "examples"), nav("btn_help", "help")],
+        ]
+    )
+
+
 def card_nav(lang: Lang) -> InlineKeyboardMarkup:
     """Под карточкой заказа — навигация вместо серого меню у поля ввода."""
 

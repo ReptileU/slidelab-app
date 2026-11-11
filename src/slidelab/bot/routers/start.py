@@ -82,8 +82,6 @@ async def route(
         await begin_ask(message, state, user)
     else:
         await greet(message, user, flows.n)
-        # Сразу карточка «Новая презентация» — меню у поля ввода больше нет
-        await order_flow.send_card(state, session, user, flows)
 
 
 async def greet(message: Message, user: User, notifier: Notifier, *, back: bool = False) -> None:
@@ -263,3 +261,9 @@ async def on_nav(
         await show_examples(message, user, flows)
     elif callback_data.value == "help":
         await show_help(message, session, user)
+
+
+@router.message(F.text.in_(kb.menu_texts("btn_menu")))
+async def show_menu(message: Message, user: User) -> None:
+    """Кнопка «☰ Меню» у поля ввода — разделы бота, без навязывания заказа."""
+    await message.answer(t(user.lang, "menu_title"), reply_markup=kb.main_inline(lang_of(user)))
