@@ -36,7 +36,7 @@ ORDER_TEXTS: dict[Lang, dict[str, object]] = {
         "err": "Не получилось — нажмите ещё раз",
         "ask": "✍️ Напишите тему презентации сообщением ниже",
         "done": "✅ Заказ # принят — статус ниже",
-        "caption": "🎨 Новая презентация — выберите параметры в карточке. Обложка бесплатно.",
+        "caption": "Обложка — бесплатно. Платите, только если понравится стиль.",
     },
     Lang.UZ: {
         "title": "Yangi taqdimot",
@@ -55,7 +55,7 @@ ORDER_TEXTS: dict[Lang, dict[str, object]] = {
         "err": "Bo‘lmadi — yana bosing",
         "ask": "✍️ Taqdimot mavzusini pastda xabar qilib yozing",
         "done": "✅ # buyurtma qabul qilindi — holati pastda",
-        "caption": "🎨 Yangi taqdimot — kartochkada parametrlarni tanlang. Muqova bepul.",
+        "caption": "Muqova — bepul. Uslub yoqsagina to‘laysiz.",
     },
     Lang.EN: {
         "title": "New presentation",
@@ -74,7 +74,7 @@ ORDER_TEXTS: dict[Lang, dict[str, object]] = {
         "err": "Didn’t work — tap again",
         "ask": "✍️ Send the presentation topic as a message below",
         "done": "✅ Order # placed — status below",
-        "caption": "🎨 New presentation — choose options in the card. The cover is free.",
+        "caption": "The cover is free. Pay only if you like the style.",
     },
 }
 
