@@ -65,12 +65,12 @@ class Notifier:
             return None
 
     async def menu(self, user: User) -> ReplyKeyboardMarkup | ReplyKeyboardRemove:
-        """Меню у поля ввода — только в режиме старой витрины (в нём кнопка с заказами клиента).
+        """Меню у поля ввода: «Новая презентация», «Мои заказы», «Цены», «Примеры», «Вопросы».
 
-        С новой Mini App вместо большого меню одна кнопка «Меню» — она присылает карточку заказа с разделами.
+        В режиме старой витрины сверху ещё кнопка витрины с заказами клиента.
         """
         if not self.settings.legacy_webapp:
-            return kb.menu_button(lang_of(user))
+            return kb.main_menu(lang_of(user), None)
         return kb.main_menu(lang_of(user), await self.app_url(user))
 
     async def app_url(self, user: User, tab: str | None = None) -> str:
@@ -337,6 +337,9 @@ class Notifier:
 
     async def topic_of(self, user: User) -> int | None:
         """Тема клиента в группе менеджеров (None — личка владельца)."""
+        return await self._topic(user)
+
+    async def topic(self, user: User) -> int | None:
         return await self._topic(user)
 
     async def _topic(self, user: User) -> int | None:

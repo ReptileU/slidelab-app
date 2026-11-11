@@ -126,6 +126,9 @@ export interface Invoice {
   url: string | null;
   amount: number;
   currency: string;
+  /** Перевод в приложении: номера карт и получатель. */
+  cards: { label: string; number: string }[];
+  name: string;
 }
 
 /** Правка на слайде: номер слайда, место (доли 0–1) и что поменять. */

@@ -133,6 +133,19 @@ class OrderOut(BaseModel):
 
 class InvoiceIn(BaseModel):
     provider: Literal["stars", "card"]
+    # Перевод прямо в приложении: реквизиты вернутся в ответе, а не придут в чат
+    app: bool = False
+
+
+class PayCardOut(BaseModel):
+    label: str
+    number: str
+
+
+class ReceiptIn(BaseModel):
+    """Скриншот оплаты из приложения — data:image/...;base64,..."""
+
+    image: str = Field(max_length=4_000_000)
 
 
 class InvoiceOut(BaseModel):
@@ -140,7 +153,10 @@ class InvoiceOut(BaseModel):
     url: str | None = None  # ссылка для Telegram.WebApp.openInvoice
     amount: int
     currency: str
-    # Для перевода: реквизиты отправлены в чат, чек клиент пришлёт туда же
+    # Для перевода: реквизиты отправлены в чат, чек клиент пришлёт туда же —
+    # или (app=True) реквизиты здесь, а чек приложение пришлёт на /receipt
+    cards: list[PayCardOut] = []
+    name: str = ""
 
 
 class SlideMark(BaseModel):

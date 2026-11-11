@@ -461,9 +461,7 @@ async def test_menu_and_card_nav_buttons(h: Harness) -> None:
     menu = h.sent("SendMessage", CLIENT)[-1]
     assert "Меню SlideLab" in menu.text
     await h.click(FormCb(field="action", value="start").pack())  # «Новая презентация» → карточка
-    card = h.sent("SendWidget", CLIENT)[-1]
-    buttons = [b.callback_data for row in card.reply_markup.inline_keyboard for b in row]
-    assert buttons == [FormCb(field="nav", value=v).pack() for v in ("orders", "prices", "examples", "help")]
+    assert h.sent("SendWidget", CLIENT)[-1].reply_markup is None  # разделы — в меню у поля ввода
     before = len(h.texts(CLIENT))
     await h.click(FormCb(field="nav", value="prices").pack())
     assert len(h.texts(CLIENT)) == before + 1 and "<b>Цены</b>" in h.texts(CLIENT)[-1]

@@ -27,6 +27,7 @@ from slidelab.api.schemas import (
     OrderOut,
     QuoteIn,
     QuoteOut,
+    ReceiptIn,
     RevisionIn,
 )
 from slidelab.config import Settings
@@ -199,6 +200,8 @@ async def invoice(
     order = await _own(session, viewer.user, order_id)
     user = viewer.user
     if body.provider == "card":
+        if body.app:
+            return payments_flow.card_in_app(flows.n, order.price)
         out = await payments_flow.card_in_chat(flows.n, user, order.price, order=order)
         await session.commit()
         return out
@@ -237,6 +240,19 @@ async def send_files(order_id: int, viewer: ViewerDep, session: SessionDep, flow
     order = await _own(session, viewer.user, order_id)
     if not await flows.deliver(order, viewer.user, "all"):
         raise HTTPException(status_code=404, detail="Файлы ещё не готовы")
+    await session.commit()
+    return OkOut()
+
+
+@router.post("/{order_id}/receipt")
+async def receipt(order_id: int, body: ReceiptIn, viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> OkOut:
+    """Перевод на карту из приложения: скриншот оплаты — владельцу с кнопками «Деньги пришли?»."""
+    order = await _own(session, viewer.user, order_id)
+    blob, ext = payments_flow.decode_image(body.image)
+    payment = await PaymentService(session).for_order(order, PaymentProvider.MANUAL_CARD)
+    await session.commit()
+    flows.pipeline.add_note(order.id, "Клиент", "сообщил об оплате переводом в приложении (чек у владельца в Telegram)")
+    await payments_flow.receipt_to_staff(flows.n, viewer.user, payment, f"заказ #{order.id}", blob, ext)
     await session.commit()
     return OkOut()
 

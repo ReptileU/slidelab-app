@@ -91,6 +91,8 @@ export function Packages() {
         amount={buying?.price ?? 0}
         onClose={() => setBuying(null)}
         createInvoice={(provider) => api.packageInvoice(buying!.code, provider)}
+        sendReceipt={(image) => api.packageReceipt(buying!.code, image)}
+        onReceipt={() => setToast(t("pay_shot_sent"))}
         onPaid={() => {
           setToast(t("pay_pkg_ok"));
           setTimeout(() => qc.invalidateQueries({ queryKey: ["me"] }), 1500);

@@ -57,7 +57,7 @@ async def cmd_new(message: Message, state: FSMContext, session: AsyncSession, us
 async def send_card(state: FSMContext, session: AsyncSession, user: User, flows: Flows) -> bool:
     await state.clear()
     store = widgets.store_for(flows.settings.data_dir)
-    return await widgets.send_order_card(flows.bot, session, user, store, kb.card_nav(lang_of(user)))
+    return await widgets.send_order_card(flows.bot, session, user, store)
 
 
 # --- заказ из карточки: после «Заказать» клиент пишет тему -----------------------------

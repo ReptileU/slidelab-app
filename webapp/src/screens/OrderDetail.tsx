@@ -208,10 +208,12 @@ function OrderView({ order }: { order: Order }) {
         amount={order.price}
         onClose={() => setSheet(null)}
         createInvoice={(p) => api.orderInvoice(order.id, p)}
+        sendReceipt={(image) => api.orderReceipt(order.id, image)}
         onPaid={() => {
           setToast(t("pay_ok"));
           setTimeout(() => refresh(), 1500);
         }}
+        onReceipt={() => setToast(t("pay_shot_sent"))}
       />
 
       <Sheet open={sheet === "redo" || sheet === "revise"} onClose={() => setSheet(null)} title={sheet === "redo" ? t("redo_t") : t("revise_t")}>

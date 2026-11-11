@@ -164,7 +164,8 @@ async def test_approve_cover_and_pay_with_stars(env: dict[str, Any]) -> None:
     assert order["status"] == "awaiting_payment"
 
     inv = (await c.post(f"/api/orders/{order_id}/invoice", json={"provider": "stars"}, headers=auth())).json()
-    assert inv == {"provider": "stars", "url": "https://t.me/$fake_invoice", "amount": 190, "currency": "XTR"}
+    assert inv | {"cards": [], "name": ""} == inv and inv["url"] == "https://t.me/$fake_invoice"
+    assert (inv["provider"], inv["amount"], inv["currency"]) == ("stars", 190, "XTR")
     link = env["tg"].of("CreateInvoiceLink")[-1]
     assert link.payload.startswith("pay:") and link.prices[0].amount == 190
 
@@ -247,3 +248,20 @@ async def test_deck_viewer_downloads_and_slide_marks(env: dict[str, Any]) -> Non
     assert list((env["work"] / str(oid) / "edits").glob("slide_marks_*.png"))
     empty = {"text": "", "marks": []}
     assert (await c.post(f"/api/orders/{oid}/revisions", json=empty, headers=auth())).status_code == 422
+
+
+async def test_card_payment_in_app_with_receipt(env: dict[str, Any]) -> None:
+    import base64
+
+    c: AsyncClient = env["client"]
+    oid = (await c.post("/api/orders", json=ORDER, headers=auth())).json()["id"]
+    inv = (await c.post(f"/api/orders/{oid}/invoice", json={"provider": "card", "app": True}, headers=auth())).json()
+    assert inv["cards"] == [{"label": "Uzum Bank", "number": "8600 0000"}]
+    shot = "data:image/jpeg;base64," + base64.b64encode(b"\xff\xd8\xff fake jpeg").decode()
+    r = await c.post(f"/api/orders/{oid}/receipt", json={"image": shot}, headers=auth())
+    assert r.status_code == 200 and r.json() == {"ok": True}
+    tg = env["tg"]
+    assert tg.of("SendPhoto") and any("Деньги пришли?" in m.text for m in tg.of("SendMessage"))
+    bad = await c.post(f"/api/orders/{oid}/receipt", json={"image": "data:text/plain;base64,aGVsbG8="}, headers=auth())
+    assert bad.status_code >= 400
+    assert (await c.post("/api/packages/month/receipt", json={"image": shot}, headers=auth())).status_code == 200

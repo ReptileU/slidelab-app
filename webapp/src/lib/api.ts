@@ -39,7 +39,9 @@ export const api = {
   order: (id: number) => request<Order>(`/orders/${id}`),
   approveCover: (id: number) => post<Order>(`/orders/${id}/approve-cover`),
   redoCover: (id: number, text: string) => post(`/orders/${id}/redo-cover`, { text }),
-  orderInvoice: (id: number, provider: "stars" | "card") => post<Invoice>(`/orders/${id}/invoice`, { provider }),
+  orderInvoice: (id: number, provider: "stars" | "card") =>
+    post<Invoice>(`/orders/${id}/invoice`, { provider, app: true }),
+  orderReceipt: (id: number, image: string) => post(`/orders/${id}/receipt`, { image }),
   revise: (id: number, text: string, marks: SlideMark[] = [], shots: string[] = []) =>
     post<Order>(`/orders/${id}/revisions`, { text, marks, shots }),
   downloads: (id: number) => request<{ name: string; url: string }[]>(`/orders/${id}/downloads`),
@@ -55,7 +57,8 @@ export const api = {
   sendFiles: (id: number) => post(`/orders/${id}/send-files`),
 
   packageInvoice: (plan: PlanCode, provider: "stars" | "card") =>
-    post<Invoice>(`/packages/${plan}/invoice`, { provider }),
+    post<Invoice>(`/packages/${plan}/invoice`, { provider, app: true }),
+  packageReceipt: (plan: PlanCode, image: string) => post(`/packages/${plan}/receipt`, { image }),
   ask: (text: string) => post("/support/messages", { text }),
   review: (stars: number, text: string, orderId?: number) =>
     post("/reviews", { stars, text: text || null, order_id: orderId ?? null }),
