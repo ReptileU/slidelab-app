@@ -62,6 +62,17 @@ def main_menu(lang: Lang, app_url: str | None) -> ReplyKeyboardMarkup:
     )
 
 
+def card_nav(lang: Lang) -> InlineKeyboardMarkup:
+    """Под карточкой заказа — навигация вместо серого меню у поля ввода."""
+    nav = lambda key, value: _btn(t(lang, key), FormCb(field="nav", value=value))  # noqa: E731
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [nav("btn_orders", "orders"), nav("btn_prices", "prices")],
+            [nav("btn_examples", "examples"), nav("btn_help", "help")],
+        ]
+    )
+
+
 def chat_form(lang: Lang) -> InlineKeyboardMarkup:
     """Под карточкой-виджетом: тем, у кого карточка не показалась, — анкета в чате."""
     return _rows(_btn(t(lang, "btn_chat_form"), FormCb(field="action", value="chat")))

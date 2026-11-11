@@ -451,3 +451,14 @@ async def test_widget_falls_back_to_chat_form(h: Harness) -> None:
     await onboard(h)
     await h.text("Новая презентация")  # Telegram не принял карточку — прежняя анкета
     assert "тем" in h.texts(CLIENT)[-1].lower()
+
+
+async def test_card_nav_buttons(h: Harness) -> None:
+    h.tg.widgets = True
+    await onboard(h)
+    card = h.sent("SendWidget", CLIENT)[-1]  # /start → приветствие и карточка
+    buttons = [b.callback_data for row in card.reply_markup.inline_keyboard for b in row]
+    assert buttons == [FormCb(field="nav", value=v).pack() for v in ("orders", "prices", "examples", "help")]
+    before = len(h.texts(CLIENT))
+    await h.click(FormCb(field="nav", value="prices").pack())
+    assert len(h.texts(CLIENT)) == before + 1 and "<b>Цены</b>" in h.texts(CLIENT)[-1]

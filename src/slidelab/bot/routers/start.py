@@ -244,3 +244,22 @@ async def on_ask(callback: CallbackQuery, state: FSMContext, user: User) -> None
 async def cmd_paysupport(message: Message, user: User, notifier: Notifier) -> None:
     """Обязательная для оплаты звёздами команда: вопросы по оплате и возвратам."""
     await message.answer(t(user.lang, "paysupport", admin=notifier.settings.admin_username))
+
+
+@router.callback_query(FormCb.filter(F.field == "nav"))
+async def on_nav(
+    callback: CallbackQuery, callback_data: FormCb, session: AsyncSession, user: User, flows: Flows
+) -> None:
+    """Кнопки под карточкой заказа: «Мои заказы», «Цены», «Примеры», «Вопросы»."""
+    await callback.answer()
+    message = callback.message
+    if not isinstance(message, Message):
+        return
+    if callback_data.value == "orders":
+        await my_orders.show_orders(message, session, user)
+    elif callback_data.value == "prices":
+        await show_prices(message, session, user)
+    elif callback_data.value == "examples":
+        await show_examples(message, user, flows)
+    elif callback_data.value == "help":
+        await show_help(message, session, user)
