@@ -699,6 +699,23 @@ def strip_btn(key: str) -> str:
     return TEXTS[Lang.RU].get(key, key)
 
 
+@router.message(Command("demo"))
+async def cmd_demo(message: Message, settings: Settings) -> None:
+    """/demo — открыть в приложении показ эффектов пакета (оплата, последняя презентация) без настоящего заказа."""
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+
+    base = settings.webapp_url.split("#")[0].split("?")[0].rstrip("/")
+    if settings.legacy_webapp or not base.startswith("https://"):
+        await message.answer("Приложение сейчас недоступно — нет ссылки.")
+        return
+    await message.answer(
+        "🎬 Демо эффектов пакета — без заказов и списаний.",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text="Открыть демо", web_app=WebAppInfo(url=f"{base}/?demo=1"))]]
+        ),
+    )
+
+
 @router.message(Command("logo"))
 async def cmd_logo(message: Message, command: CommandObject, settings: Settings) -> None:
     """/logo — логотип на аватар бота (avatar_bot.png, с подписью «Bot») и канала (avatar_mono.png)."""

@@ -17,7 +17,9 @@ initTelegram();
   const start = (window.Telegram?.WebApp?.initDataUnsafe as { start_param?: string } | undefined)?.start_param ?? "";
   const view = new URLSearchParams(location.search).get("view"); // кнопка «Посмотреть» под готовой презентацией
   const order = /^order_(\d+)$/.exec(start) ?? (view && /^\d+$/.test(view) ? [view, view] : null);
-  if (order) history.replaceState(null, "", `${location.pathname}${location.search}#/orders/${order[1]}`);
+  const demo = start === "demo" || new URLSearchParams(location.search).has("demo");
+  if (demo) history.replaceState(null, "", `${location.pathname}${location.search}#/demo`);
+  else if (order) history.replaceState(null, "", `${location.pathname}${location.search}#/orders/${order[1]}`);
   else if (!location.hash.startsWith("#/")) history.replaceState(null, "", `${location.pathname}${location.search}#/`);
 }
 

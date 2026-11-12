@@ -12,6 +12,7 @@ import { Button, Empty } from "./ui";
 // Главная — в основной сборке, остальные экраны догружаются при переходе (быстрее первый экран)
 const Done = lazy(() => import("./screens/Done").then((m) => ({ default: m.Done })));
 const Help = lazy(() => import("./screens/Help").then((m) => ({ default: m.Help })));
+const Demo = lazy(() => import("./screens/Demo").then((m) => ({ default: m.Demo })));
 const NewOrder = lazy(() => import("./screens/NewOrder").then((m) => ({ default: m.NewOrder })));
 const OrderDetail = lazy(() => import("./screens/OrderDetail").then((m) => ({ default: m.OrderDetail })));
 const Orders = lazy(() => import("./screens/Orders").then((m) => ({ default: m.Orders })));
@@ -56,6 +57,7 @@ export function App() {
           <Route path="/packages" element={<Packages />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/help" element={<Help />} />
+          <Route path="/demo" element={<Demo />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
