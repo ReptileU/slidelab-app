@@ -1,11 +1,11 @@
-import { CreditCard, Gift, Layers, PenLine, Sparkles, Upload } from "lucide-react";
+import { Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { useCatalog, useMe, useOrders, useT } from "../lib/app";
-import { money } from "../lib/i18n";
-import { hintKey, slidesKey, STATUS_BADGE, statusKey, TIERS, tierOld, tierPrice } from "../lib/order";
+import { money, type Key } from "../lib/i18n";
+import { hintKey, STATUS_BADGE, statusKey } from "../lib/order";
 import { haptic } from "../lib/tg";
-import { Cell, Group, Img, Logo, PriceTag, Section, Skeleton, useGlare } from "../ui";
+import { Img, Logo, PriceTag, Section, Skeleton, useGlare } from "../ui";
 import { PackCard } from "../ui/PackCard";
 import { WorksCarousel } from "../ui/WorksCarousel";
 
@@ -20,36 +20,16 @@ export function Home() {
   const c = catalog.data;
   const first = me.data?.first_order_price ?? null;
 
+  const returning = !!me.data?.package || (orders.data?.length ?? 0) > 0;
+
   return (
-    <div className="page">
-      {/* Карта пакета — первое, что видит клиент с пакетом */}
+    <div className="page home">
+      {/* 1. Своё: карта пакета и текущий заказ — первое, что видит постоянный клиент */}
       {me.data?.package && (
         <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
           <PackCard pkg={me.data.package} holder={me.data.first_name || "SlideLab"} />
         </Section>
       )}
-
-      <header className="hero" style={{ margin: "8px 0 28px" }} onPointerMove={glare} onPointerDown={glare}>
-        <Logo />
-        <h1 className="large-title mt-8 silver-text">{t("hero_title")}</h1>
-        <p className="subhead" style={{ margin: "10px 0 22px" }}>
-          {t("hero_sub")}
-        </p>
-        <button className="btn btn-inverse" onClick={() => go("ours")}>
-          {t("cta_order")}
-        </button>
-        {first && c && first < c.prices.s10 && (
-          <div className="offer">
-            <div className="offer-t">
-              <Gift size={14} /> {t("first_badge")} · {t("slides_s10")}
-            </div>
-            <div style={{ marginTop: 4 }}>
-              <PriceTag big now={money(first)} old={money(c.prices.s10)} sum={t("sum")} />
-            </div>
-            <div className="offer-s">{t("price_first")}</div>
-          </div>
-        )}
-      </header>
 
       {active && (
         <Section title={t("active_t")}>
@@ -64,69 +44,70 @@ export function Home() {
         </Section>
       )}
 
-      <Section>
-        <div className="way-grid">
-          <button className="card way" onClick={() => go("ours")}>
-            <span className="way-icon">
-              <Sparkles />
-            </span>
-            <span className="headline">{t("way_ours_t")}</span>
-            <span className="footnote secondary">{t("way_ours_x")}</span>
-          </button>
-          <button className="card way" onClick={() => go("own")}>
-            <span className="way-icon">
-              <Upload />
-            </span>
-            <span className="headline">{t("way_own_t")}</span>
-            <span className="footnote secondary">{t("way_own_x")}</span>
-          </button>
-        </div>
-      </Section>
+      {/* 2. Главное действие */}
+      <header
+        className={`hero${returning ? " compact" : ""}`}
+        style={{ margin: "8px 0 32px" }}
+        onPointerMove={glare}
+        onPointerDown={glare}
+      >
+        {!returning && <Logo />}
+        <h1 className={`${returning ? "title1" : "large-title mt-8"} silver-text`}>{t(returning ? "hero_again" : "hero_title")}</h1>
+        <p className="subhead" style={{ margin: "10px 0 22px" }}>
+          {t("hero_sub")}
+        </p>
+        <button className="btn btn-inverse" onClick={() => go("ours")}>
+          {t("cta_order")}
+        </button>
+        <button className="hero-link" onClick={() => go("own")}>
+          {t("own_link")} ›
+        </button>
+        {first && c && first < c.prices.s10 && (
+          <div className="offer">
+            <div className="offer-t">
+              <Gift size={14} /> {t("first_badge")} · {t("slides_s10")}
+            </div>
+            <div style={{ marginTop: 4 }}>
+              <PriceTag big now={money(first)} old={money(c.prices.s10)} sum={t("sum")} />
+            </div>
+            <div className="offer-s">{t("price_first")}</div>
+          </div>
+        )}
+      </header>
 
+      {/* 3. Доказательства: работы и стили */}
       <Section title={t("works_t")} large>
         {c ? <WorksCarousel works={c.works} /> : <Skeleton height={220} />}
       </Section>
 
       <Section title={t("styles_t")} large action={{ label: t("styles_all"), onClick: () => nav("/styles") }}>
-        <div className="style-grid">
-          {c?.styles.slice(5, 9).map((s) => (
-            <button key={s.key} className="style-card" onClick={() => nav(`/styles?open=${s.key}`)}>
-              <Img src={s.images[0]} alt={s.name} />
-              <div className="name">{s.name}</div>
-              <div className="hint">{s.hint}</div>
-            </button>
-          ))}
+        <div className="hscroll styles-row">
+          {c
+            ? c.styles.slice(0, 8).map((s) => (
+                <button key={s.key} className="style-card" onClick={() => nav(`/styles?open=${s.key}`)}>
+                  <Img src={s.images[0]} alt={s.name} />
+                  <div className="name">{s.name}</div>
+                  <div className="hint">{s.hint}</div>
+                </button>
+              ))
+            : [0, 1, 2].map((i) => <Skeleton key={i} height={120} />)}
         </div>
       </Section>
 
-      <Section title={t("how_t")} large>
-        <Group icons>
-          <Cell icon={<PenLine />} title={t("how_1")} subtitle={t("how_1x")} />
-          <Cell icon={<Sparkles />} title={t("how_2")} subtitle={t("how_2x")} />
-          <Cell icon={<CreditCard />} title={t("how_3")} subtitle={t("how_3x")} />
-          <Cell icon={<Layers />} title={t("how_4")} subtitle={t("how_4x")} />
-        </Group>
-      </Section>
-
-      {c && (
-        <Section title={t("prices_t")} large footer={`${t("x_text")} +${money(c.prices.extra_text)} · ${t("x_notes")} +${money(c.prices.extra_notes)} · ${t("dl_urgent")} +${c.prices.urgent_pct}%`}>
-          <Group>
-            {TIERS.map((tier) => (
-              <Cell
-                key={tier}
-                title={t(slidesKey(tier))}
-                value={
-                  <PriceTag
-                    now={money(tierPrice(c.prices, tier, first))}
-                    old={tierOld(c.prices, tier, first) ? money(tierOld(c.prices, tier, first)!) : null}
-                    sum={t("sum")}
-                  />
-                }
-                onClick={() => nav("/order")}
-              />
+      {/* 4. Как это работает — только новым клиентам */}
+      {!returning && (
+        <Section title={t("how_t")} large>
+          <div className="steps">
+            {(["1", "2", "3", "4"] as const).map((n) => (
+              <div key={n} className="step">
+                <span className="step-n">{n}</span>
+                <div className="subhead" style={{ fontWeight: 600 }}>
+                  {t(`how_${n}` as Key)}
+                </div>
+                <div className="footnote secondary">{t(`how_${n}x` as Key)}</div>
+              </div>
             ))}
-            <Cell title={t("pkg_promo")} chevron onClick={() => nav("/packages")} />
-          </Group>
+          </div>
         </Section>
       )}
     </div>

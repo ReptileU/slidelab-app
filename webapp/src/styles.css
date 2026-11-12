@@ -1045,3 +1045,15 @@ img, video, svg { max-width: 100%; height: auto; }
 .gold-btn { color: #2b1d00 !important; background: linear-gradient(180deg, #fff3c4 0%, #f0c85a 45%, #c9952b 100%) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 22px rgba(224, 176, 74, 0.3) !important; }
 .pkg-over-later { margin-top: 4px; padding: 10px; border: 0; background: none; color: rgba(245, 245, 247, 0.7); font: inherit; font-size: 15px; cursor: pointer; }
+
+/* ── Главная: аккуратная структура ── */
+.hero.compact { padding-top: 22px; padding-bottom: 22px; }
+.hero.compact .title1 { margin: 0; }
+.hero-link { display: block; width: 100%; margin-top: 12px; padding: 6px; border: 0; background: none; font: inherit; font-size: 15px;
+  color: rgba(245, 245, 247, 0.75); cursor: pointer; text-align: center; }
+.hero-link:active { opacity: 0.6; }
+.styles-row .style-card { flex: 0 0 42%; scroll-snap-align: start; }
+.steps { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.step { position: relative; padding: 14px 14px 14px; border-radius: var(--r-lg); background: var(--gloss-card); border: var(--gloss-border); }
+.step-n { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin-bottom: 8px; border-radius: 50%;
+  font-size: 13px; font-weight: 800; color: var(--bg); background: var(--label); }
