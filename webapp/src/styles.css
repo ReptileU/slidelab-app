@@ -1057,3 +1057,17 @@ img, video, svg { max-width: 100%; height: auto; }
 .step { position: relative; padding: 14px 14px 14px; border-radius: var(--r-lg); background: var(--gloss-card); border: var(--gloss-border); }
 .step-n { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; margin-bottom: 8px; border-radius: 50%;
   font-size: 13px; font-weight: 800; color: var(--bg); background: var(--label); }
+
+/* ---------- профиль: шапка, статистика, заглушка пакета ---------- */
+.prof-hero{position:relative;margin:-8px -16px 0;padding:0 16px;border-radius:0 0 28px 28px;
+  background:radial-gradient(420px 260px at 50% 0%,rgba(142,142,147,.28),transparent 70%)}
+.prof-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 26px}
+.prof-stats>div{background:var(--surface);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow);border:var(--gloss-border);display:flex;flex-direction:column;gap:2px}
+.prof-stats b{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.prof-stats span{font-size:13px;color:var(--secondary)}
+.prof-teaser{width:100%;display:flex;align-items:center;gap:14px;text-align:left;padding:18px;border-radius:var(--r-lg);
+  background:var(--gloss-tile);color:#fff;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.prof-teaser::after{content:"";position:absolute;inset:0;background:var(--hero-sheen);pointer-events:none}
+.prof-teaser>div:nth-child(2){flex:1;min-width:0}
+.prof-teaser .footnote{color:rgba(255,255,255,.66)!important}
+.prof-teaser-go{font-size:14px;font-weight:700;white-space:nowrap;opacity:.9}

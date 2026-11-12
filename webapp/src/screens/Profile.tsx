@@ -1,13 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleHelp, Globe, Megaphone, MessageCircle, Star } from "lucide-react";
+import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Package, Palette, Star } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
-import { useCatalog, useLang, useMe, useT } from "../lib/app";
+import { useCatalog, useLang, useMe, useOrders, useT } from "../lib/app";
 import { alert, haptic, openTelegramUrl } from "../lib/tg";
 import type { Lang } from "../lib/types";
 import { Button, Cell, Group, Section, Sheet, TextArea, Toast } from "../ui";
+import { PackCard } from "../ui/PackCard";
 
 const LANGS: Record<Lang, string> = { ru: "Русский", uz: "O‘zbekcha", en: "English" };
 
@@ -20,18 +21,57 @@ export function Profile() {
   const [sheet, setSheet] = useState<"lang" | "ask" | "review" | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const user = me.data;
+  const orders = useOrders();
+  const ordersN = orders.data?.length ?? 0;
+  const pkg = user?.package;
 
   return (
     <div className="page">
-      <div className="center" style={{ margin: "16px 0 28px" }}>
-        {user?.photo_url ? (
-          <img className="avatar" src={user.photo_url} alt="" />
-        ) : (
-          <div className="avatar">{(user?.first_name ?? "S").slice(0, 1)}</div>
-        )}
-        <h1 className="title2 mt-16">{user?.first_name}</h1>
-        {user?.username && <div className="subhead secondary">@{user.username}</div>}
+      <div className="prof-hero">
+        <div className="center" style={{ margin: "16px 0 22px" }}>
+          {user?.photo_url ? (
+            <img className="avatar" src={user.photo_url} alt="" />
+          ) : (
+            <div className="avatar">{(user?.first_name ?? "S").slice(0, 1)}</div>
+          )}
+          <h1 className="title2 mt-16">{user?.first_name}</h1>
+          {user?.username && <div className="subhead secondary">@{user.username}</div>}
+        </div>
+        <div className="prof-stats">
+          <div>
+            <b className="tabular">{ordersN}</b>
+            <span>{t("prof_orders_n")}</span>
+          </div>
+          <div>
+            <b className="tabular">{pkg ? pkg.left : "—"}</b>
+            <span>{pkg ? t("prof_left") : t("prof_nopack")}</span>
+          </div>
+        </div>
       </div>
+
+      {pkg ? (
+        <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
+          <PackCard pkg={pkg} holder={user?.first_name || "SlideLab"} hint={false} />
+        </Section>
+      ) : (
+        <Section>
+          <button className="prof-teaser" onClick={() => nav("/packages")}>
+            <Package size={30} />
+            <div>
+              <div className="headline">{t("prof_teaser_t")}</div>
+              <div className="footnote secondary">{t("prof_teaser_s")}</div>
+            </div>
+            <span className="prof-teaser-go">{t("prof_teaser_go")} ›</span>
+          </button>
+        </Section>
+      )}
+
+      <Section>
+        <Group icons>
+          <Cell icon={<FileText />} title={t("orders_t")} chevron onClick={() => nav("/orders")} />
+          <Cell icon={<Palette />} title={t("styles_t")} chevron onClick={() => nav("/styles")} />
+        </Group>
+      </Section>
 
       <Section>
         <Group icons>

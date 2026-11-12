@@ -6,7 +6,6 @@ import { money, type Key } from "../lib/i18n";
 import { hintKey, STATUS_BADGE, statusKey } from "../lib/order";
 import { haptic } from "../lib/tg";
 import { Img, Logo, PriceTag, Section, Skeleton, useGlare } from "../ui";
-import { PackCard } from "../ui/PackCard";
 import { WorksCarousel } from "../ui/WorksCarousel";
 
 export function Home() {
@@ -24,13 +23,7 @@ export function Home() {
 
   return (
     <div className="page home">
-      {/* 1. Своё: карта пакета и текущий заказ — первое, что видит постоянный клиент */}
-      {me.data?.package && (
-        <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
-          <PackCard pkg={me.data.package} holder={me.data.first_name || "SlideLab"} />
-        </Section>
-      )}
-
+      {/* 1. Текущий заказ, если есть */}
       {active && (
         <Section title={t("active_t")}>
           <button className="card" onClick={() => nav(`/orders/${active.id}`)}>
