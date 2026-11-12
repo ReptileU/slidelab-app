@@ -58,7 +58,9 @@ def main_menu(lang: Lang, app_url: str | None) -> ReplyKeyboardMarkup:
             [KeyboardButton(text=t(lang, "btn_help"))],
         ],
         resize_keyboard=True,
-        is_persistent=True,
+        # Меню не висит под полем ввода: прячется после нажатия, открывается значком ⌘ справа в поле
+        one_time_keyboard=True,
+        is_persistent=False,
     )
 
 

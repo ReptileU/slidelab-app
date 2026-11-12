@@ -1,21 +1,25 @@
 """«Мои заказы» и всё, что клиент делает с заказом: оплата, обложка, формат, правки, оценка."""
 
+import asyncio
 import html
+import logging
 import time
 from typing import Any
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramAPIError
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, FSInputFile, Message
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.bot.utils import file_of
 from slidelab.core import repositories as repo
-from slidelab.core.enums import OrderStatus
+from slidelab.core.enums import AttachmentKind, OrderStatus
 from slidelab.core.errors import DomainError
 from slidelab.core.i18n import t
-from slidelab.core.models import Order, Review, User
+from slidelab.core.models import Attachment, Order, Review, User
 from slidelab.core.models.base import utcnow
 from slidelab.core.services.orders import OrderService
 from slidelab.telegram import keyboards as kb
@@ -25,6 +29,7 @@ from slidelab.telegram.flows import Flows, Material
 from slidelab.telegram.notifier import lang_of
 from slidelab.telegram.states import CoverChangeForm, RevisionForm
 
+log = logging.getLogger(__name__)
 router = Router(name="orders")
 router.message.filter(F.chat.type == "private")
 
@@ -54,13 +59,41 @@ async def show_orders(message: Message, session: AsyncSession, user: User) -> No
 
 
 @router.callback_query(OrderCb.filter(F.action == "show"))
-async def on_show(callback: CallbackQuery, callback_data: OrderCb, session: AsyncSession, user: User) -> None:
+async def on_show(
+    callback: CallbackQuery, callback_data: OrderCb, session: AsyncSession, user: User, flows: Flows
+) -> None:
     await callback.answer()
     order = await own(session, user, callback_data.order_id)
-    if order is not None and isinstance(callback.message, Message):
-        await callback.message.answer(
-            views.client_order_card(user.lang, order), reply_markup=kb.order_actions(lang_of(user), order)
+    if order is None or not isinstance(callback.message, Message):
+        return
+    text = views.client_order_card(user.lang, order)
+    markup = kb.order_actions(lang_of(user), order)
+    photo = await first_slide(session, flows, order)
+    if photo is not None:
+        try:
+            await callback.message.answer_photo(photo, caption=text, reply_markup=markup)
+            return
+        except TelegramAPIError:  # картинку не приняли — карточка текстом
+            log.warning("Не отправилась миниатюра заказа #%s", order.id, exc_info=True)
+    await callback.message.answer(text, reply_markup=markup)
+
+
+async def first_slide(session: AsyncSession, flows: Flows, order: Order) -> FSInputFile | str | None:
+    """Первый слайд (или обложка) для карточки заказа: файл из конвейера или обложка, присланная вручную."""
+    path = await asyncio.to_thread(flows.pipeline.first_slide, order)
+    if path is not None:
+        return FSInputFile(path)
+    return await session.scalar(
+        select(Attachment.tg_file_id)
+        .where(
+            Attachment.order_id == order.id,
+            Attachment.kind == AttachmentKind.COVER,
+            Attachment.tg_file_id.is_not(None),
+            Attachment.mime_type.is_(None) | Attachment.mime_type.startswith("image/"),
         )
+        .order_by(Attachment.id.desc())
+        .limit(1)
+    )
 
 
 @router.callback_query(OrderCb.filter(F.action == "hide"))

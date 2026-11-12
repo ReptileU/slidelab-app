@@ -15,6 +15,7 @@
 """
 
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta, timezone
@@ -88,6 +89,9 @@ def title_plate(order: Order) -> dict[str, str]:
     """{"Выполнил(а)": …, "Группа": …, "Принял(а)": …} — только заполненные клиентом строки."""
     rows = (("Выполнил(а)", order.title_author), ("Группа", order.title_group), ("Принял(а)", order.title_teacher))
     return {label: value for label, value in rows if value}
+
+
+log = logging.getLogger(__name__)
 
 
 class Pipeline:
@@ -256,6 +260,26 @@ class Pipeline:
                 return images[0]
         return None
 
+    def deck_pdf(self, order: Order) -> Path | None:
+        files = [p for p in self.delivered_files(order) if p.suffix.lower() == ".pdf"]
+        return files[0] if files else None
+
+    def first_slide(self, order: Order) -> Path | None:
+        """Первый слайд готовой презентации (JPEG, кэш рядом с PDF), а пока её нет — последняя обложка.
+
+        Рисует PDF при первом обращении — вызывать из потока (asyncio.to_thread).
+        """
+        pdf = self.deck_pdf(order)
+        if pdf is not None:
+            cached = pdf.parent / ".thumb.jpg"
+            try:
+                if not cached.exists() or cached.stat().st_mtime < pdf.stat().st_mtime:
+                    render_first_page(pdf, cached)
+                return cached
+            except Exception:  # битый PDF — покажем обложку
+                log.exception("Миниатюра заказа #%s не получилась", order.id)
+        return self.latest_cover(order.id)
+
     def delivered_files(self, order: Order) -> list[Path]:
         if not order.deliver_dir:
             return []
@@ -304,3 +328,19 @@ class Pipeline:
     def _write_json(path: Path, data: dict[str, Any], indent: int | None = None) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(data, ensure_ascii=False, indent=indent), encoding="utf-8")
+
+
+def render_first_page(pdf: Path, target: Path, width: int = 960) -> None:
+    """Первая страница PDF → JPEG."""
+    import pypdfium2 as pdfium  # type: ignore[import-untyped]
+
+    doc = pdfium.PdfDocument(str(pdf))
+    try:
+        page = doc[0]
+        image = page.render(scale=width / page.get_width()).to_pil().convert("RGB")
+        page.close()
+    finally:
+        doc.close()
+    tmp = target.with_suffix(".tmp")
+    image.save(tmp, "JPEG", quality=85, optimize=True)
+    tmp.replace(target)

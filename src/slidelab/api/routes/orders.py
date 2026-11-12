@@ -287,38 +287,15 @@ def _deck_file(pipeline: Pipeline, order: Order, suffix: str) -> Path | None:
     return files[0] if files else None
 
 
-def render_thumb(pdf: Path, target: Path, width: int = 480) -> None:
-    """Первый слайд PDF → JPEG-миниатюра для списка заказов."""
-    import pypdfium2 as pdfium  # type: ignore[import-untyped]
-
-    doc = pdfium.PdfDocument(str(pdf))
-    try:
-        page = doc[0]
-        image = page.render(scale=width / page.get_width()).to_pil().convert("RGB")
-        page.close()
-    finally:
-        doc.close()
-    tmp = target.with_suffix(".tmp")
-    image.save(tmp, "JPEG", quality=82, optimize=True)
-    tmp.replace(target)
-
-
 @router.get("/{order_id}/thumb", response_model=None)
 async def thumb(
     order_id: int, viewer: ViewerDep, session: SessionDep, bot: BotDep, settings: SettingsDep
 ) -> Response | FileResponse:
     """Миниатюра заказа: первый слайд готовой презентации, а пока её нет — обложка."""
     order = await _own(session, viewer.user, order_id)
-    pipeline = Pipeline(settings.work_dir)
-    pdf = _deck_file(pipeline, order, ".pdf")
-    if pdf is not None:
-        cached = pdf.parent / ".thumb.jpg"
-        try:
-            if not cached.exists() or cached.stat().st_mtime < pdf.stat().st_mtime:
-                await asyncio.to_thread(render_thumb, pdf, cached)
-            return FileResponse(cached, media_type="image/jpeg", headers={"Cache-Control": "private, max-age=3600"})
-        except Exception:  # битый PDF — покажем обложку
-            log.exception("Миниатюра заказа #%s не получилась", order.id)
+    path = await asyncio.to_thread(Pipeline(settings.work_dir).first_slide, order)
+    if path is not None:
+        return FileResponse(path, headers={"Cache-Control": "private, max-age=3600"})
     return await cover(order_id, viewer, session, bot, settings)
 
 
