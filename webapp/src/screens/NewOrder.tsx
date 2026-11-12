@@ -7,7 +7,9 @@ import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
 import { DEADLINES, deadlineKey, estimate, slidesKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { alert, haptic } from "../lib/tg";
-import type { Design, Lang, OrderDraft, Quote } from "../lib/types";
+import { unlockAudio } from "../lib/sound";
+import type { Design, Lang, OrderDraft, Package, Quote } from "../lib/types";
+import { PaidOverlay } from "../ui/PaidOverlay";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 import { Cell, Group, PriceTag, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
 
@@ -118,6 +120,14 @@ export function NewOrder() {
   const full: number | null =
     c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, null, null, notesFree).price : null;
 
+  const [paid, setPaid] = useState<{ order: number; cost: number; pkg: Package } | null>(null);
+  // звук «оплачено» на iOS играет только после касания — «будим» звук на первом касании формы
+  useEffect(() => {
+    const once = () => unlockAudio();
+    window.addEventListener("pointerdown", once, { once: true });
+    return () => window.removeEventListener("pointerdown", once);
+  }, []);
+
   const submit = useMutation({
     mutationFn: () => {
       const { key, title_plate, ...fields } = draft;
@@ -139,9 +149,15 @@ export function NewOrder() {
       return api.createOrder(body, key);
     },
     onSuccess: (order) => {
-      haptic.success();
       localStorage.removeItem(DRAFT_KEY);
       qc.invalidateQueries({ queryKey: ["orders"] });
+      const pkg = me.data?.package;
+      // Оплачено из пакета — сначала «карта и галочка», потом экран заказа
+      if (order.paid_from === "package" && pkg) {
+        setPaid({ order: order.id, cost: order.package_cost, pkg: { ...pkg, left: Math.max(0, pkg.left - order.package_cost) } });
+        return;
+      }
+      haptic.success();
       qc.invalidateQueries({ queryKey: ["me"] });
       nav(`/order/done/${order.id}`, { replace: true });
     },
@@ -181,6 +197,17 @@ export function NewOrder() {
 
   return (
     <div className="page no-tabbar">
+      {paid && (
+        <PaidOverlay
+          pkg={paid.pkg}
+          holder={me.data?.first_name || "SlideLab"}
+          cost={paid.cost}
+          onDone={() => {
+            qc.invalidateQueries({ queryKey: ["me"] });
+            nav(`/order/done/${paid.order}`, { replace: true });
+          }}
+        />
+      )}
       <BackButton onClick={back} />
       <div style={{ margin: "8px 0 20px" }}>
         <div className="footnote secondary">{t("step", { n: step })}</div>
@@ -353,7 +380,7 @@ export function NewOrder() {
         </>
       )}
 
-      <MainButton text={buttonText} muted={missing.length > 0} loading={submit.isPending} onClick={next} />
+      {!paid && <MainButton text={buttonText} muted={missing.length > 0} loading={submit.isPending} onClick={next} />}
 
       <Sheet open={stylePicker} onClose={() => setStylePicker(false)} title={t("f_style")}>
         <Group>

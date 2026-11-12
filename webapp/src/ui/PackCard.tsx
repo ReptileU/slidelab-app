@@ -29,7 +29,7 @@ const clamp = (v: number, a = -1, b = 1) => Math.max(a, Math.min(b, v));
  * Виртуальная «пластиковая» карта пакета: остаток презентаций крупно, точки — сколько осталось.
  * Ничего не нажимается: карта наклоняется за пальцем и за наклоном телефона, а от тряски по ней пробегает блик.
  */
-export function PackCard({ pkg, holder }: { pkg: Package; holder: string }) {
+export function PackCard({ pkg, holder, hint = true }: { pkg: Package; holder: string; hint?: boolean }) {
   const t = useT();
   const { lang } = useLang();
   const card = useRef<HTMLDivElement>(null);
@@ -196,7 +196,7 @@ export function PackCard({ pkg, holder }: { pkg: Package; holder: string }) {
           </div>
         </div>
       </div>
-      <p className="pcard-hint">{t("pkg_card_hint")}</p>
+      {hint && <p className="pcard-hint">{t("pkg_card_hint")}</p>}
     </div>
   );
 }
