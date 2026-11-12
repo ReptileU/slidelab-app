@@ -6,6 +6,7 @@ import { money } from "../lib/i18n";
 import { hintKey, slidesKey, STATUS_BADGE, statusKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { haptic } from "../lib/tg";
 import { Cell, Group, Img, Logo, PriceTag, Section, Skeleton, useGlare } from "../ui";
+import { PackCard } from "../ui/PackCard";
 import { WorksCarousel } from "../ui/WorksCarousel";
 
 export function Home() {
@@ -21,6 +22,13 @@ export function Home() {
 
   return (
     <div className="page">
+      {/* Карта пакета — первое, что видит клиент с пакетом */}
+      {me.data?.package && (
+        <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
+          <PackCard pkg={me.data.package} holder={me.data.first_name || "SlideLab"} />
+        </Section>
+      )}
+
       <header className="hero" style={{ margin: "8px 0 28px" }} onPointerMove={glare} onPointerDown={glare}>
         <Logo />
         <h1 className="large-title mt-8 silver-text">{t("hero_title")}</h1>
