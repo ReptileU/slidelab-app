@@ -9,7 +9,7 @@ import { Section, Skeleton, Toast } from "../ui";
 import { PaySheet } from "../ui/PaySheet";
 
 /** Картинка-фон пакета: чем дороже пакет, тем статуснее (серебро → платина → золото). */
-const PACK_ART: Record<string, string> = { week: "p0", month: "p1", vip: "p2" };
+const PACK_ART: Record<string, string> = { week: "p0", month: "p1b", vip: "p2" };
 
 /** «2 презентации», «10 презентаций» — подпись под крупной цифрой. */
 function presWord(lang: string, n: number): string {
