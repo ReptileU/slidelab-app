@@ -16,7 +16,8 @@ Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
                 $_.CommandLine -like "*slidelab.api.main*" -or
                 $_.CommandLine -like "*slidelab.core.seed*" -or
                 $_.CommandLine -like "*alembic*" -or
-                $_.CommandLine -like "*cloudflared*localhost:8010*")) -or
+                $_.CommandLine -like "*cloudflared*localhost:8010*" -or
+                $_.CommandLine -like "*cloudflared*tunnel*run*")) -or
             ($_.ExecutablePath -and $_.ExecutablePath -like "$Root\.venv\*"))
     } |
     ForEach-Object {

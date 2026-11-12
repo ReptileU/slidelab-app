@@ -92,7 +92,32 @@ $apiJob = Start-Job -ArgumentList $Root, $Logs -ScriptBlock {
 # Нужна, только если включена новая Mini App (LEGACY_WEBAPP=false) и стоит cloudflared:
 #   winget install Cloudflare.cloudflared
 $tunnel = $null
-if ((EnvValue "LEGACY_WEBAPP") -eq "false") {
+# Постоянный адрес (именной туннель Cloudflare): data\tunnel_token.txt — токен туннеля (кладёт владелец),
+# data\public_url.txt — адрес вида https://app.example.com. Тогда ссылка не меняется при перезапусках.
+$tokenFile = Join-Path $Root "data\tunnel_token.txt"
+$publicFile = Join-Path $Root "data\public_url.txt"
+$named = (Test-Path -LiteralPath $tokenFile) -and (Test-Path -LiteralPath $publicFile)
+if ((EnvValue "LEGACY_WEBAPP") -eq "false" -and $named -and (Has "cloudflared")) {
+    Step "Постоянная ссылка для Mini App..."
+    $tunnelLog = Join-Path $Logs "tunnel.log"
+    Set-Content -LiteralPath $tunnelLog -Value "" -Encoding UTF8
+    $token = (Get-Content -LiteralPath $tokenFile -Raw).Trim()
+    $url = (Get-Content -LiteralPath $publicFile -Raw).Trim().TrimEnd("/")
+    # Токен — через переменную окружения, а не в командной строке: так его не видно в списке процессов
+    $env:TUNNEL_TOKEN = $token
+    $tunnel = Start-Process cloudflared -ArgumentList "tunnel", "--no-autoupdate", "run" `
+        -RedirectStandardError $tunnelLog -RedirectStandardOutput (Join-Path $Logs "tunnel.out.log") `
+        -WindowStyle Hidden -PassThru
+    Remove-Item Env:TUNNEL_TOKEN -ErrorAction SilentlyContinue
+    $lines = [System.IO.File]::ReadAllLines((Join-Path $Root ".env"), $Utf8NoBom)
+    if ($lines | Where-Object { $_ -match "^WEBAPP_URL=" }) {
+        $lines = $lines | ForEach-Object { if ($_ -match "^WEBAPP_URL=") { "WEBAPP_URL=$url/" } else { $_ } }
+    } else {
+        $lines = @($lines) + "WEBAPP_URL=$url/"
+    }
+    [System.IO.File]::WriteAllLines((Join-Path $Root ".env"), [string[]]$lines, $Utf8NoBom)
+    Write-Host "  Mini App: $url (постоянная)"
+} elseif ((EnvValue "LEGACY_WEBAPP") -eq "false") {
     if (Has "cloudflared") {
         Step "Временная ссылка для Mini App..."
         $tunnelLog = Join-Path $Logs "tunnel.log"
