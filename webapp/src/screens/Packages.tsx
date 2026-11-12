@@ -1,13 +1,26 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Crown, Sparkles, Zap } from "lucide-react";
 import { useState } from "react";
 
 import { api } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { formatDate, money, type Key } from "../lib/i18n";
 import type { Plan } from "../lib/types";
-import { Button, Section, Skeleton, Toast } from "../ui";
+import { Section, Skeleton, Toast } from "../ui";
 import { PaySheet } from "../ui/PaySheet";
+
+/** Картинка-фон пакета: чем дороже пакет, тем статуснее (серебро → платина → золото). */
+const PACK_ART: Record<string, string> = { week: "p0", month: "p1", vip: "p2" };
+
+/** «2 презентации», «10 презентаций» — подпись под крупной цифрой. */
+function presWord(lang: string, n: number): string {
+  if (lang === "uz") return "taqdimot";
+  if (lang === "en") return n === 1 ? "presentation" : "presentations";
+  const d = n % 10;
+  const dd = n % 100;
+  if (d === 1 && dd !== 11) return "презентация";
+  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return "презентации";
+  return "презентаций";
+}
 
 export function Packages() {
   const t = useT();
@@ -47,37 +60,34 @@ export function Packages() {
 
       <Section footer={t("pkg_note")}>
         <div className="stack gap-12">
-          {!c && [0, 1, 2].map((i) => <Skeleton key={i} height={150} radius={16} />)}
+          {!c && [0, 1, 2].map((i) => <Skeleton key={i} height={230} radius={24} />)}
           {c?.plans.map((p) => {
             const single = c.prices.s20 * p.count;
             const save = Math.round((1 - p.price / single) * 100);
-            const Icon = p.code === "vip" ? Crown : p.code === "month" ? Sparkles : Zap;
+            const perks = [p.notes_free && t("pkg_notes"), p.priority && t("pkg_priority")].filter(Boolean);
             return (
-              <div key={p.code} className={`card${p.code === "vip" ? " vip" : ""}`}>
-                <div className="row spread">
-                  <span className="row" style={{ gap: 10 }}>
-                    <span className="way-icon">
-                      <Icon />
+              <div key={p.code} className={`pack pack-${p.code}`}>
+                <img className="pack-bg" src={`./packs/${PACK_ART[p.code] ?? "p0"}.webp`} alt="" draggable={false} />
+                <div className="pack-body">
+                  <div className="row" style={{ gap: 6 }}>
+                    {p.code === "vip" && <span className="pack-chip vip">VIP</span>}
+                    <span className="pack-chip">{t("pkg_save", { pct: save })}</span>
+                    <span className="pack-chip ghost">{t("pkg_days", { days: p.days })}</span>
+                  </div>
+                  <div className="pack-count">
+                    <span className="pack-num tabular">{p.count}</span>
+                    <span className="pack-unit">{presWord(lang, p.count)}</span>
+                  </div>
+                  <div className="pack-per">
+                    {t("per_one", { price: `${money(Math.round(p.price / p.count))} ${t("sum")}` })}
+                  </div>
+                  {perks.length > 0 && <div className="pack-perks">{perks.join(" · ")}</div>}
+                  <button className="pack-buy" onClick={() => setBuying(p)}>
+                    <span>{t("buy")}</span>
+                    <span className="tabular">
+                      {money(p.price)} {t("sum")}
                     </span>
-                    <span className="headline">{planName(p.code)}</span>
-                  </span>
-                  <span className={`badge ${p.code === "vip" ? "gold" : ""}`}>{t("pkg_save", { pct: save })}</span>
-                </div>
-                <div className="row spread mt-16" style={{ alignItems: "baseline" }}>
-                  <span className="title2 tabular">
-                    {money(p.price)} {t("sum")}
-                  </span>
-                  <span className="footnote secondary">{t("pkg_days", { days: p.days })}</span>
-                </div>
-                <div className="footnote secondary">
-                  {t("per_one", { price: `${money(Math.round(p.price / p.count))} ${t("sum")}` })}
-                  {p.notes_free && ` · ${t("pkg_notes")}`}
-                  {p.priority && ` · ${t("pkg_priority")}`}
-                </div>
-                <div className="mt-16">
-                  <Button kind={p.code === "month" ? "filled" : "tinted"} onClick={() => setBuying(p)}>
-                    {t("buy")}
-                  </Button>
+                  </button>
                 </div>
               </div>
             );
