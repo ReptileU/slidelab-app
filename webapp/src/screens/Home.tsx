@@ -6,6 +6,7 @@ import { money } from "../lib/i18n";
 import { hintKey, slidesKey, STATUS_BADGE, statusKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { haptic } from "../lib/tg";
 import { Cell, Group, Img, Logo, PriceTag, Section, Skeleton, useGlare } from "../ui";
+import { WorksCarousel } from "../ui/WorksCarousel";
 
 export function Home() {
   const t = useT();
@@ -75,25 +76,7 @@ export function Home() {
       </Section>
 
       <Section title={t("works_t")} large>
-        <div className="hscroll">
-          {c
-            ? c.works.map((w) => (
-                <figure key={w.image} className="work" style={{ margin: 0 }}>
-                  <Img src={w.image} alt={w.title} />
-                  <figcaption className="work-caption">
-                    <div className="subhead" style={{ fontWeight: 600 }}>
-                      {w.title}
-                    </div>
-                    <div className="footnote secondary">{w.style}</div>
-                  </figcaption>
-                </figure>
-              ))
-            : [0, 1].map((i) => (
-                <div key={i} className="work">
-                  <Skeleton height={180} />
-                </div>
-              ))}
-        </div>
+        {c ? <WorksCarousel works={c.works} /> : <Skeleton height={220} />}
       </Section>
 
       <Section title={t("styles_t")} large action={{ label: t("styles_all"), onClick: () => nav("/styles") }}>
