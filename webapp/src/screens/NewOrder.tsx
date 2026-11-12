@@ -206,6 +206,10 @@ export function NewOrder() {
             qc.invalidateQueries({ queryKey: ["me"] });
             nav(`/order/done/${paid.order}`, { replace: true });
           }}
+          onBuy={() => {
+            qc.invalidateQueries({ queryKey: ["me"] });
+            nav("/packages", { replace: true });
+          }}
         />
       )}
       <BackButton onClick={back} />

@@ -1024,3 +1024,24 @@ img, video, svg { max-width: 100%; height: auto; }
 @keyframes paid-draw { to { stroke-dashoffset: 0; } }
 .paid-t { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
 .paid-s { font-size: 14px; color: rgba(245, 245, 247, 0.65); text-align: center; }
+
+/* Последняя презентация из пакета: карта трескается и разлетается */
+.shards { position: relative; }
+.shard { transition: transform 1.1s cubic-bezier(0.5, 0, 0.75, 0), opacity 1.1s ease-in; }
+.shard.l { clip-path: polygon(0 0, 52% 0, 47% 22%, 55% 41%, 46% 63%, 53% 80%, 49% 100%, 0 100%); }
+.shard.r { position: absolute; inset: 0; clip-path: polygon(52% 0, 100% 0, 100% 100%, 49% 100%, 53% 80%, 46% 63%, 55% 41%, 47% 22%); }
+.crack { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+.crack polyline { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 0.6; vector-effect: non-scaling-stroke; stroke-dasharray: 120; stroke-dashoffset: 120; }
+.paid-ov.last.paid .crack { opacity: 1; }
+.paid-ov.last.paid .crack polyline { animation: paid-draw 0.5s 1.1s ease-in forwards; }
+.paid-ov.broken .crack { opacity: 0; transition: opacity 0.2s; }
+.paid-ov.broken .shard.l { transform: translate(-30%, 60vh) rotate(-28deg); opacity: 0; }
+.paid-ov.broken .shard.r { transform: translate(30%, 55vh) rotate(24deg); opacity: 0; }
+.paid-ov.broken .paid-card { animation: paid-shake 0.25s ease-in-out; transform: none; filter: none; }
+@keyframes paid-shake { 0%, 100% { translate: 0; } 25% { translate: -6px 2px; } 75% { translate: 6px -2px; } }
+.pkg-over { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 380px; color: #f5f5f7; text-align: center;
+  animation: paid-fade 0.5s 0.95s ease both; }
+.pkg-over .pack-buy { margin-top: 14px; justify-content: center; }
+.gold-btn { color: #2b1d00 !important; background: linear-gradient(180deg, #fff3c4 0%, #f0c85a 45%, #c9952b 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 22px rgba(224, 176, 74, 0.3) !important; }
+.pkg-over-later { margin-top: 4px; padding: 10px; border: 0; background: none; color: rgba(245, 245, 247, 0.7); font: inherit; font-size: 15px; cursor: pointer; }

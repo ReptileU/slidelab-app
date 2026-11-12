@@ -60,3 +60,38 @@ export function playPaid(): void {
     /* без звука — не страшно */
   }
 }
+
+/** Хруст ломающейся карты: короткий шум + глухой удар. */
+export function playCrack(): void {
+  const c = context();
+  if (!c) return;
+  try {
+    if (c.state === "suspended") void c.resume();
+    const now = c.currentTime + 0.01;
+    const len = Math.floor(c.sampleRate * 0.25);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    const noise = c.createBufferSource();
+    noise.buffer = buf;
+    const hp = c.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 1800;
+    const ng = c.createGain();
+    ng.gain.value = 0.35;
+    noise.connect(hp).connect(ng).connect(c.destination);
+    noise.start(now);
+    const osc = c.createOscillator();
+    const og = c.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(55, now + 0.25);
+    og.gain.setValueAtTime(0.3, now);
+    og.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    osc.connect(og).connect(c.destination);
+    osc.start(now);
+    osc.stop(now + 0.32);
+  } catch {
+    /* без звука — не страшно */
+  }
+}

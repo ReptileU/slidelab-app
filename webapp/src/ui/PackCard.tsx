@@ -29,7 +29,18 @@ const clamp = (v: number, a = -1, b = 1) => Math.max(a, Math.min(b, v));
  * Виртуальная «пластиковая» карта пакета: остаток презентаций крупно, точки — сколько осталось.
  * Ничего не нажимается: карта наклоняется за пальцем и за наклоном телефона, а от тряски по ней пробегает блик.
  */
-export function PackCard({ pkg, holder, hint = true }: { pkg: Package; holder: string; hint?: boolean }) {
+export function PackCard({
+  pkg,
+  holder,
+  hint = true,
+  still = false,
+}: {
+  pkg: Package;
+  holder: string;
+  hint?: boolean;
+  /** без наклона и датчиков — для анимаций поверх экрана */
+  still?: boolean;
+}) {
   const t = useT();
   const { lang } = useLang();
   const card = useRef<HTMLDivElement>(null);
@@ -62,6 +73,7 @@ export function PackCard({ pkg, holder, hint = true }: { pkg: Package; holder: s
 
   // Наклон телефона и тряска
   useEffect(() => {
+    if (still) return;
     const s = tg as unknown as Sensors | undefined;
     const cleanups: (() => void)[] = [];
     let base: { b: number; g: number } | null = null;
@@ -129,9 +141,10 @@ export function PackCard({ pkg, holder, hint = true }: { pkg: Package; holder: s
       cleanups.push(() => window.removeEventListener("devicemotion", onM));
     }
     return () => cleanups.forEach((f) => f());
-  }, []);
+  }, [still]);
 
   function follow(e: React.PointerEvent<HTMLDivElement>) {
+    if (still) return;
     const box = e.currentTarget.getBoundingClientRect();
     touching.current = true;
     target.current = {
