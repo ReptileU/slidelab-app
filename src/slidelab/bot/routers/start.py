@@ -264,6 +264,6 @@ async def on_nav(
 
 
 @router.message(F.text.in_(kb.menu_texts("btn_menu")))
-async def show_menu(message: Message, user: User) -> None:
-    """Кнопка «☰ Меню» у поля ввода — разделы бота, без навязывания заказа."""
-    await message.answer(t(user.lang, "menu_title"), reply_markup=kb.main_inline(lang_of(user)))
+async def show_menu(message: Message, user: User, flows: Flows) -> None:
+    """Старая кнопка «☰ Меню» у поля ввода: меняем её на полное меню с разделами."""
+    await message.answer(t(user.lang, "menu_title"), reply_markup=await flows.n.menu(user))
