@@ -3,9 +3,10 @@ import { useState } from "react";
 
 import { api } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
-import { formatDate, money, type Key } from "../lib/i18n";
+import { money, type Key } from "../lib/i18n";
 import type { Plan } from "../lib/types";
 import { Section, Skeleton, Toast } from "../ui";
+import { PackCard } from "../ui/PackCard";
 import { PaySheet } from "../ui/PaySheet";
 
 /** Картинка-фон пакета: чем дороже пакет, тем статуснее (серебро → платина → золото). */
@@ -45,16 +46,7 @@ export function Packages() {
 
       {pkg && (
         <Section title={t("pkg_my")}>
-          <div className="card">
-            <div className="row spread">
-              <span className="headline">{planName(pkg.plan)}</span>
-              <span className="footnote secondary">{t("pkg_until", { date: formatDate(pkg.expires_at, lang) })}</span>
-            </div>
-            <div className="title1 tabular mt-8">{t("pkg_left", { left: pkg.left, total: pkg.total })}</div>
-            <div className="progress mt-8">
-              <i style={{ width: `${(pkg.left / Math.max(pkg.total, 1)) * 100}%` }} />
-            </div>
-          </div>
+          <PackCard pkg={pkg} holder={me.data?.first_name || "SlideLab"} />
         </Section>
       )}
 
