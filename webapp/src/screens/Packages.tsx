@@ -64,16 +64,6 @@ export function Packages() {
         </Section>
       )}
 
-      {lucky.data && (
-        <Section>
-          <LuckyCard
-            info={lucky.data}
-            onBuy={() => setBuying({ code: "lucky", price: lucky.data.price })}
-            onOpen={() => void openBox()}
-          />
-        </Section>
-      )}
-
       <Section footer={t("pkg_note")}>
         <div className="stack gap-12">
           {!c && [0, 1, 2].map((i) => <Skeleton key={i} height={230} radius={24} />)}
@@ -110,6 +100,16 @@ export function Packages() {
           })}
         </div>
       </Section>
+
+      {lucky.data && (
+        <Section title={t("lucky_section")} footer={t("lucky_section_x")}>
+          <LuckyCard
+            info={lucky.data}
+            onBuy={() => setBuying({ code: "lucky", price: lucky.data.price })}
+            onOpen={() => void openBox()}
+          />
+        </Section>
+      )}
 
       <PaySheet
         open={!!buying}

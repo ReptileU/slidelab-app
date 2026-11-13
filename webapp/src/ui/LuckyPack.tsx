@@ -73,12 +73,21 @@ export function LuckyCard({
           </span>
           <span className="lucky-limit">{t("lucky_limit", { n: info.limit })}</span>
         </div>
-        <div className="lucky-title">
-          <span className="lucky-q">1</span>
-          <span className="lucky-arrow">→</span>
-          <span className="lucky-q silver-text">10</span>
-        </div>
-        <p className="lucky-tag">{t("lucky_tag")}</p>
+        <h3 className="lucky-head">{t("lucky_head")}</h3>
+        <ol className="lucky-steps">
+          <li>
+            <b>1</b>
+            <span>{t("lucky_s1", { price })}</span>
+          </li>
+          <li>
+            <b>2</b>
+            <span>{t("lucky_s2")}</span>
+          </li>
+          <li>
+            <b>3</b>
+            <span>{t("lucky_s3")}</span>
+          </li>
+        </ol>
 
         <div className="lucky-odds" aria-label={t("lucky_odds")}>
           <div className="lucky-odds-h">{t("lucky_odds")}</div>
@@ -95,7 +104,6 @@ export function LuckyCard({
             </div>
           ))}
         </div>
-        <p className="lucky-note">{t("lucky_floor", { price })}</p>
         <p className="lucky-note">{t("lucky_odds_note")}</p>
 
         {info.pending ? (
