@@ -52,6 +52,13 @@ export function Profile() {
       {pkg ? (
         <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
           <PackCard pkg={pkg} holder={user?.first_name || "SlideLab"} hint={false} />
+          {pkg.left <= 1 && (
+            <div className="mt-12">
+              <Button kind="tinted" onClick={() => nav("/packages")}>
+                {t("prof_renew")}
+              </Button>
+            </div>
+          )}
         </Section>
       ) : (
         <Section>

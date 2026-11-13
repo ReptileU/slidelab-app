@@ -18,7 +18,9 @@ initTelegram();
   const view = new URLSearchParams(location.search).get("view"); // кнопка «Посмотреть» под готовой презентацией
   const order = /^order_(\d+)$/.exec(start) ?? (view && /^\d+$/.test(view) ? [view, view] : null);
   const demo = start === "demo" || new URLSearchParams(location.search).has("demo");
+  const go = new URLSearchParams(location.search).get("go"); // кнопка «Продлить пакет» под напоминанием
   if (demo) history.replaceState(null, "", `${location.pathname}${location.search}#/demo`);
+  else if (go === "packages") history.replaceState(null, "", `${location.pathname}${location.search}#/packages`);
   else if (order) history.replaceState(null, "", `${location.pathname}${location.search}#/orders/${order[1]}`);
   else if (!location.hash.startsWith("#/")) history.replaceState(null, "", `${location.pathname}${location.search}#/`);
 }

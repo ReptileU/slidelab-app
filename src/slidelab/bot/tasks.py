@@ -3,7 +3,7 @@
 import asyncio
 import html
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import aiohttp
 from aiogram import Bot
@@ -11,11 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from slidelab.config import Settings
 from slidelab.core import repositories as repo
+from slidelab.core.enums import Lang
 from slidelab.core.models import Order
 from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.services.orders import OrderService
 from slidelab.core.services.pipeline import KIND_RU, REVIEW_OF, TODO, ReadyReview, safe_name
 from slidelab.telegram import keyboards as kb
+from slidelab.telegram import views
 from slidelab.telegram.flows import Flows
 from slidelab.telegram.notifier import Notifier
 
@@ -24,6 +26,10 @@ log = logging.getLogger(__name__)
 REVIEW_EVERY = 20  # секунд
 STUCK_EVERY = 600
 STUCK_REPEAT = timedelta(hours=12)
+PACK_EVERY = 1800
+PACK_SOON = timedelta(days=3)  # за сколько до конца срока напоминаем
+PACK_HOURS = range(9, 21)  # пишем клиенту только днём (время Ташкента)
+TASHKENT = timedelta(hours=5)
 
 
 async def watch_reviews(bot: Bot, sessionmaker: async_sessionmaker[AsyncSession], settings: Settings) -> None:
@@ -128,3 +134,33 @@ async def check_stuck(flows: Flows, session: AsyncSession) -> int:
         alerted += 1
     await session.commit()
     return alerted
+
+
+async def watch_packages(bot: Bot, sessionmaker: async_sessionmaker[AsyncSession], settings: Settings) -> None:
+    """Напоминание клиенту: в пакете осталась одна презентация или срок скоро выйдет."""
+    await asyncio.sleep(90)
+    while True:
+        try:
+            async with sessionmaker() as session:
+                await check_packages(Notifier(bot, session, settings), session)
+        except Exception:
+            log.exception("Напоминания о пакетах")
+        await asyncio.sleep(PACK_EVERY)
+
+
+async def check_packages(notifier: Notifier, session: AsyncSession, now: datetime | None = None) -> int:
+    now = now or utcnow()
+    if (now + TASHKENT).hour not in PACK_HOURS:
+        return 0  # ночью не будим — напомним утром
+    sent = 0
+    for pkg in await repo.packages_to_remind(session, now, now + PACK_SOON):
+        user = await repo.get_user(session, pkg.user_id)
+        lang = user.lang or Lang.RU
+        key = "pkg_remind_last" if pkg.left == 1 else "pkg_remind_soon"
+        settings = notifier.settings
+        markup = None if settings.legacy_webapp else kb.renew_pack(lang, settings.webapp_url)
+        await notifier.client(user, key, markup, left=pkg.left, date=views.date_short(pkg.expires_at))
+        pkg.reminded_at = now  # даже если клиент заблокировал бота — второй раз не пробуем
+        await session.commit()
+        sent += 1
+    return sent

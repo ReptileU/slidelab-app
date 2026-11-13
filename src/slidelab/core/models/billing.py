@@ -48,6 +48,7 @@ class UserPackage(CreatedAtMixin, Base):
     total: Mapped[int]
     left: Mapped[int] = mapped_column("left_count")  # LEFT — ключевое слово SQL
     expires_at: Mapped[datetime]
+    reminded_at: Mapped[datetime | None]  # напоминание «осталась одна / скоро истекает» — один раз на пакет
 
 
 class PackageLedger(CreatedAtMixin, Base):

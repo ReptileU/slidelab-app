@@ -112,6 +112,12 @@ def open_app(lang: Lang, url: str) -> InlineKeyboardMarkup:
     return _rows(InlineKeyboardButton(text=t(lang, "btn_open_app"), web_app=WebAppInfo(url=url)))
 
 
+def renew_pack(lang: Lang, url: str) -> InlineKeyboardMarkup:
+    """Под напоминанием о пакете: сразу на вкладку «Пакеты» в приложении."""
+    sep = "&" if "?" in url else "?"
+    return _rows(InlineKeyboardButton(text=t(lang, "btn_renew"), web_app=WebAppInfo(url=f"{url}{sep}go=packages")))
+
+
 def languages() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

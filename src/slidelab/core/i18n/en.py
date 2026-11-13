@@ -52,6 +52,9 @@ TEXTS: dict[str, str] = {
     "pkg_on": "⟦pack⟧<b>Pack «{plan}» is on</b>\nAvailable: {left} · until {date}.\nOrder as usual — it's deducted from the pack.",
     "gift_text": "Thank you for choosing SlideLab! May your presentations get top marks.",
     "gift_sent": "⟦gift|🎁⟧Your pack gift is already in your Telegram profile.",
+    "btn_renew": "Renew pack",
+    "pkg_remind_last": "⟦pack⟧<b>One presentation left in your pack</b>\nValid until {date}. Renew early — the remainder carries over to the new pack.",
+    "pkg_remind_soon": "⟦pack⟧<b>Your pack expires soon</b>\nPresentations left: {left}, valid until {date}. Order in time or renew — the remainder carries over to the new pack.",
     # --- examples and questions ---
     "examples": "⟦works⟧<b>Our work</b>\nEach presentation has its own style for the topic.",
     "examples_channel": "All work and styles — in the channel {channel}",

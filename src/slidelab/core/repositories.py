@@ -3,7 +3,7 @@
 from collections.abc import Iterable
 from datetime import datetime
 
-from sqlalchemy import exists, func, select
+from sqlalchemy import exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core.enums import OrderStatus, PaymentStatus, PlanCode, SlideTier, Stage
@@ -91,6 +91,21 @@ async def is_order_paid(session: AsyncSession, order_id: int) -> bool:
 async def order_package_debits(session: AsyncSession, order_id: int) -> list[PackageLedger]:
     stmt = select(PackageLedger).where(PackageLedger.order_id == order_id).order_by(PackageLedger.id)
     return list((await session.scalars(stmt)).all())
+
+
+async def packages_to_remind(session: AsyncSession, now: datetime, soon: datetime) -> list[UserPackage]:
+    """Действующие пакеты, о которых пора напомнить: осталась одна презентация или срок вот-вот выйдет."""
+    stmt = (
+        select(UserPackage)
+        .where(
+            UserPackage.reminded_at.is_(None),
+            UserPackage.left > 0,
+            UserPackage.expires_at > now,
+            or_(UserPackage.left == 1, UserPackage.expires_at < soon),
+        )
+        .order_by(UserPackage.id)
+    )
+    return list(await session.scalars(stmt))
 
 
 async def get_active_package(

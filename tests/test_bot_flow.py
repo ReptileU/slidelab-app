@@ -31,9 +31,10 @@ from fakes import TOKEN, FakeSession, make_bot
 from slidelab.bot import tasks
 from slidelab.bot.main import build_dispatcher
 from slidelab.config import Settings
-from slidelab.core.enums import Lang, OrderStatus, PaymentProvider, PaymentStatus, Stage
-from slidelab.core.models import Base, Order, Payment
+from slidelab.core.enums import Lang, OrderStatus, PaymentProvider, PaymentStatus, PlanCode, Stage
+from slidelab.core.models import Base, Order, Payment, UserPackage
 from slidelab.core.models import User as DbUser
+from slidelab.core.models.base import utcnow
 from slidelab.core.seed import seed
 from slidelab.telegram.callbacks import FmtCb, FormCb, LangCb, MgrCb, OrderCb, PayCb, QuickCb
 from slidelab.telegram.flows import Flows
@@ -502,3 +503,45 @@ async def test_pay_card_receipt_and_confirm(h: Harness) -> None:
         assert json.loads(h.tg.of("EditMessageWidgetData")[-1].chat_data)["st"] == 3
     finally:
         SETTINGS.legacy_webapp = True
+
+
+async def test_package_reminder_once_and_only_by_day(h: Harness) -> None:
+    await onboard(h)
+    day = utcnow().replace(hour=7, minute=0)  # 12:00 в Ташкенте
+    night = day.replace(hour=20)  # 01:00 в Ташкенте
+    async with h.sm() as s:
+        user = await s.scalar(select(DbUser).where(DbUser.tg_id == CLIENT))
+        assert user is not None
+        s.add(
+            UserPackage(user_id=user.id, plan_code=PlanCode.WEEK, total=2, left=1, expires_at=day + timedelta(days=10))
+        )
+        await s.commit()
+
+    async def run(now: datetime) -> int:
+        async with h.sm() as s:
+            return await tasks.check_packages(Notifier(h.bot, s, SETTINGS), s, now)
+
+    assert await run(night) == 0  # ночью не пишем
+    assert await run(day) == 1
+    assert "осталась одна презентация" in h.texts(CLIENT)[-1]
+    assert await run(day) == 0  # второй раз о том же пакете не напоминаем
+
+
+async def test_package_reminder_before_expiry_not_for_fresh(h: Harness) -> None:
+    await onboard(h)
+    day = utcnow().replace(hour=7, minute=0)
+    async with h.sm() as s:
+        user = await s.scalar(select(DbUser).where(DbUser.tg_id == CLIENT))
+        assert user is not None
+        fresh = UserPackage(
+            user_id=user.id, plan_code=PlanCode.MONTH, total=4, left=3, expires_at=day + timedelta(days=20)
+        )
+        s.add(fresh)
+        await s.commit()
+        async with h.sm() as s2:
+            assert await tasks.check_packages(Notifier(h.bot, s2, SETTINGS), s2, day) == 0  # рано
+        fresh.expires_at = day + timedelta(days=2)
+        await s.commit()
+    async with h.sm() as s:
+        assert await tasks.check_packages(Notifier(h.bot, s, SETTINGS), s, day) == 1
+    assert "скоро закончится" in h.texts(CLIENT)[-1]

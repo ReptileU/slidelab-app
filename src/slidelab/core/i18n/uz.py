@@ -52,6 +52,9 @@ TEXTS: dict[str, str] = {
     "pkg_on": "⟦pack⟧<b>«{plan}» paketi yoqildi</b>\nMavjud: {left} · {date} gacha.\nOdatdagidek buyurtma bering — paketdan yechiladi.",
     "gift_text": "SlideLab’ni tanlaganingiz uchun rahmat! Taqdimotlaringiz a’lo bo‘lsin.",
     "gift_sent": "⟦gift|🎁⟧Paket uchun sovg‘a — allaqachon Telegram profilingizda.",
+    "btn_renew": "Paketni uzaytirish",
+    "pkg_remind_last": "⟦pack⟧<b>Paketda bitta taqdimot qoldi</b>\n{date} gacha amal qiladi. Oldindan uzaytiring — qoldiq yangi paketga o‘tadi.",
+    "pkg_remind_soon": "⟦pack⟧<b>Paket muddati tugayapti</b>\nQolgan taqdimotlar: {left}, {date} gacha amal qiladi. Buyurtma berishga ulguring yoki uzaytiring — qoldiq yangi paketga o‘tadi.",
     # --- namunalar va savollar ---
     "examples": "⟦works⟧<b>Ishlar namunasi</b>\nHar bir taqdimot — mavzuga mos o‘z uslubida.",
     "examples_channel": "Barcha ishlar va uslublar — {channel} kanalida",

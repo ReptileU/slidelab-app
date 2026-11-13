@@ -185,6 +185,7 @@ def start_background(bot: Bot, dp: Dispatcher, settings: Settings) -> list["asyn
     jobs = [
         asyncio.create_task(tasks.watch_reviews(bot, sm, settings)),
         asyncio.create_task(tasks.watch_stuck(bot, sm, settings)),
+        asyncio.create_task(tasks.watch_packages(bot, sm, settings)),
         asyncio.create_task(widgets.watch_statuses(bot, sm, widgets.store_for(settings.data_dir))),
     ]
     if settings.admin_id and settings.channel:
