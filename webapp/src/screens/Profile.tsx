@@ -1,11 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
-import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Package, Palette, Star } from "lucide-react";
+import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Package, Palette, Star, SunMoon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useOrders, useT } from "../lib/app";
-import { alert, haptic, openTelegramUrl } from "../lib/tg";
+import { alert, getThemeMode, haptic, hasTelegramColors, openTelegramUrl, setThemeMode, type ThemeMode } from "../lib/tg";
 import type { Lang } from "../lib/types";
 import { Button, Cell, Group, Section, Sheet, TextArea, Toast } from "../ui";
 import { PackCard } from "../ui/PackCard";
@@ -18,7 +18,9 @@ export function Profile() {
   const { lang, setLang } = useLang();
   const me = useMe();
   const catalog = useCatalog();
-  const [sheet, setSheet] = useState<"lang" | "ask" | "review" | null>(null);
+  const [sheet, setSheet] = useState<"lang" | "theme" | "ask" | "review" | null>(null);
+  const [theme, setTheme] = useState<ThemeMode>(getThemeMode);
+  const themes: ThemeMode[] = hasTelegramColors() ? ["telegram", "auto", "light", "dark"] : ["auto", "light", "dark"];
   const [toast, setToast] = useState<string | null>(null);
   const user = me.data;
   const orders = useOrders();
@@ -53,7 +55,7 @@ export function Profile() {
         <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
           <PackCard pkg={pkg} holder={user?.first_name || "SlideLab"} hint={false} />
           {pkg.left <= 1 && (
-            <div className="mt-12">
+            <div style={{ marginTop: 18 }}>
               <Button kind="tinted" onClick={() => nav("/packages")}>
                 {t("prof_renew")}
               </Button>
@@ -83,6 +85,7 @@ export function Profile() {
       <Section>
         <Group icons>
           <Cell icon={<Globe />} title={t("lang_t")} value={LANGS[lang]} chevron onClick={() => setSheet("lang")} />
+          <Cell icon={<SunMoon />} title={t("theme_t")} value={t(`theme_${theme}`)} chevron onClick={() => setSheet("theme")} />
         </Group>
       </Section>
 
@@ -109,6 +112,24 @@ export function Profile() {
               checked={l === lang}
               onClick={() => {
                 setLang(l);
+                setSheet(null);
+              }}
+            />
+          ))}
+        </Group>
+      </Sheet>
+
+      <Sheet open={sheet === "theme"} onClose={() => setSheet(null)} title={t("theme_t")}>
+        <Group>
+          {themes.map((m) => (
+            <Cell
+              key={m}
+              title={t(`theme_${m}`)}
+              checked={m === theme}
+              onClick={() => {
+                haptic.select();
+                setThemeMode(m);
+                setTheme(m);
                 setSheet(null);
               }}
             />

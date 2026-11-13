@@ -155,10 +155,51 @@ function safe(call: () => void): void {
   }
 }
 
+/** Оформление: telegram — цвета фона из темы Telegram пользователя; auto — чёрно-белая, светлая/тёмная вслед за Telegram. */
+export type ThemeMode = "auto" | "light" | "dark" | "telegram";
+const THEME_KEY = "sl_theme";
+const THEME_VARS = ["--bg", "--surface", "--gloss-card", "--glass"];
+
+export function getThemeMode(): ThemeMode {
+  try {
+    const v = localStorage.getItem(THEME_KEY);
+    if (v === "auto" || v === "light" || v === "dark" || v === "telegram") return v;
+  } catch {
+    /* хранилище недоступно — оформление по умолчанию */
+  }
+  return hasTelegramColors() ? "telegram" : "auto"; // по умолчанию — как тема Telegram у самого пользователя
+}
+
+export function setThemeMode(mode: ThemeMode): void {
+  try {
+    localStorage.setItem(THEME_KEY, mode);
+  } catch {
+    /* не запомнится до следующего открытия — не страшно */
+  }
+  applyTheme();
+}
+
+/** Есть ли у Telegram свои цвета фона (вне Telegram пункт «Цвета Telegram» не показываем). */
+export function hasTelegramColors(): boolean {
+  return !!tg?.themeParams?.bg_color;
+}
+
 export function applyTheme(): void {
   const root = document.documentElement;
-  const dark = tg ? tg.colorScheme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const mode = getThemeMode();
+  const system = tg ? tg.colorScheme === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const dark = mode === "dark" || (mode !== "light" && system);
   root.dataset.theme = dark ? "dark" : "light";
+  for (const name of THEME_VARS) root.style.removeProperty(name);
+  const p = tg?.themeParams;
+  if (mode === "telegram" && p?.bg_color) {
+    const page = p.secondary_bg_color ?? p.bg_color;
+    const surface = p.section_bg_color ?? p.bg_color;
+    root.style.setProperty("--bg", page);
+    root.style.setProperty("--surface", surface);
+    root.style.setProperty("--gloss-card", surface);
+    root.style.setProperty("--glass", `color-mix(in srgb, ${surface} 76%, transparent)`);
+  }
   if (!tg) return;
   const webApp = tg;
   const bg = getComputedStyle(root).getPropertyValue("--bg").trim();
