@@ -243,6 +243,10 @@ const ru = {
   ask_sent: "Отправлено — ответ придёт в чат с ботом.",
   rv_ph: "Что понравилось, что улучшить?",
   rv_sent: "Спасибо за отзыв!",
+  rv_mine: "Ваш отзыв",
+  rv_withdraw: "Отозвать отзыв",
+  rv_withdraw_q: "Отозвать отзыв? Мы его удалим.",
+  rv_withdrawn: "Отзыв отозван",
   search_ph: "Поиск",
   nothing_found: "Ничего не нашли — спросите менеджера.",
 
@@ -501,6 +505,10 @@ const uz: Dict = {
   ask_sent: "Yuborildi — javob bot chatiga keladi.",
   rv_ph: "Nima yoqdi, nimani yaxshilash kerak?",
   rv_sent: "Fikringiz uchun rahmat!",
+  rv_mine: "Sizning fikringiz",
+  rv_withdraw: "Fikrni qaytarib olish",
+  rv_withdraw_q: "Fikrni qaytarib olasizmi? Biz uni o‘chiramiz.",
+  rv_withdrawn: "Fikr qaytarib olindi",
   search_ph: "Qidirish",
   nothing_found: "Hech narsa topilmadi — menejerdan so‘rang.",
 
@@ -756,6 +764,10 @@ const en: Dict = {
   ask_sent: "Sent — the answer will come to the bot chat.",
   rv_ph: "What did you like, what can we improve?",
   rv_sent: "Thanks for your review!",
+  rv_mine: "Your review",
+  rv_withdraw: "Withdraw review",
+  rv_withdraw_q: "Withdraw your review? We will delete it.",
+  rv_withdrawn: "Review withdrawn",
   search_ph: "Search",
   nothing_found: "Nothing found — ask the manager.",
 

@@ -206,6 +206,18 @@ async def test_package_invoice_and_support(env: dict[str, Any]) -> None:
     assert (await c.post("/api/reviews", json={"stars": 5}, headers=auth())).status_code == 200
 
 
+async def test_review_can_be_withdrawn_by_author_only(env: dict[str, Any]) -> None:
+    c: AsyncClient = env["client"]
+    assert (await c.get("/api/reviews/mine", headers=auth())).json() is None
+    await c.post("/api/reviews", json={"stars": 4, "text": "Хорошо"}, headers=auth())
+    mine = (await c.get("/api/reviews/mine", headers=auth())).json()
+    assert mine["stars"] == 4 and mine["text"] == "Хорошо"
+    assert (await c.delete(f"/api/reviews/{mine['id']}", headers=auth(888))).status_code == 404  # чужой
+    assert (await c.delete(f"/api/reviews/{mine['id']}", headers=auth())).json() == {"ok": True}
+    assert (await c.get("/api/reviews/mine", headers=auth())).json() is None
+    assert (await c.delete(f"/api/reviews/{mine['id']}", headers=auth())).status_code == 404  # уже отозван
+
+
 # --- готовая презентация: листать, скачать, правки по слайдам -------------------------
 
 

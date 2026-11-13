@@ -210,3 +210,11 @@ class ReviewIn(BaseModel):
 
 class OkOut(BaseModel):
     ok: bool = True
+
+
+class ReviewOut(BaseModel):
+    id: int
+    order_id: int | None
+    stars: int
+    text: str | None
+    created_at: datetime

@@ -1,11 +1,11 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Package, Palette, Star, SunMoon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useOrders, useT } from "../lib/app";
-import { alert, getThemeMode, haptic, hasTelegramColors, openTelegramUrl, setThemeMode, type ThemeMode } from "../lib/tg";
+import { alert, confirm, getThemeMode, haptic, hasTelegramColors, openTelegramUrl, setThemeMode, type ThemeMode } from "../lib/tg";
 import type { Lang } from "../lib/types";
 import { Button, Cell, Group, Section, Sheet, TextArea, Toast } from "../ui";
 import { PackCard } from "../ui/PackCard";
@@ -138,7 +138,12 @@ export function Profile() {
       </Sheet>
 
       <AskSheet open={sheet === "ask"} onClose={() => setSheet(null)} onSent={() => setToast(t("ask_sent"))} />
-      <ReviewSheet open={sheet === "review"} onClose={() => setSheet(null)} onSent={() => setToast(t("rv_sent"))} />
+      <ReviewSheet
+        open={sheet === "review"}
+        onClose={() => setSheet(null)}
+        onSent={() => setToast(t("rv_sent"))}
+        onWithdrawn={() => setToast(t("rv_withdrawn"))}
+      />
       <Toast text={toast} onDone={() => setToast(null)} />
     </div>
   );
@@ -171,20 +176,75 @@ export function AskSheet({ open, onClose, onSent }: { open: boolean; onClose: ()
   );
 }
 
-function ReviewSheet({ open, onClose, onSent }: { open: boolean; onClose: () => void; onSent: () => void }) {
+function ReviewSheet({
+  open,
+  onClose,
+  onSent,
+  onWithdrawn,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSent: () => void;
+  onWithdrawn: () => void;
+}) {
   const t = useT();
+  const qc = useQueryClient();
   const [stars, setStars] = useState(5);
   const [text, setText] = useState("");
+  const mine = useQuery({ queryKey: ["review"], queryFn: api.myReview, enabled: open, retry: false });
+  const sent = mine.data ?? null;
+  const fail = (e: unknown) => alert(e instanceof ApiError ? e.message : t("error"));
   const send = useMutation({
     mutationFn: () => api.review(stars, text.trim()),
     onSuccess: () => {
       haptic.success();
       setText("");
+      void qc.invalidateQueries({ queryKey: ["review"] });
       onClose();
       onSent();
     },
-    onError: (e) => alert(e instanceof ApiError ? e.message : t("error")),
+    onError: fail,
   });
+  const withdraw = useMutation({
+    mutationFn: (id: number) => api.withdrawReview(id),
+    onSuccess: () => {
+      haptic.success();
+      qc.setQueryData(["review"], null);
+      onClose();
+      onWithdrawn();
+    },
+    onError: fail,
+  });
+
+  // Отзыв уже отправлен — показываем его и даём отозвать
+  if (sent) {
+    return (
+      <Sheet open={open} onClose={onClose} title={t("rv_mine")}>
+        <div className="row" style={{ justifyContent: "center", gap: 8, marginBottom: 12 }} aria-label={`${sent.stars} / 5`}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Star key={n} size={30} strokeWidth={1.5} color="var(--label)" fill={n <= sent.stars ? "var(--label)" : "none"} />
+          ))}
+        </div>
+        {sent.text && (
+          <p className="subhead center" style={{ margin: "0 8px 4px", whiteSpace: "pre-wrap" }}>
+            {sent.text}
+          </p>
+        )}
+        <div className="mt-16">
+          <Button
+            kind="gray"
+            disabled={withdraw.isPending}
+            onClick={async () => {
+              if (await confirm(t("rv_withdraw_q"))) withdraw.mutate(sent.id);
+            }}
+          >
+            <span style={{ color: "var(--danger)" }}>{t("rv_withdraw")}</span>
+          </Button>
+        </div>
+      </Sheet>
+    );
+  }
+
   return (
     <Sheet open={open} onClose={onClose} title={t("review_t")}>
       <div className="row" style={{ justifyContent: "center", gap: 8, marginBottom: 16 }}>
@@ -205,7 +265,7 @@ function ReviewSheet({ open, onClose, onSent }: { open: boolean; onClose: () => 
         <TextArea value={text} onChange={setText} placeholder={t("rv_ph")} maxLength={1000} rows={3} />
       </Group>
       <div className="mt-16">
-        <Button disabled={send.isPending} onClick={() => send.mutate()}>
+        <Button disabled={send.isPending || mine.isLoading} onClick={() => send.mutate()}>
           {t("send_short")}
         </Button>
       </div>

@@ -1,6 +1,15 @@
 import { initData } from "./tg";
 import type { Catalog, Invoice, Lang, Me, Order, OrderDraft, PlanCode, Quote, SlideMark } from "./types";
 
+/** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
+export interface MyReview {
+  id: number;
+  order_id: number | null;
+  stars: number;
+  text: string | null;
+  created_at: string;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -62,6 +71,8 @@ export const api = {
   ask: (text: string) => post("/support/messages", { text }),
   review: (stars: number, text: string, orderId?: number) =>
     post("/reviews", { stars, text: text || null, order_id: orderId ?? null }),
+  myReview: () => request<MyReview | null>("/reviews/mine"),
+  withdrawReview: (id: number) => request(`/reviews/${id}`, { method: "DELETE" }),
 
   /** Обложка — с авторизацией, поэтому через fetch и blob, а не <img src>. */
   async coverUrl(id: number): Promise<string> {
