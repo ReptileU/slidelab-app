@@ -174,7 +174,15 @@ async def on_packages(callback: CallbackQuery, session: AsyncSession, user: User
 
 async def packages_view(session: AsyncSession, user: User, flows: Flows) -> tuple[str, InlineKeyboardMarkup]:
     plans = list(
-        (await session.scalars(select(PackagePlan).where(PackagePlan.is_active).order_by(PackagePlan.sort))).all()
+        (
+            await session.scalars(
+                select(PackagePlan)
+                .where(
+                    PackagePlan.is_active, PackagePlan.code != PlanCode.LUCKY
+                )  # бонус-пакет — только в приложении, где видны шансы
+                .order_by(PackagePlan.sort)
+            )
+        ).all()
     )
     current = await repo.get_active_package(session, user.id, utcnow())
     gift = flows.settings.gift_until.strftime("%d.%m") if utcnow().date() <= flows.settings.gift_until else None

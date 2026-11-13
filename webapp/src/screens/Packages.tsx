@@ -1,27 +1,19 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money, type Key } from "../lib/i18n";
-import type { Plan } from "../lib/types";
+import { alert, haptic } from "../lib/tg";
+import type { BuyPlan, LuckyPrize } from "../lib/types";
+import { presWord } from "../lib/words";
 import { Section, Skeleton, Toast } from "../ui";
+import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
 import { PackCard } from "../ui/PackCard";
 import { PaySheet } from "../ui/PaySheet";
 
 /** Картинка-фон пакета: чем дороже пакет, тем статуснее (серебро → платина → золото). */
 const PACK_ART: Record<string, string> = { week: "p0", month: "p1b", vip: "p2" };
-
-/** «2 презентации», «10 презентаций» — подпись под крупной цифрой. */
-function presWord(lang: string, n: number): string {
-  if (lang === "uz") return "taqdimot";
-  if (lang === "en") return n === 1 ? "presentation" : "presentations";
-  const d = n % 10;
-  const dd = n % 100;
-  if (d === 1 && dd !== 11) return "презентация";
-  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return "презентации";
-  return "презентаций";
-}
 
 export function Packages() {
   const t = useT();
@@ -29,7 +21,29 @@ export function Packages() {
   const qc = useQueryClient();
   const me = useMe();
   const catalog = useCatalog();
-  const [buying, setBuying] = useState<Plan | null>(null);
+  const [buying, setBuying] = useState<{ code: BuyPlan; price: number } | null>(null);
+  const [reveal, setReveal] = useState<LuckyPrize | null>(null);
+  const [waitBox, setWaitBox] = useState(false); // звёзды оплачены — ждём, пока сервер начислит бонус-пакет
+  const lucky = useQuery({ queryKey: ["lucky"], queryFn: api.lucky, retry: false, refetchInterval: waitBox ? 1500 : false });
+
+  async function openBox() {
+    try {
+      haptic.tap();
+      setReveal(await api.luckyOpen());
+    } catch (e) {
+      await alert(e instanceof ApiError ? e.message : t("error"));
+    }
+  }
+
+  // Оплатили звёздами — пакет появится через секунду-другую: открываем его сразу
+  useEffect(() => {
+    if (waitBox && lucky.data?.pending) {
+      setWaitBox(false);
+      void openBox();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waitBox, lucky.data?.pending]);
+
   const [toast, setToast] = useState<string | null>(null);
   const pkg = me.data?.package;
   const c = catalog.data;
@@ -47,6 +61,16 @@ export function Packages() {
       {pkg && (
         <Section title={t("pkg_my")}>
           <PackCard pkg={pkg} holder={me.data?.first_name || "SlideLab"} />
+        </Section>
+      )}
+
+      {lucky.data && (
+        <Section>
+          <LuckyCard
+            info={lucky.data}
+            onBuy={() => setBuying({ code: "lucky", price: lucky.data.price })}
+            onOpen={() => void openBox()}
+          />
         </Section>
       )}
 
@@ -96,10 +120,21 @@ export function Packages() {
         sendReceipt={(image) => api.packageReceipt(buying!.code, image)}
         onReceipt={() => setToast(t("pay_shot_sent"))}
         onPaid={() => {
-          setToast(t("pay_pkg_ok"));
+          if (buying?.code === "lucky") setWaitBox(true);
+          else setToast(t("pay_pkg_ok"));
           setTimeout(() => qc.invalidateQueries({ queryKey: ["me"] }), 1500);
         }}
       />
+      {reveal && (
+        <LuckyReveal
+          prize={reveal}
+          onDone={() => {
+            setReveal(null);
+            void qc.invalidateQueries({ queryKey: ["lucky"] });
+            void qc.invalidateQueries({ queryKey: ["me"] });
+          }}
+        />
+      )}
       <Toast text={toast} onDone={() => setToast(null)} />
     </div>
   );

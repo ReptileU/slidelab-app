@@ -1074,3 +1074,96 @@ img, video, svg { max-width: 100%; height: auto; }
 /* На весь экран кнопки Telegram (крестик, ⋯) лежат поверх страницы — под ними фон, чтобы контент не просвечивал при прокрутке */
 body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-index:40;pointer-events:none;
   background:linear-gradient(var(--bg) 72%,transparent)}
+
+/* ---------- бонус-пакет: карточка с шансами ---------- */
+.lucky{position:relative;border-radius:26px;overflow:hidden;color:#f5f5f7;isolation:isolate;
+  background:linear-gradient(160deg,#2c2c2e 0%,#0b0b0c 60%,#000 100%);
+  box-shadow:0 18px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.18);
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .25s var(--ease-out)}
+.lucky-holo{position:absolute;inset:-40%;z-index:-1;opacity:.5;filter:blur(30px);
+  background:conic-gradient(from 0deg,#6e6e73,#f5f5f7,#8e8e93,#3a3a3c,#d1d1d6,#6e6e73);animation:luckySpin 14s linear infinite}
+@keyframes luckySpin{to{transform:rotate(360deg)}}
+.lucky::before{content:"";position:absolute;inset:1.5px;border-radius:24.5px;z-index:-1;
+  background:linear-gradient(160deg,#1f1f21 0%,#0a0a0b 65%,#000 100%)}
+.lucky-glare{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(260px 200px at var(--gx,50%) var(--gy,20%),rgba(255,255,255,.14),transparent 70%)}
+.lucky-in{position:relative;padding:18px}
+.lucky-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.04em;
+  background:linear-gradient(180deg,#fff,#c7c7cc);color:#000}
+.lucky-limit{font-size:11.5px;color:rgba(245,245,247,.5)}
+.lucky-title{display:flex;align-items:baseline;gap:12px;margin:16px 0 2px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.lucky-q{font-size:64px}
+.lucky-arrow{font-size:30px;color:rgba(245,245,247,.4);font-weight:600}
+.lucky-tag{font-size:15px;color:rgba(245,245,247,.75);margin:6px 0 16px}
+.lucky-odds{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:12px 14px}
+.lucky-odds-h{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,245,247,.5);margin-bottom:8px}
+.lucky-row{display:grid;grid-template-columns:118px 1fr 52px;align-items:center;gap:10px;padding:6px 0;font-size:15px;font-weight:700}
+.lucky-row small{font-size:11.5px;font-weight:500;color:rgba(245,245,247,.55)}
+.lucky-row-p{text-align:right;font-size:14px}
+.lucky-bar{height:6px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.lucky-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#8e8e93,#fff)}
+.lucky-row.vip .lucky-row-n{background:var(--silver);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.lucky-note{font-size:12px;line-height:1.35;color:rgba(245,245,247,.5);margin:10px 2px 0}
+.lucky-buy{margin-top:16px;width:100%;height:54px;border-radius:999px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,#fff 0%,#e5e5ea 60%,#c7c7cc 100%);color:#000;font-size:16px;font-weight:700;
+  box-shadow:inset 0 1px 0 #fff,0 8px 24px rgba(255,255,255,.12)}
+.lucky-buy:disabled{opacity:.45;justify-content:center}
+.lucky-buy.open{justify-content:center;animation:luckyPulse 1.6s ease-in-out infinite}
+.lucky-buy.open span{display:inline-flex;align-items:center;gap:8px}
+@keyframes luckyPulse{0%,100%{box-shadow:inset 0 1px 0 #fff,0 0 0 0 rgba(255,255,255,.35)}50%{box-shadow:inset 0 1px 0 #fff,0 0 0 12px rgba(255,255,255,0)}}
+
+/* ---------- бонус-пакет: открытие ---------- */
+.lr{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:radial-gradient(120% 90% at 50% 40%,#1c1c1e 0%,#000 70%);color:#f5f5f7;animation:lrIn .3s ease both;overflow:hidden}
+@keyframes lrIn{from{opacity:0}to{opacity:1}}
+.lr-rays{position:absolute;left:50%;top:44%;width:160vmax;height:160vmax;margin:-80vmax 0 0 -80vmax;opacity:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.09) 0deg 6deg,transparent 6deg 18deg);
+  -webkit-mask:radial-gradient(circle,#000 0%,transparent 55%);mask:radial-gradient(circle,#000 0%,transparent 55%);animation:luckySpin 40s linear infinite}
+.lr.open .lr-rays{opacity:1;transition:opacity .6s ease}
+.lr-pack{position:relative;width:min(62vw,250px);aspect-ratio:5/7;border-radius:22px;overflow:hidden;color:#fff;
+  background:linear-gradient(160deg,#3a3a3c,#0b0b0c 55%,#000);
+  box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.25),inset 0 0 0 1px rgba(255,255,255,.08);
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .2s var(--ease-out);
+  animation:lrFloat 3.2s ease-in-out infinite}
+@keyframes lrFloat{0%,100%{translate:0 0}50%{translate:0 -8px}}
+.lr-pack.t1{animation:lrShake .35s ease both,lrFloat 3.2s ease-in-out .35s infinite}
+.lr-pack.t2{animation:lrShake2 .4s ease both,lrFloat 3.2s ease-in-out .4s infinite}
+.lr-pack.t3{animation:lrBurst .4s ease-in both}
+@keyframes lrShake{0%,100%{rotate:0deg;scale:1}25%{rotate:-5deg;scale:1.04}60%{rotate:4deg}}
+@keyframes lrShake2{0%,100%{rotate:0deg;scale:1}20%{rotate:-8deg;scale:1.08}45%{rotate:7deg}70%{rotate:-4deg}}
+@keyframes lrBurst{0%{scale:1}40%{scale:1.14;filter:brightness(1.6)}100%{scale:1.5;opacity:0;filter:brightness(3) blur(6px)}}
+.lr-foil{position:absolute;inset:0;opacity:.55;mix-blend-mode:screen;
+  background:linear-gradient(115deg,transparent 20%,rgba(255,255,255,.35) 38%,transparent 52%,rgba(200,200,210,.25) 68%,transparent 82%);
+  background-size:260% 100%;animation:lrFoil 3.4s linear infinite}
+@keyframes lrFoil{from{background-position:130% 0}to{background-position:-130% 0}}
+.lr-glare{position:absolute;inset:0;background:radial-gradient(180px 160px at var(--gx,50%) var(--gy,25%),rgba(255,255,255,.22),transparent 70%)}
+.lr-crack{position:absolute;background:linear-gradient(90deg,transparent,#fff,transparent);height:2px;opacity:0;filter:drop-shadow(0 0 6px #fff)}
+.lr-crack.c1{left:8%;right:30%;top:36%;rotate:-18deg}
+.lr-crack.c2{left:28%;right:6%;top:58%;rotate:14deg}
+.lr-crack.c3{left:14%;right:14%;top:47%;rotate:-4deg}
+.lr-pack.t1 .c1,.lr-pack.t2 .c1,.lr-pack.t2 .c2,.lr-pack.t3 .lr-crack{opacity:.95}
+.lr-label{position:absolute;left:16px;top:14px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.lr-mark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;font-weight:800;
+  background:var(--silver);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.lr-name{position:absolute;left:0;right:0;bottom:16px;text-align:center;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+.lr-steps{display:flex;gap:10px}
+.lr-steps i{width:34px;height:5px;border-radius:99px;background:rgba(255,255,255,.18);transition:background .2s}
+.lr-steps i.on{background:#fff}
+.lr-hint{font-size:15px;color:rgba(245,245,247,.6);animation:lrBlink 1.6s ease-in-out infinite}
+@keyframes lrBlink{50%{opacity:.45}}
+.lr-prize{position:relative;text-align:center;animation:lrPrize .7s var(--spring) both}
+@keyframes lrPrize{from{opacity:0;scale:.4}to{opacity:1;scale:1}}
+.lr-got{font-size:14px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(245,245,247,.6)}
+.lr-vip{display:inline-block;margin-top:12px;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:800;letter-spacing:.1em;
+  background:linear-gradient(180deg,#fff,#c7c7cc);color:#000}
+.lr-num{font-size:min(46vw,200px);font-weight:800;letter-spacing:-.05em;line-height:1;margin-top:6px}
+.lr.big .lr-num{filter:drop-shadow(0 0 40px rgba(255,255,255,.35))}
+.lr-unit{font-size:22px;font-weight:700;margin-top:4px}
+.lr-take{position:relative;margin-top:14px;height:54px;padding:0 44px;border-radius:999px;font-size:17px;font-weight:700;color:#000;
+  background:linear-gradient(180deg,#fff 0%,#e5e5ea 60%,#c7c7cc 100%);box-shadow:inset 0 1px 0 #fff,0 10px 30px rgba(255,255,255,.14);
+  animation:lrPrize .6s var(--spring) .35s both}
+.lr-sparks{position:absolute;left:50%;top:44%;width:0;height:0}
+.lr-sparks i{position:absolute;width:6px;height:6px;margin:-3px;border-radius:50%;background:#fff;opacity:0;
+  animation:lrSpark .9s var(--ease-out) var(--d,0ms) both}
+@keyframes lrSpark{0%{opacity:1;transform:rotate(var(--a)) translateX(10px) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateX(46vmin) scale(.2)}}
+@media (prefers-reduced-motion: reduce){.lucky-holo,.lr-rays,.lr-foil,.lr-pack,.lr-hint{animation:none}}

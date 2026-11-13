@@ -11,6 +11,8 @@ from slidelab.core.models import Order, PackageLedger, PackagePlan, UserPackage
 from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.services.pricing import PackageBalance, package_cost
 
+RANK = {PlanCode.LUCKY: 0, PlanCode.WEEK: 1, PlanCode.MONTH: 2, PlanCode.VIP: 3}
+
 
 @dataclass(frozen=True, slots=True)
 class Credit:
@@ -45,6 +47,7 @@ class PackageService:
         plan_code: PlanCode,
         reason: LedgerReason = LedgerReason.PURCHASE,
         credit: Credit | None = None,
+        count: int | None = None,
     ) -> UserPackage:
         """Пакет после оплаты (или выдача менеджером).
 
@@ -55,7 +58,8 @@ class PackageService:
         now = self.clock()
         current = await repo.get_active_package(self.session, user_id, now, for_update=True)
 
-        count = plan.count - (credit.units if credit else 0)
+        bonus = count is not None  # выпало в бонус-пакете: презентаций столько, сколько выпало
+        count = count if count is not None else plan.count - (credit.units if credit else 0)
         expires = now + timedelta(days=plan.days)
         code = plan.code
         carried = 0
@@ -64,6 +68,8 @@ class PackageService:
             expires = max(expires, as_utc(current.expires_at))
             if current.plan_code is PlanCode.VIP:
                 code = PlanCode.VIP
+            elif bonus and RANK[current.plan_code] > RANK[code]:
+                code = current.plan_code  # бонус не понижает уже купленный пакет
 
         package = UserPackage(
             user_id=user_id, plan_code=code, total=count + carried, left=count + carried, expires_at=expires

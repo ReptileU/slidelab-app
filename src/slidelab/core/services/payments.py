@@ -13,10 +13,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
-from slidelab.core.enums import OrderStatus, PaymentProvider, PaymentStatus, PlanCode
+from slidelab.core.enums import LedgerReason, OrderStatus, PaymentProvider, PaymentStatus, PlanCode
 from slidelab.core.errors import InvalidTransitionError
-from slidelab.core.models import Order, Payment, UserPackage
+from slidelab.core.models import Order, PackageBox, Payment, UserPackage
 from slidelab.core.models.base import utcnow
+from slidelab.core.services.lucky import LuckyService, Prize
 from slidelab.core.services.orders import PAYABLE, OrderService
 from slidelab.core.services.packages import Credit
 from slidelab.core.services.pricing import to_stars
@@ -34,6 +35,7 @@ class PaidResult:
     started: bool = False  # заказ сразу ушёл в работу (обложка уже была у клиента)
     credit: Credit | None = None
     attention: str | None = None  # деньги пришли, но что-то не так — владелец должен разобраться
+    prize: Prize | None = None  # бонус-пакет: что выпало
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +49,7 @@ class PaymentService:
         self.session = session
         self.orders = OrderService(session, clock)
         self.packages = self.orders.packages
+        self.lucky = LuckyService(session, clock)
 
     async def stars_for(self, amount_uzs: int) -> int:
         rate = (await repo.get_price_rule_row(self.session)).uzs_per_star
@@ -75,6 +78,8 @@ class PaymentService:
             )
             .order_by(Order.id.desc())
         )
+        if plan_code is PlanCode.LUCKY:
+            return None
         for order_id in ids.all():
             if await self.packages.credit_for(order_id, plan_code) is not None:
                 return order_id
@@ -91,6 +96,9 @@ class PaymentService:
     async def for_plan(
         self, user_id: int, plan_code: PlanCode, provider: PaymentProvider, credit_order_id: int | None = None
     ) -> Payment:
+        if plan_code is PlanCode.LUCKY:
+            await self.lucky.ensure_can_buy(user_id)
+            credit_order_id = None  # в бонус-пакет заказы не засчитываются
         q = await self.plan_quote(plan_code, credit_order_id, user_id)
         amount, currency = await self._amount(q.amount, provider)
         return await self._create(
@@ -134,7 +142,22 @@ class PaymentService:
         package = None
         credit = None
         attention = None
-        if payment.plan_code is not None:
+        prize = None
+        if payment.plan_code is PlanCode.LUCKY:
+            # Розыгрыш — в момент оплаты: презентации начисляются сразу, даже если клиент не откроет «коробку»
+            prize = self.lucky.roll()
+            package = await self.packages.activate(payment.user_id, prize.plan, LedgerReason.BONUS, count=prize.count)
+            payment.user_package_id = package.id
+            self.session.add(
+                PackageBox(
+                    user_id=payment.user_id,
+                    user_package_id=package.id,
+                    prize=prize.code,
+                    count=prize.count,
+                    created_at=self.orders.clock(),
+                )
+            )
+        elif payment.plan_code is not None:
             if payment.credit_order_id is not None:
                 credit = await self.packages.credit_for(payment.credit_order_id, payment.plan_code, at_payment=True)
                 if credit is None:
@@ -157,7 +180,13 @@ class PaymentService:
                 started = await self.orders.mark_paid(order, actor_id=None)
         await self.session.flush()
         return PaidResult(
-            payment=payment, order=order, package=package, started=started, credit=credit, attention=attention
+            payment=payment,
+            order=order,
+            package=package,
+            started=started,
+            credit=credit,
+            attention=attention,
+            prize=prize,
         )
 
     async def confirm_manual(self, order_id: int, manager_id: int) -> PaidResult:

@@ -9,7 +9,7 @@ from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import FSInputFile, InlineKeyboardMarkup
 from sqlalchemy import select
 
-from slidelab.core.enums import PaidFrom, PaymentProvider, PlanCode
+from slidelab.core.enums import Lang, PaidFrom, PaymentProvider, PlanCode
 from slidelab.core.i18n import money, t
 from slidelab.core.models import Order, PackagePlan, ShowcaseStyle, User
 from slidelab.core.services.payments import PaidResult, PaymentService
@@ -120,7 +120,18 @@ class Flows:
                 f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
                 user=user,
             )
-        if result.package is not None:
+        if result.package is not None and result.prize is not None:
+            # Бонус-пакет: что выпало, клиент смотрит в приложении — там «коробка» открывается красиво
+            pkg = result.package
+            settings = self.settings
+            markup = None if settings.legacy_webapp else kb.open_lucky(user.lang or Lang.RU, settings.webapp_url)
+            await self.n.client(user, "lucky_paid", markup, left=pkg.left, date=views.date_short(pkg.expires_at))
+            await self.n.staff(
+                f"🎁 Бонус-пакет оплачен · {amount} · выпало презентаций: {result.prize.count}\n"
+                f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code> · осталось {pkg.left}",
+                user=user,
+            )
+        elif result.package is not None:
             pkg = result.package
             name = t(user.lang, "plan_" + pkg.plan_code.value)
             await self.n.client(
@@ -237,7 +248,13 @@ class Flows:
         if not payments.packages.offer_credit(order, self.settings.credit_days):
             return
         plans = (
-            await self.session.scalars(select(PackagePlan).where(PackagePlan.is_active).order_by(PackagePlan.sort))
+            await self.session.scalars(
+                select(PackagePlan)
+                .where(
+                    PackagePlan.is_active, PackagePlan.code != PlanCode.LUCKY
+                )  # бонус-пакет — только в приложении, где видны шансы
+                .order_by(PackagePlan.sort)
+            )
         ).all()
         lang = user.lang
         lines, items = [], []

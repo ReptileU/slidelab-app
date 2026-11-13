@@ -4,7 +4,7 @@ from typing import Any
 from sqlalchemy import CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from slidelab.core.enums import LedgerReason, PaymentProvider, PaymentStatus, PlanCode
+from slidelab.core.enums import BoxPrize, LedgerReason, PaymentProvider, PaymentStatus, PlanCode
 from slidelab.core.models.base import Base, CreatedAtMixin, str_enum
 
 
@@ -49,6 +49,19 @@ class UserPackage(CreatedAtMixin, Base):
     left: Mapped[int] = mapped_column("left_count")  # LEFT — ключевое слово SQL
     expires_at: Mapped[datetime]
     reminded_at: Mapped[datetime | None]  # напоминание «осталась одна / скоро истекает» — один раз на пакет
+
+
+class PackageBox(CreatedAtMixin, Base):
+    """Купленный бонус-пакет. Приз разыгран и начислен при оплате; opened_at — клиент посмотрел, что выпало."""
+
+    __tablename__ = "package_boxes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    user_package_id: Mapped[int] = mapped_column(ForeignKey("user_packages.id"))
+    prize: Mapped[BoxPrize] = mapped_column(str_enum(BoxPrize))
+    count: Mapped[int]  # сколько презентаций начислено
+    opened_at: Mapped[datetime | None]
 
 
 class PackageLedger(CreatedAtMixin, Base):

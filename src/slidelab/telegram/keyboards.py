@@ -118,6 +118,12 @@ def renew_pack(lang: Lang, url: str) -> InlineKeyboardMarkup:
     return _rows(InlineKeyboardButton(text=t(lang, "btn_renew"), web_app=WebAppInfo(url=f"{url}{sep}go=packages")))
 
 
+def open_lucky(lang: Lang, url: str) -> InlineKeyboardMarkup:
+    """Под сообщением об оплате бонус-пакета: открыть его в приложении."""
+    sep = "&" if "?" in url else "?"
+    return _rows(InlineKeyboardButton(text=t(lang, "btn_open_lucky"), web_app=WebAppInfo(url=f"{url}{sep}go=packages")))
+
+
 def languages() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

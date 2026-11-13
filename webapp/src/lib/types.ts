@@ -5,6 +5,24 @@ export type SlideTier = "s10" | "s20" | "s30";
 export type Deadline = "urgent" | "normal" | "relaxed";
 export type Design = "ours" | "own";
 export type PlanCode = "week" | "month" | "vip";
+/** Что можно купить на вкладке «Пакеты»: обычный пакет или бонус-пакет. */
+export type BuyPlan = PlanCode | "lucky";
+export type BoxPrize = "one" | "two" | "four" | "vip";
+
+export interface LuckyPrize {
+  prize: BoxPrize;
+  count: number;
+}
+
+/** Бонус-пакет: цена, открытые шансы, лимит и купленный, но ещё не открытый пакет. */
+export interface LuckyInfo {
+  price: number;
+  odds: (LuckyPrize & { percent: number })[];
+  limit: number;
+  window_days: number;
+  can_buy: boolean;
+  pending: LuckyPrize | null;
+}
 export type PaidFrom = "cash" | "package";
 export type OrderStatus = "new" | "cover" | "awaiting_payment" | "work" | "done" | "revision" | "cancelled";
 

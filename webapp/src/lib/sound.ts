@@ -95,3 +95,51 @@ export function playCrack(): void {
     /* без звука — не страшно */
   }
 }
+
+/** Короткий «тук» по пакету; чем ближе к открытию, тем выше тон. */
+export function playTap(step: number): void {
+  const c = context();
+  if (!c) return;
+  try {
+    if (c.state === "suspended") void c.resume();
+    const now = c.currentTime + 0.01;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(320 + step * 140, now);
+    osc.frequency.exponentialRampToValueAtTime(160 + step * 70, now + 0.12);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.16);
+    osc.connect(gain).connect(c.destination);
+    osc.start(now);
+    osc.stop(now + 0.18);
+  } catch {
+    /* без звука — не страшно */
+  }
+}
+
+/** Пакет открылся: восходящий аккорд, для крупного приза — длиннее и ярче. */
+export function playReveal(big: boolean): void {
+  const c = context();
+  if (!c) return;
+  try {
+    if (c.state === "suspended") void c.resume();
+    const now = c.currentTime + 0.02;
+    const notes = big ? [523.25, 659.25, 783.99, 1046.5, 1318.5] : [659.25, 783.99, 1046.5];
+    notes.forEach((freq, i) => {
+      const at = i * 0.085;
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, now + at);
+      gain.gain.linearRampToValueAtTime(0.18, now + at + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + at + (big ? 1.1 : 0.7));
+      osc.connect(gain).connect(c.destination);
+      osc.start(now + at);
+      osc.stop(now + at + (big ? 1.2 : 0.8));
+    });
+  } catch {
+    /* без звука — не страшно */
+  }
+}

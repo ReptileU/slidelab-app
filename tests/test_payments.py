@@ -1,3 +1,4 @@
+import random
 from collections.abc import Callable
 from typing import Any
 
@@ -5,11 +6,12 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from conftest import FakeClock
-from slidelab.core.enums import OrderStatus, PaymentProvider, PaymentStatus, PlanCode, SlideTier
+from slidelab.core.enums import BoxPrize, OrderStatus, PaymentProvider, PaymentStatus, PlanCode, SlideTier
 from slidelab.core.errors import InvalidTransitionError
 from slidelab.core.models import Order
+from slidelab.core.services import lucky
 from slidelab.core.services.packages import PackageService
-from slidelab.core.services.payments import PaymentService
+from slidelab.core.services.payments import PaidResult, PaymentService
 from slidelab.core.services.pricing import to_stars
 from test_orders import draft
 
@@ -130,3 +132,68 @@ async def test_set_price_only_before_payment(payments: PaymentService, make_user
     await payments.confirm_manual(order.id, user.id)
     with pytest.raises(InvalidTransitionError):
         await payments.orders.set_price(order.id, 1, actor_id=None)
+
+
+# --- бонус-пакет ------------------------------------------------------------------------
+
+
+class FixedRng(random.Random):
+    """Розыгрыш с заранее известным исходом."""
+
+    def __init__(self, prize: BoxPrize) -> None:
+        super().__init__()
+        self.prize = prize
+
+    def choices(self, population: Any, weights: Any = None, *, cum_weights: Any = None, k: int = 1) -> list[Any]:
+        return [next(p for p in population if p.code is self.prize)]
+
+
+async def buy_lucky(payments: PaymentService, user_id: int, prize: BoxPrize) -> PaidResult:
+    payments.lucky.rng = FixedRng(prize)
+    payment = await payments.for_plan(user_id, PlanCode.LUCKY, PaymentProvider.MANUAL_CARD)
+    return await payments.mark_paid(payment.id)
+
+
+async def test_lucky_odds_are_fair_and_never_empty() -> None:
+    assert sum(p.weight for p in lucky.PRIZES) == 1000
+    assert min(p.count for p in lucky.PRIZES) >= 1  # в минусе остаться нельзя: минимум одна презентация
+
+
+async def test_lucky_pack_gives_prize_and_box(
+    payments: PaymentService, session: AsyncSession, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    payment = await payments.for_plan(user.id, PlanCode.LUCKY, PaymentProvider.MANUAL_CARD)
+    assert payment.amount == 17_000
+    result = await buy_lucky(payments, user.id, BoxPrize.TWO)
+    assert result.prize is not None and result.prize.count == 2
+    assert result.package is not None and result.package.left == 2
+    box = await payments.lucky.pending(user.id)
+    assert box is not None and (box.prize, box.count) == (BoxPrize.TWO, 2)
+    opened = await payments.lucky.open(user.id)
+    assert opened is not None and opened.opened_at is not None
+    assert await payments.lucky.pending(user.id) is None  # второй раз открыть нечего
+
+
+async def test_lucky_pack_adds_to_current_and_keeps_its_rank(
+    payments: PaymentService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    await payments.packages.activate(user.id, PlanCode.MONTH)
+    result = await buy_lucky(payments, user.id, BoxPrize.ONE)
+    assert result.package is not None
+    assert (result.package.left, result.package.plan_code) == (5, PlanCode.MONTH)  # 4 + 1, пакет не «понизился»
+    vip = await buy_lucky(payments, user.id, BoxPrize.VIP)
+    assert vip.package is not None and (vip.package.left, vip.package.plan_code) == (15, PlanCode.VIP)
+
+
+async def test_lucky_pack_limit_per_week(
+    payments: PaymentService, clock: FakeClock, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    for _ in range(lucky.LIMIT):
+        await buy_lucky(payments, user.id, BoxPrize.ONE)
+    with pytest.raises(lucky.LuckyLimitError):
+        await payments.for_plan(user.id, PlanCode.LUCKY, PaymentProvider.MANUAL_CARD)
+    clock.advance(days=8)
+    await payments.for_plan(user.id, PlanCode.LUCKY, PaymentProvider.MANUAL_CARD)  # через неделю — снова можно

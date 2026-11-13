@@ -2,13 +2,43 @@ from fastapi import APIRouter
 
 from slidelab.api import payments_flow
 from slidelab.api.deps import FlowsDep, SessionDep, ViewerDep
-from slidelab.api.schemas import InvoiceIn, InvoiceOut, OkOut, ReceiptIn
+from slidelab.api.schemas import InvoiceIn, InvoiceOut, LuckyOddsOut, LuckyOut, LuckyPrizeOut, OkOut, ReceiptIn
 from slidelab.core import repositories as repo
 from slidelab.core.enums import PaymentProvider, PlanCode
+from slidelab.core.errors import NotFoundError
 from slidelab.core.i18n import t
+from slidelab.core.services import lucky
+from slidelab.core.services.lucky import LuckyService
 from slidelab.core.services.payments import PaymentService
 
 router = APIRouter(prefix="/packages", tags=["packages"])
+
+
+@router.get("/lucky")
+async def lucky_info(viewer: ViewerDep, session: SessionDep) -> LuckyOut:
+    """Бонус-пакет: цена, шансы (те же числа, по которым идёт розыгрыш), лимит и неоткрытый пакет."""
+    service = LuckyService(session)
+    plan = await repo.get_plan(session, PlanCode.LUCKY)
+    box = await service.pending(viewer.user.id)
+    bought = await service.bought_recently(viewer.user.id)
+    return LuckyOut(
+        price=plan.price,
+        odds=[LuckyOddsOut(prize=p.code, count=p.count, percent=p.percent) for p in lucky.PRIZES],
+        limit=lucky.LIMIT,
+        window_days=lucky.WINDOW.days,
+        can_buy=plan.is_active and bought < lucky.LIMIT,
+        pending=LuckyPrizeOut(prize=box.prize, count=box.count) if box else None,
+    )
+
+
+@router.post("/lucky/open")
+async def lucky_open(viewer: ViewerDep, session: SessionDep) -> LuckyPrizeOut:
+    """Клиент открыл бонус-пакет: презентации уже начислены при оплате, здесь только отметка «посмотрел»."""
+    box = await LuckyService(session).open(viewer.user.id)
+    if box is None:
+        raise NotFoundError("Нет неоткрытого бонус-пакета")
+    await session.commit()
+    return LuckyPrizeOut(prize=box.prize, count=box.count)
 
 
 @router.post("/{plan}/invoice")
@@ -18,6 +48,8 @@ async def invoice(
     """Как в боте: недавно сданный заказ засчитывается в пакет сам, владелец получает заявку."""
     user = viewer.user
     payments = PaymentService(session)
+    if plan is PlanCode.LUCKY:
+        await payments.lucky.ensure_can_buy(user.id)  # лимит — до показа реквизитов, а не после перевода
     credit_id = await payments.best_credit(user.id, plan)
     quote = await payments.plan_quote(plan, credit_id, user.id)
     if body.provider == "card":

@@ -6,6 +6,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from slidelab.core.enums import (
+    BoxPrize,
     Deadline,
     Design,
     Lang,
@@ -210,6 +211,26 @@ class ReviewIn(BaseModel):
 
 class OkOut(BaseModel):
     ok: bool = True
+
+
+class LuckyOddsOut(BaseModel):
+    prize: BoxPrize
+    count: int
+    percent: float
+
+
+class LuckyPrizeOut(BaseModel):
+    prize: BoxPrize
+    count: int
+
+
+class LuckyOut(BaseModel):
+    price: int
+    odds: list[LuckyOddsOut]
+    limit: int
+    window_days: int
+    can_buy: bool
+    pending: LuckyPrizeOut | None
 
 
 class ReviewOut(BaseModel):

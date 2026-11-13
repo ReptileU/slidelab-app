@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { Catalog, Invoice, Lang, Me, Order, OrderDraft, PlanCode, Quote, SlideMark } from "./types";
+import type { BuyPlan, Catalog, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
 
 /** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
 export interface MyReview {
@@ -65,9 +65,11 @@ export const api = {
   },
   sendFiles: (id: number) => post(`/orders/${id}/send-files`),
 
-  packageInvoice: (plan: PlanCode, provider: "stars" | "card") =>
+  packageInvoice: (plan: BuyPlan, provider: "stars" | "card") =>
     post<Invoice>(`/packages/${plan}/invoice`, { provider, app: true }),
-  packageReceipt: (plan: PlanCode, image: string) => post(`/packages/${plan}/receipt`, { image }),
+  packageReceipt: (plan: BuyPlan, image: string) => post(`/packages/${plan}/receipt`, { image }),
+  lucky: () => request<LuckyInfo>("/packages/lucky"),
+  luckyOpen: () => post<LuckyPrize>("/packages/lucky/open"),
   ask: (text: string) => post("/support/messages", { text }),
   review: (stars: number, text: string, orderId?: number) =>
     post("/reviews", { stars, text: text || null, order_id: orderId ?? null }),

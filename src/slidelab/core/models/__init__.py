@@ -1,5 +1,6 @@
 from slidelab.core.models.base import Base
 from slidelab.core.models.billing import (
+    PackageBox,
     PackageLedger,
     PackagePlan,
     Payment,
@@ -17,6 +18,7 @@ __all__ = [
     "FaqItem",
     "Order",
     "OrderEvent",
+    "PackageBox",
     "PackageLedger",
     "PackagePlan",
     "Payment",

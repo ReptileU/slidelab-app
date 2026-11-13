@@ -68,6 +68,16 @@ class PlanCode(StrEnum):
     WEEK = "week"
     MONTH = "month"
     VIP = "vip"
+    LUCKY = "lucky"  # бонус-пакет: минимум одна презентация, с шансом на больше
+
+
+class BoxPrize(StrEnum):
+    """Что выпало в бонус-пакете."""
+
+    ONE = "one"  # 1 презентация
+    TWO = "two"  # 2 презентации
+    FOUR = "four"  # 4 презентации, как пакет на месяц
+    VIP = "vip"  # VIP-пакет: 10 презентаций
 
 
 class LedgerReason(StrEnum):
@@ -76,6 +86,7 @@ class LedgerReason(StrEnum):
     ORDER = "order"  # списание за заказ
     REFUND = "refund"  # возврат при отмене заказа
     GRANT = "grant"  # начислено менеджером
+    BONUS = "bonus"  # выпало в бонус-пакете
 
 
 class PaymentProvider(StrEnum):

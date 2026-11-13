@@ -6,7 +6,7 @@ from sqlalchemy import select
 from slidelab.api.deps import SessionDep, SettingsDep
 from slidelab.api.schemas import CatalogOut, FaqOut, PlanOut, PricesOut, StyleOut, WorkOut
 from slidelab.core import repositories as repo
-from slidelab.core.enums import Lang
+from slidelab.core.enums import Lang, PlanCode
 from slidelab.core.models import FaqItem, PackagePlan, PortfolioWork, ShowcaseStyle
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
@@ -23,7 +23,13 @@ async def get_catalog(
 ) -> CatalogOut:
     """Цены, тарифы, стили, работы и FAQ. Публичный — без авторизации, его можно кешировать."""
     rule = await repo.get_price_rule_row(session)
-    plans = await session.scalars(select(PackagePlan).where(PackagePlan.is_active).order_by(PackagePlan.sort))
+    plans = await session.scalars(
+        select(PackagePlan)
+        .where(
+            PackagePlan.is_active, PackagePlan.code != PlanCode.LUCKY
+        )  # у бонус-пакета своя витрина: /packages/lucky
+        .order_by(PackagePlan.sort)
+    )
     styles = await session.scalars(select(ShowcaseStyle).where(ShowcaseStyle.is_active).order_by(ShowcaseStyle.sort))
     works = await session.scalars(select(PortfolioWork).where(PortfolioWork.is_active).order_by(PortfolioWork.sort))
     faq = await session.scalars(select(FaqItem).where(FaqItem.is_active).order_by(FaqItem.sort))

@@ -29,6 +29,8 @@ PRICE_RULE: dict[str, Any] = {
 }
 
 PLANS: list[dict[str, Any]] = [
+    # Бонус-пакет: цена одной презентации из стартового пакета; что выпадет — см. services/lucky.py
+    {"code": PlanCode.LUCKY, "count": 1, "price": 17_000, "days": 14, "sort": 0},
     {"code": PlanCode.WEEK, "count": 2, "price": 34_000, "days": 14, "sort": 1},
     {"code": PlanCode.MONTH, "count": 4, "price": 64_000, "days": 30, "sort": 2},
     {
