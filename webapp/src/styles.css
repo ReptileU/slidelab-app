@@ -1070,3 +1070,7 @@ img, video, svg { max-width: 100%; height: auto; }
 .prof-teaser>div:nth-child(2){flex:1;min-width:0}
 .prof-teaser .footnote{color:rgba(255,255,255,.66)!important}
 .prof-teaser-go{font-size:14px;font-weight:700;white-space:nowrap;opacity:.9}
+
+/* На весь экран кнопки Telegram (крестик, ⋯) лежат поверх страницы — под ними фон, чтобы контент не просвечивал при прокрутке */
+body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-index:40;pointer-events:none;
+  background:linear-gradient(var(--bg) 72%,transparent)}

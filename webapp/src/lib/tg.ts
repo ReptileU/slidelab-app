@@ -26,6 +26,8 @@ interface WebApp {
   setBackgroundColor(c: string): void;
   setBottomBarColor?(c: string): void;
   disableVerticalSwipes?(): void;
+  requestFullscreen?(): void;
+  isFullscreen?: boolean;
   enableClosingConfirmation(): void;
   disableClosingConfirmation(): void;
   onEvent(e: string, cb: (...args: never[]) => void): void;
@@ -221,6 +223,11 @@ export function initTelegram(): void {
   safe(() => webApp.expand());
   // Свайп вниз не закрывает и не сворачивает приложение — закрыть можно только крестиком (Telegram 7.7+)
   if (webApp.isVersionAtLeast("7.7")) safe(() => webApp.disableVerticalSwipes?.());
+  // На телефоне — на весь экран (Telegram 8.0+): у окна нет шапки-шторки, за которую его можно стянуть вниз,
+  // остаются только кнопки Telegram сверху — закрыть можно лишь крестиком. На компьютере окно оставляем обычным.
+  if (webApp.isVersionAtLeast("8.0") && ["ios", "android"].includes(webApp.platform) && !webApp.isFullscreen) {
+    safe(() => webApp.requestFullscreen?.());
+  }
   // Запасной вариант для iOS и старых версий: страница всегда прокручиваемая и никогда не стоит в самом верху,
   // поэтому жест вниз прокручивает страницу, а не утаскивает окно приложения.
   safe(() => {
