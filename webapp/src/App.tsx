@@ -98,6 +98,8 @@ function TabBar({ activeOrders }: { activeOrders: number }) {
         <i>
           <Plus strokeWidth={2.4} />
         </i>
+        {/* подпись видна только в боковом меню на широком экране */}
+        <span className="tab-plus-label">{t("cta_order")}</span>
       </button>
       {tab({ to: "/packages", icon: Package, label: t("tab_packages") })}
       {tab({ to: "/profile", icon: UserRound, label: t("tab_profile") })}

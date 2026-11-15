@@ -48,7 +48,7 @@ export function NowBar() {
   if (!count) return null;
   const current = Math.min(index, count - 1);
   return (
-    <div className="now-wrap">
+    <div className={`now-wrap${count > 1 ? " multi" : ""}`}>
       {count > 1 && (
         <div className="now-dots" aria-hidden>
           {list.map((o, i) => (

@@ -78,7 +78,7 @@ export function Packages() {
       )}
 
       <Section footer={t("pkg_note")}>
-        <div className="stack gap-12">
+        <div className="stack gap-12 packs-grid">
           {!c && [0, 1, 2].map((i) => <Skeleton key={i} height={230} radius={24} />)}
           {c?.plans.map((p) => {
             const single = c.prices.s20 * p.count;
