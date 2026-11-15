@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 
 import { useCatalog, useMe, useOrders, useT } from "../lib/app";
 import type { Key } from "../lib/i18n";
-import { hintKey, STATUS_BADGE, statusKey } from "../lib/order";
 import { haptic } from "../lib/tg";
 import { Img, Logo, Section, Skeleton, useGlare } from "../ui";
 import { Promos } from "../ui/Promos";
@@ -15,27 +14,13 @@ export function Home() {
   const me = useMe();
   const catalog = useCatalog();
   const orders = useOrders();
-  const active = orders.data?.find((o) => !["done", "cancelled"].includes(o.status));
   const c = catalog.data;
 
   const returning = !!me.data?.package || (orders.data?.length ?? 0) > 0;
 
   return (
     <div className="page home">
-      {/* 1. Текущий заказ, если есть */}
-      {active && (
-        <Section title={t("active_t")}>
-          <button className="card" onClick={() => nav(`/orders/${active.id}`)}>
-            <div className="row spread">
-              <span className="footnote secondary">{t("order_n", { id: active.id })}</span>
-              <span className={`badge ${STATUS_BADGE[active.status]}`}>{t(statusKey(active.status))}</span>
-            </div>
-            <div className="headline mt-8 ellipsis">{active.topic}</div>
-            <div className="subhead secondary">{t(hintKey(active.status))}</div>
-          </button>
-        </Section>
-      )}
-
+      {/* Текущий заказ показывает плашка над меню (NowBar) */}
       {/* 2. Главное действие */}
       <header
         className={`hero${returning ? " compact" : ""}`}

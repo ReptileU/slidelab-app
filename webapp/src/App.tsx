@@ -8,6 +8,7 @@ import { closeApp, haptic, inTelegram, inTelegramWithoutUser, openChat } from ".
 import { Home } from "./screens/Home";
 import { LangPick } from "./screens/LangPick";
 import { Button, Empty } from "./ui";
+import { NowBar } from "./ui/NowBar";
 
 // Главная — в основной сборке, остальные экраны догружаются при переходе (быстрее первый экран)
 const Done = lazy(() => import("./screens/Done").then((m) => ({ default: m.Done })));
@@ -29,6 +30,8 @@ function prefetchScreens() {
 }
 
 const TABS = ["/", "/orders", "/packages", "/profile"];
+/** Где над меню видна плашка «заказ готовится»: везде, кроме списка заказов — там он и так на виду. */
+const NOW_TABS = ["/", "/packages", "/profile"];
 
 export function App() {
   const me = useMe();
@@ -61,6 +64,7 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      {NOW_TABS.includes(location.pathname) && <NowBar />}
       {TABS.includes(location.pathname) && <TabBar activeOrders={me.data?.active_orders ?? 0} />}
     </>
   );
@@ -71,8 +75,10 @@ function TabBar({ activeOrders }: { activeOrders: number }) {
   const nav = useNavigate();
   const tab = ({ to, icon: Icon, label, badge }: { to: string; icon: typeof HomeIcon; label: string; badge?: number }) => (
     <NavLink key={to} to={to} end replace onClick={() => haptic.select()}>
-      <Icon strokeWidth={1.8} />
-      {label}
+      <span className="tab-in">
+        <Icon strokeWidth={1.9} />
+        <span>{label}</span>
+      </span>
       {!!badge && <span className="dot">{badge}</span>}
     </NavLink>
   );
