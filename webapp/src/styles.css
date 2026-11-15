@@ -1168,3 +1168,24 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
   animation:lrSpark .9s var(--ease-out) var(--d,0ms) both}
 @keyframes lrSpark{0%{opacity:1;transform:rotate(var(--a)) translateX(10px) scale(1)}100%{opacity:0;transform:rotate(var(--a)) translateX(46vmin) scale(.2)}}
 @media (prefers-reduced-motion: reduce){.lucky-holo,.lr-rays,.lr-foil,.lr-pack,.lr-hint{animation:none}}
+
+/* ---------- рекламные плитки на главной ---------- */
+.promos{margin:-12px -16px 28px;padding:4px 16px 8px}
+.promo{position:relative;flex:0 0 132px;height:132px;border-radius:22px;overflow:hidden;padding:12px;text-align:left;isolation:isolate;
+  display:flex;flex-direction:column;justify-content:space-between;scroll-snap-align:start;color:#fff;
+  box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.2);transition:transform .15s var(--ease-out)}
+.promo:active{transform:scale(.96)}
+.promo-big{font-size:31px;font-weight:800;letter-spacing:-.04em;line-height:1;white-space:nowrap}
+.promo-big small{font-size:13px;font-weight:700;letter-spacing:0;opacity:.75}
+.promo-packs .promo-big small{display:block;margin-bottom:2px}
+.promo-text{font-size:12.5px;font-weight:600;line-height:1.2}
+.promo-first{background:linear-gradient(160deg,#fff 0%,#e5e5ea 55%,#aeaeb2 100%);color:#000}
+.promo-packs{background:#000}
+.promo-packs img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2;opacity:.9}
+.promo-packs::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.25) 45%,rgba(0,0,0,.8))}
+.promo-lucky{background:linear-gradient(160deg,#2c2c2e,#000)}
+.promo-holo{position:absolute;inset:-50%;z-index:-1;opacity:.55;filter:blur(22px);
+  background:conic-gradient(from 0deg,#3a3a3c,#f5f5f7,#636366,#1c1c1e,#d1d1d6,#3a3a3c);animation:luckySpin 10s linear infinite}
+.promo-lucky::after{content:"";position:absolute;inset:1.5px;border-radius:20.5px;z-index:-1;background:linear-gradient(160deg,#1c1c1e,#000)}
+.promo-cover{background:linear-gradient(160deg,#48484a 0%,#1c1c1e 60%,#000 100%)}
+.promo-cover .promo-big small{margin:0 0 0 2px}

@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
@@ -25,6 +26,18 @@ export function Packages() {
   const [reveal, setReveal] = useState<LuckyPrize | null>(null);
   const [waitBox, setWaitBox] = useState(false); // звёзды оплачены — ждём, пока сервер начислит бонус-пакет
   const lucky = useQuery({ queryKey: ["lucky"], queryFn: api.lucky, retry: false, refetchInterval: waitBox ? 1500 : false });
+
+  // С плитки на главной (?lucky=1) — сразу прокручиваем к бонус-пакету
+  const luckyRef = useRef<HTMLDivElement>(null);
+  const [params] = useSearchParams();
+  const toLucky = params.get("lucky") === "1";
+  useEffect(() => {
+    if (toLucky && lucky.data && catalog.data) {
+      const id = setTimeout(() => luckyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+      return () => clearTimeout(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toLucky, !!lucky.data, !!catalog.data]);
 
   async function openBox() {
     try {
@@ -102,7 +115,8 @@ export function Packages() {
       </Section>
 
       {lucky.data && (
-        <Section title={t("lucky_section")} footer={t("lucky_section_x")}>
+        <Section title={t("plan_lucky")}>
+          <div ref={luckyRef} />
           <LuckyCard
             info={lucky.data}
             onBuy={() => setBuying({ code: "lucky", price: lucky.data.price })}
