@@ -6,9 +6,11 @@
 
 import html
 import re
+from contextlib import suppress
 from datetime import datetime, timedelta
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import BaseFilter, Command, CommandObject, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ForceReply, Message
@@ -347,7 +349,8 @@ async def on_review_send(
         note = f"{KIND_ACC[kind]} отправлена клиенту"
     await callback.answer("Отправлено клиенту")
     if isinstance(callback.message, Message):
-        await callback.message.edit_reply_markup(reply_markup=None)
+        with suppress(TelegramBadRequest):  # кнопок уже нет — не мешаем остальному
+            await callback.message.edit_reply_markup(reply_markup=None)
     await flows.n.refresh_card(order, note)
     await session.commit()
 
@@ -357,7 +360,8 @@ async def on_review_fix(callback: CallbackQuery, callback_data: MgrCb, state: FS
     await state.set_state(StaffForm.fix)
     await state.update_data(order_id=callback_data.order_id)
     if isinstance(callback.message, Message):
-        await callback.message.edit_reply_markup(reply_markup=None)
+        with suppress(TelegramBadRequest):  # кнопок уже нет — не мешаем остальному
+            await callback.message.edit_reply_markup(reply_markup=None)
     await _ask(callback, f"Доработка #{callback_data.order_id}: что исправить? Текстом, можно со скриншотом.")
 
 
@@ -432,7 +436,8 @@ async def on_stuck(callback: CallbackQuery, callback_data: MgrCb, session: Async
     order = await repo.get_order(session, callback_data.order_id)
     action = callback_data.action[4:]
     if isinstance(callback.message, Message):
-        await callback.message.edit_reply_markup(reply_markup=None)
+        with suppress(TelegramBadRequest):  # кнопок уже нет — не мешаем остальному
+            await callback.message.edit_reply_markup(reply_markup=None)
     if action == "mute":
         order.no_alert = True
         await session.commit()
