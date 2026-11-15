@@ -1308,3 +1308,13 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
   .now-eq,.now-go{display:none}
   .toast{left:calc(var(--side) + 24px)}
 }
+
+/* панель меню не сливается с чёрным фоном: чуть светлее и со светлой кромкой сверху */
+:root[data-theme="dark"]{--bar:#222225}
+.now-wrap,:root[data-theme="dark"] .now-wrap{box-shadow:0 -12px 36px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.22)}
+:root:not(.has-now) .tabbar{box-shadow:0 -12px 36px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 .5px rgba(255,255,255,.1)}
+:root[data-theme="light"] .now-wrap,:root[data-theme="light"]:not(.has-now) .tabbar{box-shadow:0 -10px 30px rgba(0,0,0,.14),inset 0 .5px 0 var(--separator)}
+@media (min-width: 1024px) {
+  .now-wrap,:root[data-theme="dark"] .now-wrap,:root[data-theme="light"] .now-wrap{box-shadow:inset 0 0 0 .5px var(--separator)}
+  .tabbar,:root:not(.has-now) .tabbar,:root[data-theme="light"]:not(.has-now) .tabbar{box-shadow:none}
+}
