@@ -429,3 +429,17 @@ async def test_client_cannot_cancel_done(orders: OrderService, make_user: Callab
     await orders.deliver(order, actor_id=None)
     with pytest.raises(InvalidTransitionError):
         await orders.cancel_by_client(order.id, user.id)
+
+
+async def test_cancel_last_presentation_of_package_gives_it_back(
+    orders: OrderService, packages: PackageService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    await packages.activate(user.id, PlanCode.LUCKY, count=1)  # в пакете ровно одна
+    order = await orders.create(user.id, draft())
+    assert order.paid_from is PaidFrom.PACKAGE
+    assert (await packages.balance(user.id)).left == 0  # type: ignore[union-attr]
+    await orders.cancel_by_client(order.id, user.id)
+    assert (await packages.balance(user.id)).left == 1  # type: ignore[union-attr]
+    again = await orders.create(user.id, draft())  # и её снова можно потратить
+    assert again.paid_from is PaidFrom.PACKAGE and again.is_paid
