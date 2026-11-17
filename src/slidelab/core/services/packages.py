@@ -48,6 +48,7 @@ class PackageService:
         reason: LedgerReason = LedgerReason.PURCHASE,
         credit: Credit | None = None,
         count: int | None = None,
+        expires_at: datetime | None = None,
     ) -> UserPackage:
         """Пакет после оплаты (или выдача менеджером).
 
@@ -60,7 +61,7 @@ class PackageService:
 
         bonus = count is not None  # выпало в бонус-пакете: презентаций столько, сколько выпало
         count = count if count is not None else plan.count - (credit.units if credit else 0)
-        expires = now + timedelta(days=plan.days)
+        expires = as_utc(expires_at) if expires_at else now + timedelta(days=plan.days)  # подарок — срок дарителя
         code = plan.code
         carried = 0
         if current is not None:

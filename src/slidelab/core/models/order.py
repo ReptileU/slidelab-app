@@ -87,10 +87,8 @@ class Order(CreatedAtMixin, Base):
     # Зачёт заказа в пакет: несколько дней после сдачи можно купить пакет со скидкой на цену заказа
     credit_until: Mapped[datetime | None]
     credit_used: Mapped[bool] = mapped_column(default=False)
-    # Клиент отменил оплаченный заказ: презентация остаётся оплаченной и идёт в зачёт следующего заказа
-    voucher_open: Mapped[bool] = mapped_column(default=False, server_default="0")
-    # Этот заказ оплачен отменённым (id того заказа); отменят и его — оплата вернётся туда
-    voucher_from_id: Mapped[int | None]
+    # Оплачен купоном (база заказа); отменят и его — купон вернётся клиенту
+    coupon_id: Mapped[int | None] = mapped_column(ForeignKey("coupons.id", use_alter=True))
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     # карточка заказа в теме клиента у менеджеров — редактируется при смене статуса
     managers_message_id: Mapped[int | None]

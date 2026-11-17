@@ -36,7 +36,7 @@ from slidelab.config import Settings
 from slidelab.core import repositories as repo
 from slidelab.core.enums import AttachmentKind, Lang, OrderSource, OrderStatus, PaymentProvider, Stage
 from slidelab.core.i18n import guess_lang, t
-from slidelab.core.models import Attachment, Order, OrderEvent, ShowcaseStyle, User
+from slidelab.core.models import Attachment, Coupon, Order, OrderEvent, ShowcaseStyle, User
 from slidelab.core.models.order import REVISION_MAX
 from slidelab.core.schemas.order import OrderDraft
 from slidelab.core.services import pricing
@@ -63,6 +63,14 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
     ):
         kinds[order_id].add(kind)
     style_keys = {sid: key for sid, key in await session.execute(select(ShowcaseStyle.id, ShowcaseStyle.key))}
+    # отменённые заказы, чей купон ещё у клиента и не потрачен — «Оплата сохранена»
+    kept = set(
+        await session.scalars(
+            select(Coupon.order_id).where(
+                Coupon.order_id.in_(ids), Coupon.used_order_id.is_(None), Coupon.gift_id.is_(None)
+            )
+        )
+    )
     events: dict[int, list[EventOut]] = {i: [] for i in ids}
     if with_events:
         for e in await session.scalars(select(OrderEvent).where(OrderEvent.order_id.in_(ids)).order_by(OrderEvent.id)):
@@ -77,8 +85,8 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
             due_at=o.due_at,
             skip_cover=o.skip_cover,
             is_paid=o.is_paid,
-            voucher_open=o.voucher_open,
-            by_voucher=o.voucher_from_id is not None,
+            voucher_open=o.id in kept,
+            by_voucher=o.coupon_id is not None,
             pres_lang=o.pres_lang,
             design=o.design,
             style_key=style_keys.get(o.style_id) if o.style_id else None,
@@ -197,7 +205,7 @@ async def cancel(order_id: int, viewer: ViewerDep, session: SessionDep, flows: F
     order = await OrderService(session).cancel_by_client(order_id, viewer.user.id)
     await flows.sync(order)
     await session.commit()
-    if order.voucher_open:
+    if order.status is OrderStatus.CANCELLED and (await _out(session, [order]))[0].voucher_open:
         note = "❌ клиент отменил — оплата перейдёт на его следующий заказ"
     elif order.package_cost:
         note = "❌ клиент отменил — презентация вернулась в пакет"

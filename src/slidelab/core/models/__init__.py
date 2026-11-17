@@ -1,5 +1,7 @@
 from slidelab.core.models.base import Base
 from slidelab.core.models.billing import (
+    Coupon,
+    Gift,
     PackageBox,
     PackageLedger,
     PackagePlan,
@@ -15,7 +17,9 @@ from slidelab.core.models.user import User
 __all__ = [
     "Attachment",
     "Base",
+    "Coupon",
     "FaqItem",
+    "Gift",
     "Order",
     "OrderEvent",
     "PackageBox",

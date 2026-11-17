@@ -45,6 +45,7 @@ export interface Me {
   voucher?: SlideTier | null; // оплаченная презентация от отменённого заказа — её объём
   vouchers?: number;
   voucher_list?: SlideTier[]; // объём каждого купона
+  coupons?: { id: number; slides: SlideTier; gift?: boolean }[];
   wallet_cover?: string | null; // своя обложка кошелька (версия), null — классическая
 }
 
@@ -166,4 +167,15 @@ export interface SlideMark {
   x: number;
   y: number;
   text: string;
+}
+
+/** Подарок из кошелька: купон или презентации из пакета, ссылкой другу. */
+export interface Gift {
+  id: number;
+  kind: "coupon" | "pack";
+  count: number;
+  slides: SlideTier | null;
+  plan: PlanCode | null;
+  link: string;
+  created_at: string;
 }

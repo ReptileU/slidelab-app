@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 
 from slidelab.api.deps import SessionDep, SettingsDep, ViewerDep
 from slidelab.api.payments_flow import decode_image
-from slidelab.api.schemas import LangIn, MeOut, PackageOut, WalletCoverIn
+from slidelab.api.schemas import CouponOut, LangIn, MeOut, PackageOut, WalletCoverIn
 from slidelab.core import repositories as repo
 from slidelab.core.errors import DomainError
 from slidelab.core.models import Order
@@ -27,7 +27,7 @@ async def get_me(viewer: ViewerDep, session: SessionDep) -> MeOut:
     active = await session.scalar(
         select(func.count(Order.id)).where(Order.user_id == user.id, Order.status.in_(repo.ACTIVE_STATUSES))
     )
-    vouchers = await repo.open_vouchers(session, user.id)
+    vouchers = await repo.open_coupons(session, user.id)
     return MeOut(
         id=user.id,
         first_name=user.first_name,
@@ -44,6 +44,7 @@ async def get_me(viewer: ViewerDep, session: SessionDep) -> MeOut:
         voucher=vouchers[0].slides if vouchers else None,
         vouchers=len(vouchers),
         voucher_list=[v.slides for v in vouchers],
+        coupons=[CouponOut(id=v.id, slides=v.slides, gift=v.from_user_id is not None) for v in vouchers],
         wallet_cover=user.wallet_cover,
     )
 

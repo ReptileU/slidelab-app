@@ -124,6 +124,12 @@ def open_lucky(lang: Lang, url: str) -> InlineKeyboardMarkup:
     return _rows(InlineKeyboardButton(text=t(lang, "btn_open_lucky"), web_app=WebAppInfo(url=f"{url}{sep}go=packages")))
 
 
+def open_wallet(lang: Lang, url: str) -> InlineKeyboardMarkup:
+    """Под сообщением о подарке: открыть кошелёк в профиле."""
+    sep = "&" if "?" in url else "?"
+    return _rows(InlineKeyboardButton(text=t(lang, "btn_wallet"), web_app=WebAppInfo(url=f"{url}{sep}go=profile")))
+
+
 def languages() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[

@@ -15,10 +15,12 @@ from slidelab.bot.routers import order as order_flow
 from slidelab.bot.routers import orders as my_orders
 from slidelab.config import Settings
 from slidelab.core import repositories as repo
-from slidelab.core.enums import Lang, PlanCode
+from slidelab.core.enums import GiftKind, Lang, PlanCode
+from slidelab.core.errors import NotFoundError
 from slidelab.core.i18n import DEFAULT, money, t
-from slidelab.core.models import FaqItem, PackagePlan, User
+from slidelab.core.models import Coupon, FaqItem, PackagePlan, User
 from slidelab.core.models.base import utcnow
+from slidelab.core.services.gifts import GiftError, GiftService
 from slidelab.telegram import keyboards as kb
 from slidelab.telegram import legacy, views
 from slidelab.telegram.callbacks import FormCb, LangCb, PlanCb
@@ -80,8 +82,40 @@ async def route(
         await my_orders.ask_revision(message, state, session, user, int(payload[5:]))
     elif payload == "ask":
         await begin_ask(message, state, user)
+    elif payload.startswith("gift_"):
+        await claim_gift(payload[5:], message, session, user, flows)
     else:
         await greet(message, user, flows.n)
+
+
+async def claim_gift(code: str, message: Message, session: AsyncSession, user: User, flows: Flows) -> None:
+    """Друг открыл ссылку на подарок: забираем, рассказываем, что пришло, и сообщаем дарителю."""
+    try:
+        got = await GiftService(session).claim(code, user.id)
+    except NotFoundError:
+        await message.answer(t(user.lang, "gift_err_missing"), reply_markup=await flows.n.menu(user))
+        return
+    except GiftError as e:
+        await message.answer(t(user.lang, f"gift_err_{e}"), reply_markup=await flows.n.menu(user))
+        return
+    await session.commit()
+    gift = got.gift
+    giver = await session.get(User, gift.from_user_id)
+    name = html.escape(views.client_name(giver)) if giver else "SlideLab"
+    lang = user.lang or Lang.RU
+    if got.coupons:
+        text = t(lang, "gift_got_coupons", name=name, count=got.coupons)
+    elif gift.kind is GiftKind.COUPON:
+        coupon = await session.get(Coupon, gift.coupon_id)
+        text = t(
+            lang, "gift_got_coupon", name=name, slides=t(lang, f"slides_{coupon.slides}" if coupon else "slides_s20")
+        )
+    else:
+        text = t(lang, "gift_got_pack", name=name, count=gift.count, date=views.date_short(gift.expires_at))
+    markup = kb.open_wallet(lang, flows.n.settings.webapp_url) if flows.n.settings.webapp_url else None
+    await message.answer(text, reply_markup=markup)
+    if giver is not None:
+        await flows.n.client(giver, "gift_claimed", name=html.escape(views.client_name(user)))
 
 
 async def greet(message: Message, user: User, notifier: Notifier, *, back: bool = False) -> None:

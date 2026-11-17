@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from slidelab.core.enums import OrderStatus, PaymentStatus, PlanCode, SlideTier, Stage
 from slidelab.core.errors import NotFoundError
 from slidelab.core.models import (
+    Coupon,
     Order,
     PackageLedger,
     PackagePlan,
@@ -190,12 +191,12 @@ async def orders_to_watch(session: AsyncSession) -> list[Order]:
     return list((await session.scalars(stmt)).all())
 
 
-async def open_vouchers(session: AsyncSession, user_id: int, *, for_update: bool = False) -> list[Order]:
-    """Отменённые оплаченные заказы клиента, чья оплата ещё не пошла в зачёт, — старые первыми."""
+async def open_coupons(session: AsyncSession, user_id: int, *, for_update: bool = False) -> list[Coupon]:
+    """Купоны клиента, которыми можно платить: не потрачены и не лежат в подарке. Старые — первыми."""
     stmt = (
-        select(Order)
-        .where(Order.user_id == user_id, Order.voucher_open.is_(True), Order.status == OrderStatus.CANCELLED)
-        .order_by(Order.id)
+        select(Coupon)
+        .where(Coupon.user_id == user_id, Coupon.used_order_id.is_(None), Coupon.gift_id.is_(None))
+        .order_by(Coupon.id)
     )
     if for_update:
         stmt = stmt.with_for_update()

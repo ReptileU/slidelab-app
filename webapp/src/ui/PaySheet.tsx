@@ -4,34 +4,12 @@ import { type ReactNode, useRef, useState } from "react";
 import { ApiError } from "../lib/api";
 import { useCatalog, useT } from "../lib/app";
 import { money } from "../lib/i18n";
+import { copyText } from "../lib/clipboard";
 import { shrink } from "../lib/image";
 import { alert, haptic, openInvoice } from "../lib/tg";
 import type { Invoice } from "../lib/types";
 import { Button, Cell, Group, Sheet } from ".";
 
-/** Скопировать номер карты: clipboard API, а где его нет (старые WebView) — через скрытое поле. */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    try {
-      const area = document.createElement("textarea");
-      area.value = text;
-      area.setAttribute("readonly", "");
-      area.style.position = "fixed";
-      area.style.opacity = "0";
-      document.body.appendChild(area);
-      area.select();
-      area.setSelectionRange(0, text.length);
-      const ok = document.execCommand("copy");
-      area.remove();
-      return ok;
-    } catch {
-      return false;
-    }
-  }
-}
 
 /** Скриншот → JPEG до 1600 px: быстро отправляется и читается без потерь. */
 /**

@@ -9,6 +9,7 @@ from slidelab.core.enums import (
     BoxPrize,
     Deadline,
     Design,
+    GiftKind,
     Lang,
     OrderStatus,
     PaidFrom,
@@ -38,6 +39,7 @@ class MeOut(BaseModel):
     voucher: SlideTier | None = None
     vouchers: int = 0
     voucher_list: list[SlideTier] = Field(default_factory=list)  # объём каждого купона — для кошелька
+    coupons: list["CouponOut"] = Field(default_factory=list)
     wallet_cover: str | None = None  # версия обложки кошелька (меняется при замене фото)
 
 
@@ -154,6 +156,28 @@ class PayCardOut(BaseModel):
     number: str
 
 
+class CouponOut(BaseModel):
+    id: int
+    slides: SlideTier
+    gift: bool = False  # подарен кем-то
+
+
+class GiftIn(BaseModel):
+    kind: GiftKind
+    coupon_id: int | None = None  # купон
+    count: int = Field(default=1, ge=1, le=20)  # презентаций из пакета
+
+
+class GiftOut(BaseModel):
+    id: int
+    kind: GiftKind
+    count: int
+    slides: SlideTier | None = None
+    plan: PlanCode | None = None
+    link: str
+    created_at: datetime
+
+
 class WalletCoverIn(BaseModel):
     """Фото для обложки кошелька — data:image/...;base64,..."""
 
@@ -256,3 +280,6 @@ class ReviewOut(BaseModel):
     stars: int
     text: str | None
     created_at: datetime
+
+
+MeOut.model_rebuild()

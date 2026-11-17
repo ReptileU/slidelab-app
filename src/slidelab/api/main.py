@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field
 from starlette.responses import Response
 from starlette.types import Scope
 
-from slidelab.api.routes import catalog, me, orders, packages, support
+from slidelab.api.routes import catalog, gifts, me, orders, packages, support
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
 from slidelab.core.errors import DomainError, ForbiddenError, NotFoundError
@@ -99,7 +99,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def pricing_error(request: Request, exc: PricingError) -> JSONResponse:
         return JSONResponse({"code": "pricing", "detail": str(exc)}, status_code=422)
 
-    for module in (me, catalog, orders, packages, support):
+    for module in (me, catalog, orders, packages, support, gifts):
         app.include_router(module.router, prefix="/api")
 
     @app.get("/api/health")

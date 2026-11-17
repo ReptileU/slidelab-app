@@ -87,6 +87,7 @@ class LedgerReason(StrEnum):
     REFUND = "refund"  # возврат при отмене заказа
     GRANT = "grant"  # начислено менеджером
     BONUS = "bonus"  # выпало в бонус-пакете
+    GIFT = "gift"  # подарок: минус у дарителя, плюс у получателя
 
 
 class PaymentProvider(StrEnum):
@@ -111,3 +112,21 @@ class AttachmentKind(StrEnum):
 class MessageDirection(StrEnum):
     IN = "in"  # от клиента
     OUT = "out"  # от менеджера
+
+
+class CouponOrigin(StrEnum):
+    """Откуда купон на одну оплаченную презентацию."""
+
+    CANCEL = "cancel"  # отменил оплаченный заказ (или пакет истёк до отмены)
+    GIFT = "gift"  # подарили
+
+
+class GiftKind(StrEnum):
+    COUPON = "coupon"  # купон целиком
+    PACK = "pack"  # несколько презентаций из пакета
+
+
+class GiftStatus(StrEnum):
+    PENDING = "pending"  # ссылка отправлена, ещё не забрали
+    CLAIMED = "claimed"
+    REVOKED = "revoked"  # даритель передумал — вернулось ему

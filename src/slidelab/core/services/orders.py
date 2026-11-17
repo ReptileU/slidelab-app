@@ -10,9 +10,9 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
-from slidelab.core.enums import Deadline, Lang, OrderSource, OrderStatus, PaidFrom, Stage
+from slidelab.core.enums import CouponOrigin, Deadline, Lang, OrderSource, OrderStatus, PaidFrom, Stage
 from slidelab.core.errors import DueTooSoonError, ForbiddenError, InvalidTransitionError, PaymentRequiredError
-from slidelab.core.models import Order, OrderEvent, Revision
+from slidelab.core.models import Coupon, Order, OrderEvent, Revision
 from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.schemas.order import OrderDraft
 from slidelab.core.services import pricing
@@ -52,8 +52,8 @@ class OrderService:
         rules = await repo.get_price_rules(self.session)
         first_order = not await repo.has_orders(self.session, user_id)
         balance = await self.packages.balance(user_id)
-        vouchers = await repo.open_vouchers(self.session, user_id)
-        voucher = vouchers[0].slides if vouchers else None
+        coupons = await repo.open_coupons(self.session, user_id)
+        voucher = coupons[0].slides if coupons else None
         return pricing.quote(req, rules, first_order=first_order, package=balance, voucher=voucher)
 
     def _due(self, draft: OrderDraft) -> datetime | None:
@@ -117,10 +117,10 @@ class OrderService:
         )
         self.session.add(order)
         await self.session.flush()
-        if q.voucher:  # оплата отменённого заказа уходит в этот
-            old = (await repo.open_vouchers(self.session, user_id, for_update=True))[0]
-            old.voucher_open = False
-            order.voucher_from_id = old.id
+        if q.voucher:  # база оплачена купоном
+            coupon = (await repo.open_coupons(self.session, user_id, for_update=True))[0]
+            coupon.used_order_id = order.id
+            order.coupon_id = coupon.id
         if order.skip_cover and order.is_paid:  # из пакета без доплаты — сразу в работу
             await self._apply(order, S.WORK, None, comment="сразу всю презентацию — из пакета")
         if order.paid_from is PaidFrom.PACKAGE:
@@ -185,11 +185,11 @@ class OrderService:
             return order
         if order.status not in CLIENT_CANCELLABLE:
             raise InvalidTransitionError("Презентация уже готова — отменить нельзя, напишите нам")
-        keep = order.is_paid and order.paid_from is PaidFrom.CASH and order.price > 0 and order.voucher_from_id is None
+        keep = order.is_paid and order.paid_from is PaidFrom.CASH and order.price > 0 and order.coupon_id is None
         await self._apply(order, S.CANCELLED, user_id, comment="отменил клиент")
         if keep:
-            order.voucher_open = True
-        elif not order.is_paid and order.voucher_from_id is None:
+            self.give_coupon(order)
+        elif not order.is_paid and order.coupon_id is None:
             order.hidden = True  # не оплачен — убираем из списка
         await self.session.flush()
         return order
@@ -299,16 +299,23 @@ class OrderService:
             self.set_stage(order, Stage.DECK_TODO)
         elif to is S.CANCELLED:
             if order.package_cost and not await self.packages.refund(order):
-                order.voucher_open = True  # срок пакета вышел — презентация не пропадает, а становится купоном
-            if order.voucher_from_id is not None:  # был оплачен отменённым заказом — возвращаем ту оплату
-                old = await repo.get_order(self.session, order.voucher_from_id, for_update=True)
-                old.voucher_open = True
+                self.give_coupon(order)  # срок пакета вышел — презентация не пропадает, а становится купоном
+            if order.coupon_id is not None:  # был оплачен купоном — купон возвращается клиенту
+                coupon = await self.session.get(Coupon, order.coupon_id, with_for_update=True)
+                if coupon is not None:
+                    coupon.used_order_id = None
             order.stage = None  # убираем из конвейера: Claude и сторож его больше не видят
             order.credit_until = None
 
         order.status = to
         self._event(order, current, to, actor_id, comment)
         await self.session.flush()
+
+    def give_coupon(self, order: Order) -> Coupon:
+        """Оплаченная презентация отменённого заказа — купон клиенту (без срока)."""
+        coupon = Coupon(user_id=order.user_id, slides=order.slides, origin=CouponOrigin.CANCEL, order_id=order.id)
+        self.session.add(coupon)
+        return coupon
 
     @staticmethod
     def _own(order: Order, user_id: int) -> None:

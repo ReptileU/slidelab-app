@@ -67,10 +67,8 @@ def staff_card(order: Order, user: User, style_name: str | None = None) -> str:
     ]
     if order.skip_cover:
         lines.append("⚡ <b>Сразу всю презентацию</b> — без обложки, в работу после оплаты")
-    if order.voucher_from_id is not None:
-        lines.append(f"🎟 Оплачен отменённым заказом #{order.voucher_from_id}")
-    if order.voucher_open:
-        lines.append("🎟 Отменён после оплаты — оплата ждёт следующего заказа клиента")
+    if order.coupon_id is not None:
+        lines.append("🎟 Оплачен купоном клиента")
     if order.design is Design.OWN:
         lines.append("Дизайн: шаблон клиента" + (f" — {e(order.template_url)}" if order.template_url else ""))
     else:

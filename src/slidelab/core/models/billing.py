@@ -4,7 +4,17 @@ from typing import Any
 from sqlalchemy import CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from slidelab.core.enums import BoxPrize, LedgerReason, PaymentProvider, PaymentStatus, PlanCode
+from slidelab.core.enums import (
+    BoxPrize,
+    CouponOrigin,
+    GiftKind,
+    GiftStatus,
+    LedgerReason,
+    PaymentProvider,
+    PaymentStatus,
+    PlanCode,
+    SlideTier,
+)
 from slidelab.core.models.base import Base, CreatedAtMixin, str_enum
 
 
@@ -106,3 +116,40 @@ class Promo(Base):
     gifts: Mapped[dict[str, Any]]  # {"week": "<gift_id>", ...}
     texts: Mapped[dict[str, Any]]  # {"ru": {"week": "🧸 мишка в подарок"}, ...}
     is_active: Mapped[bool] = mapped_column(default=True)
+
+
+class Coupon(CreatedAtMixin, Base):
+    """Одна оплаченная презентация без срока: от отменённого заказа или подарок.
+
+    Покрывает базу заказа до своего объёма (больше слайдов — доплата разницы). Пока купон в подарке
+    (gift_id), им нельзя заплатить.
+    """
+
+    __tablename__ = "coupons"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    slides: Mapped[SlideTier] = mapped_column(str_enum(SlideTier))
+    origin: Mapped[CouponOrigin] = mapped_column(str_enum(CouponOrigin))
+    order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id"))  # отменённый заказ, из которого купон
+    used_order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id"))  # каким заказом потрачен
+    gift_id: Mapped[int | None] = mapped_column(ForeignKey("gifts.id"))  # сейчас в подарке, ждёт получателя
+    from_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))  # кто подарил
+
+
+class Gift(CreatedAtMixin, Base):
+    """Подарок по ссылке t.me/<бот>?start=gift_<code>: купон или презентации из пакета."""
+
+    __tablename__ = "gifts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(String(32), unique=True)
+    from_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    kind: Mapped[GiftKind] = mapped_column(str_enum(GiftKind))
+    coupon_id: Mapped[int | None] = mapped_column(ForeignKey("coupons.id", use_alter=True))
+    plan_code: Mapped[PlanCode | None] = mapped_column(str_enum(PlanCode))  # пакет: какой тариф получит друг
+    count: Mapped[int] = mapped_column(default=1)
+    expires_at: Mapped[datetime | None]  # пакет: срок как у пакета дарителя
+    status: Mapped[GiftStatus] = mapped_column(str_enum(GiftStatus), default=GiftStatus.PENDING)
+    to_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    done_at: Mapped[datetime | None]  # когда забрали или отменили

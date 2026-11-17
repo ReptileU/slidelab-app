@@ -1543,3 +1543,20 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .wallet-sheet-card { max-width: 420px; margin: 0 auto; }
 .wallet-item .coupon, .wallet-sheet-card .coupon { width: 100%; }
 .wallet-item { display: block; }
+
+/* ── Подарки из кошелька ── */
+.gift-count { display: flex; align-items: center; justify-content: center; gap: 28px; }
+.gift-count b { font-size: 56px; font-weight: 800; min-width: 70px; text-align: center; letter-spacing: -0.03em; }
+.gift-count button { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: var(--label);
+  background: var(--fill); border: 0; }
+.gift-count button:disabled { opacity: 0.35; }
+.gift-ready { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 4px 8px 22px; text-align: center; }
+.gift-ready svg { color: var(--paid); animation: gift-pop 0.6s var(--spring) both; }
+@keyframes gift-pop { from { transform: scale(0.3) rotate(-25deg); opacity: 0; } }
+.gift-ready b { font-size: 20px; }
+.gift-ready span { font-size: 14px; color: var(--secondary, var(--label)); opacity: 0.75; }
+.gift-pending { margin-top: 22px; }
+.gift-pending-t { margin: 0 16px 6px; letter-spacing: 0.02em; }
+.gift-acts { display: inline-flex; gap: 12px; }
+.gift-acts button { background: none; border: 0; padding: 4px 0; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); }
+.gift-acts button.danger { color: var(--danger); }

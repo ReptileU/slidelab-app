@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { BuyPlan, Catalog, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
+import type { BuyPlan, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
 
 /** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
 export interface MyReview {
@@ -79,6 +79,9 @@ export const api = {
   myReview: () => request<MyReview | null>("/reviews/mine"),
   withdrawReview: (id: number) => request(`/reviews/${id}`, { method: "DELETE" }),
 
+  gifts: () => request<Gift[]>("/gifts"),
+  makeGift: (body: { kind: "coupon"; coupon_id: number } | { kind: "pack"; count: number }) => post<Gift>("/gifts", body),
+  revokeGift: (id: number) => request(`/gifts/${id}`, { method: "DELETE" }),
   setWalletCover: (image: string) => post<Me>("/me/wallet-cover", { image }),
   resetWalletCover: () => request<Me>("/me/wallet-cover", { method: "DELETE" }),
   /** Обложка кошелька — с авторизацией, как и обложка заказа */

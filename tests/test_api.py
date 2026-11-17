@@ -51,7 +51,11 @@ async def env(tmp_path: Path) -> AsyncIterator[dict[str, Any]]:
         await s.commit()
 
     settings = Settings(  # type: ignore[call-arg]
-        _env_file=None, bot_token=TOKEN, managers_chat_id=MANAGERS_CHAT, pay_uzum="8600 0000", work_dir=tmp_path,
+        _env_file=None,
+        bot_token=TOKEN,
+        managers_chat_id=MANAGERS_CHAT,
+        pay_uzum="8600 0000",
+        work_dir=tmp_path,
         data_dir=tmp_path / "data",
     )
     app = create_app(settings)

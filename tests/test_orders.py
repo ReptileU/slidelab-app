@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from conftest import FakeClock
+from slidelab.core import repositories as repo
 from slidelab.core.enums import (
     Deadline,
     Design,
@@ -393,7 +394,8 @@ async def test_client_cancel_unpaid_is_removed(orders: OrderService, make_user: 
     user = await make_user()
     order = await orders.create(user.id, draft())
     gone = await orders.cancel_by_client(order.id, user.id)
-    assert (gone.status, gone.hidden, gone.voucher_open) == (S.CANCELLED, True, False)
+    assert (gone.status, gone.hidden) == (S.CANCELLED, True)
+    assert await repo.open_coupons(orders.session, user.id) == []
 
 
 async def test_client_cancel_paid_keeps_presentation_for_next_order(
@@ -404,7 +406,9 @@ async def test_client_cancel_paid_keeps_presentation_for_next_order(
     await orders.mark_paid(first, actor_id=None)
     assert first.status is S.WORK
     cancelled = await orders.cancel_by_client(first.id, user.id)
-    assert (cancelled.status, cancelled.voucher_open, cancelled.hidden) == (S.CANCELLED, True, False)
+    assert (cancelled.status, cancelled.hidden) == (S.CANCELLED, False)
+    (coupon,) = await repo.open_coupons(orders.session, user.id)
+    assert (coupon.order_id, coupon.slides) == (first.id, first.slides)
 
     # следующий такой же заказ — база уже оплачена, платить только за доплаты (срочность)
     plain = await orders.quote(user.id, draft().quote_request())
@@ -413,13 +417,13 @@ async def test_client_cancel_paid_keeps_presentation_for_next_order(
     assert urgent.voucher and urgent.price > 0
 
     second = await orders.create(user.id, draft())
-    assert second.is_paid and second.voucher_from_id == first.id and not first.voucher_open
+    assert second.is_paid and second.coupon_id == coupon.id and coupon.used_order_id == second.id
     # оплата использована один раз
     assert not (await orders.quote(user.id, draft().quote_request())).voucher
 
     # отменили и второй — оплата снова ждёт следующего заказа
     await orders.cancel_by_client(second.id, user.id)
-    assert first.voucher_open and not second.voucher_open
+    assert [c.id for c in await repo.open_coupons(orders.session, user.id)] == [coupon.id]  # тот же купон, не два
 
 
 async def test_client_cannot_cancel_done(orders: OrderService, make_user: Callable[..., Any]) -> None:
@@ -454,6 +458,6 @@ async def test_cancel_after_package_expired_gives_coupon(
     assert order.status is S.WORK and order.paid_from is PaidFrom.PACKAGE
     clock.advance(days=60)  # пакет истёк, пока делали презентацию
     await orders.cancel_by_client(order.id, user.id)
-    assert order.voucher_open  # вернуть в пакет некуда — купон
+    assert len(await repo.open_coupons(orders.session, user.id)) == 1  # вернуть в пакет некуда — купон
     q = await orders.quote(user.id, draft().quote_request())
     assert (q.voucher, q.price) == (True, 0)
