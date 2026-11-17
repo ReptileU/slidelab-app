@@ -92,3 +92,31 @@ export function breakdown(
   if (d.extra_notes && !(fromPkg && notesFree)) lines.push({ key: "notes", amount: prices.extra_notes });
   return lines;
 }
+
+/** «Обычно» — не раньше чем через столько часов (как NORMAL_MIN_HOURS на сервере); быстрее — «Срочно». */
+export const NORMAL_MIN_HOURS = 48;
+
+/** Значение для <input type="datetime-local"> в местном времени устройства. */
+export function toLocalInput(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/** Самый ранний срок для «Обычно», округлённый вверх до получаса. */
+export function earliestNormal(now = new Date()): Date {
+  const d = new Date(now.getTime() + NORMAL_MIN_HOURS * 3600_000);
+  d.setSeconds(0, 0);
+  const m = d.getMinutes();
+  if (m % 30) d.setMinutes(m + (30 - (m % 30)));
+  return d;
+}
+
+/** «20 нояб., 15:00» — срок для кнопки и сводки. */
+export function formatDue(iso: string, lang: string): string {
+  return new Date(iso).toLocaleString(lang === "en" ? "en-GB" : lang === "uz" ? "uz-UZ" : "ru-RU", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

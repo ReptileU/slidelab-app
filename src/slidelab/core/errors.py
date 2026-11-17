@@ -26,3 +26,9 @@ class ParallelLimitError(DomainError):
 
 class PaymentRequiredError(DomainError):
     code = "payment_required"
+
+
+class DueTooSoonError(DomainError):
+    """Срок раньше, чем позволяет «Обычно», — такой заказ оформляют как «Срочно»."""
+
+    code = "due_too_soon"

@@ -103,6 +103,7 @@ export interface OrderDraft {
   topic: string;
   slides: SlideTier;
   deadline: Deadline;
+  due_at?: string | null; // ISO, к какому сроку нужна — только для «Обычно»
   pres_lang: Lang;
   design: Design;
   style_key?: string | null;

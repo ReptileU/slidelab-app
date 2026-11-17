@@ -1,17 +1,51 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
-import { breakdown, DEADLINES, deadlineKey, estimate, type PriceLine, slidesKey, TIERS, tierOld, tierPrice } from "../lib/order";
+import {
+  breakdown,
+  DEADLINES,
+  deadlineKey,
+  earliestNormal,
+  estimate,
+  formatDue,
+  NORMAL_MIN_HOURS,
+  type PriceLine,
+  slidesKey,
+  TIERS,
+  tierOld,
+  tierPrice,
+  toLocalInput,
+} from "../lib/order";
 import { alert, haptic } from "../lib/tg";
 import { unlockAudio } from "../lib/sound";
-import type { Deadline, Design, Lang, OrderDraft, Package, Quote, SlideTier } from "../lib/types";
+import type {
+  Deadline,
+  Design,
+  Lang,
+  OrderDraft,
+  Package,
+  Quote,
+  SlideTier,
+} from "../lib/types";
 import { PaidOverlay } from "../ui/PaidOverlay";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
-import { Cell, CostTag, Group, PriceTag, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
+import {
+  Cell,
+  CostTag,
+  Group,
+  PriceTag,
+  Section,
+  Segmented,
+  Sheet,
+  Skeleton,
+  TextArea,
+  TextInput,
+  ToggleCell,
+} from "../ui";
 
 const DRAFT_KEY = "sl_draft";
 
@@ -23,7 +57,8 @@ type Draft = Omit<OrderDraft, "slides" | "deadline"> & {
 };
 
 function newKey(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto)
+    return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
 }
 
@@ -54,7 +89,8 @@ function emptyDraft(lang: Lang): Draft {
 function loadDraft(lang: Lang): Draft {
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
-    if (raw) return { ...emptyDraft(lang), ...(JSON.parse(raw) as Partial<Draft>) };
+    if (raw)
+      return { ...emptyDraft(lang), ...(JSON.parse(raw) as Partial<Draft>) };
   } catch {
     /* повреждённый черновик — начинаем заново */
   }
@@ -88,7 +124,8 @@ export function NewOrder() {
     }
   }, [draft]);
 
-  const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setDraft((d) => ({ ...d, [k]: v }));
+  const set = <K extends keyof Draft>(k: K, v: Draft[K]) =>
+    setDraft((d) => ({ ...d, [k]: v }));
   const c = catalog.data;
   const first = me.data?.first_order_price ?? null;
   const style = c?.styles.find((s) => s.key === draft.style_key);
@@ -96,38 +133,98 @@ export function NewOrder() {
   // Чего не хватает на шаге — как в прежней витрине: кнопка подсказывает, поля подсвечиваются
   const missing1 = [
     ...(draft.topic.trim().length < 3 ? (["topic"] as const) : []),
-    ...(draft.design === "own" && (draft.template_url ?? "").trim().length <= 3 ? (["template"] as const) : []),
+    ...(draft.design === "own" && (draft.template_url ?? "").trim().length <= 3
+      ? (["template"] as const)
+      : []),
   ];
-  const missing2 = [...(!draft.slides ? (["slides"] as const) : []), ...(!draft.deadline ? (["deadline"] as const) : [])];
-  const missing = step === 1 ? missing1 : step === 2 ? missing2 : [...missing1, ...missing2];
+  const dueOk =
+    !!draft.due_at &&
+    new Date(draft.due_at).getTime() >= earliestNormal().getTime() - 60_000;
+  const missing2 = [
+    ...(!draft.slides ? (["slides"] as const) : []),
+    ...(!draft.deadline ? (["deadline"] as const) : []),
+    ...(draft.deadline === "normal" && !dueOk ? (["due"] as const) : []),
+  ];
+  const missing =
+    step === 1 ? missing1 : step === 2 ? missing2 : [...missing1, ...missing2];
   const [showNeed, setShowNeed] = useState(false);
-  const need = (k: (typeof missing)[number]) => showNeed && missing.includes(k as never);
+  const need = (k: (typeof missing)[number]) =>
+    showNeed && missing.includes(k as never);
   const step2Ok = missing2.length === 0;
 
   const quote = useQuery({
-    queryKey: ["quote", draft.slides, draft.deadline, draft.extra_text, draft.extra_notes],
+    queryKey: [
+      "quote",
+      draft.slides,
+      draft.deadline,
+      draft.extra_text,
+      draft.extra_notes,
+    ],
     queryFn: () =>
-      api.quote({ slides: draft.slides!, deadline: draft.deadline!, extra_text: draft.extra_text, extra_notes: draft.extra_notes }),
+      api.quote({
+        slides: draft.slides!,
+        deadline: draft.deadline!,
+        extra_text: draft.extra_text,
+        extra_notes: draft.extra_notes,
+      }),
     enabled: step2Ok,
     retry: 1,
   });
   // Цена видна сразу, даже пока сервер не ответил (или недоступен); его ответ — точнее, он в приоритете
-  const notesFree = !!c?.plans.find((p) => p.code === me.data?.package?.plan)?.notes_free;
+  const notesFree = !!c?.plans.find((p) => p.code === me.data?.package?.plan)
+    ?.notes_free;
   const local: Quote | null =
-    c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, first, me.data?.package ?? null, notesFree) : null;
+    c && draft.slides
+      ? estimate(
+          c.prices,
+          { ...draft, slides: draft.slides },
+          first,
+          me.data?.package ?? null,
+          notesFree,
+        )
+      : null;
   const shown = (step2Ok && quote.data) || local;
   // Цена без скидки — чтобы зачеркнуть её рядом со скидочной
   const full: number | null =
-    c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, null, null, notesFree).price : null;
+    c && draft.slides
+      ? estimate(
+          c.prices,
+          { ...draft, slides: draft.slides },
+          null,
+          null,
+          notesFree,
+        ).price
+      : null;
   // Сколько именно стоит «срочно» для выбранного объёма (пока объём не выбран — для самого маленького)
-  const urgentTier: SlideTier = draft.slides && draft.slides !== "s30" ? draft.slides : "s10";
+  const urgentTier: SlideTier =
+    draft.slides && draft.slides !== "s30" ? draft.slides : "s10";
   const urgentCalc = (deadline: Deadline) =>
-    c ? estimate(c.prices, { ...draft, slides: urgentTier, deadline }, first, me.data?.package ?? null, notesFree).price : 0;
+    c
+      ? estimate(
+          c.prices,
+          { ...draft, slides: urgentTier, deadline },
+          first,
+          me.data?.package ?? null,
+          notesFree,
+        ).price
+      : 0;
   const urgentExtra = urgentCalc("urgent") - urgentCalc("normal");
   const lines: PriceLine[] | null =
-    c && draft.slides ? breakdown(c.prices, { ...draft, slides: draft.slides }, first, me.data?.package ?? null, notesFree) : null;
+    c && draft.slides
+      ? breakdown(
+          c.prices,
+          { ...draft, slides: draft.slides },
+          first,
+          me.data?.package ?? null,
+          notesFree,
+        )
+      : null;
 
-  const [paid, setPaid] = useState<{ order: number; cost: number; pkg: Package } | null>(null);
+  const [paid, setPaid] = useState<{
+    order: number;
+    cost: number;
+    pkg: Package;
+  } | null>(null);
   // звук «оплачено» на iOS играет только после касания — «будим» звук на первом касании формы
   useEffect(() => {
     const once = () => unlockAudio();
@@ -138,13 +235,19 @@ export function NewOrder() {
   const submit = useMutation({
     mutationFn: () => {
       const { key, title_plate, ...fields } = draft;
-      const plate = (v?: string | null) => (title_plate ? v?.trim() || null : null);
+      const plate = (v?: string | null) =>
+        title_plate ? v?.trim() || null : null;
       const body: OrderDraft = {
         ...fields,
         slides: draft.slides!,
         deadline: draft.deadline!,
+        due_at:
+          draft.deadline === "normal" && draft.due_at
+            ? new Date(draft.due_at).toISOString()
+            : null,
         topic: draft.topic.trim(),
-        template_url: draft.design === "own" ? draft.template_url?.trim() || null : null,
+        template_url:
+          draft.design === "own" ? draft.template_url?.trim() || null : null,
         style_key: draft.design === "ours" ? draft.style_key : null,
         contact: draft.contact?.trim() || null,
         comment: draft.comment?.trim() || null,
@@ -161,7 +264,11 @@ export function NewOrder() {
       const pkg = me.data?.package;
       // Оплачено из пакета — сначала «карта и галочка», потом экран заказа
       if (order.paid_from === "package" && pkg) {
-        setPaid({ order: order.id, cost: order.package_cost, pkg: { ...pkg, left: Math.max(0, pkg.left - order.package_cost) } });
+        setPaid({
+          order: order.id,
+          cost: order.package_cost,
+          pkg: { ...pkg, left: Math.max(0, pkg.left - order.package_cost) },
+        });
         return;
       }
       haptic.success();
@@ -187,7 +294,9 @@ export function NewOrder() {
       haptic.error();
       setShowNeed(true);
       if (step === 3) setStep(missing1.length ? 1 : 2);
-      document.getElementById(`need-${missing[0]}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document
+        .getElementById(`need-${missing[0]}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setShowNeed(false);
@@ -197,7 +306,11 @@ export function NewOrder() {
     } else submit.mutate();
   };
   const buttonText = missing.length
-    ? t("left", { items: missing.map((k) => t(`miss_${k}` as Parameters<typeof t>[0])).join(", ") })
+    ? t("left", {
+        items: missing
+          .map((k) => t(`miss_${k}` as Parameters<typeof t>[0]))
+          .join(", "),
+      })
     : step < 3
       ? t("next")
       : t("send");
@@ -222,7 +335,9 @@ export function NewOrder() {
       <BackButton onClick={back} />
       <div style={{ margin: "8px 0 20px" }}>
         <div className="footnote secondary">{t("step", { n: step })}</div>
-        <h1 className="title1">{t(step === 1 ? "step1_t" : step === 2 ? "step2_t" : "step3_t")}</h1>
+        <h1 className="title1">
+          {t(step === 1 ? "step1_t" : step === 2 ? "step2_t" : "step3_t")}
+        </h1>
         <div className="progress mt-8">
           <i style={{ width: `${(step / 3) * 100}%` }} />
         </div>
@@ -232,18 +347,50 @@ export function NewOrder() {
         <>
           <Section title={t("f_topic")} id="need-topic" need={need("topic")}>
             <Group>
-              <TextArea value={draft.topic} onChange={(v) => set("topic", v)} placeholder={t("f_topic_ph")} maxLength={300} rows={2} />
+              <TextArea
+                value={draft.topic}
+                onChange={(v) => set("topic", v)}
+                placeholder={t("f_topic_ph")}
+                maxLength={300}
+                rows={2}
+              />
             </Group>
           </Section>
           {/* Подпись на титульном — сразу после темы: студенту она нужна почти всегда, выключается одним касанием */}
-          <Section title={t("plate_t")} footer={draft.title_plate ? t("plate_hint") : undefined}>
+          <Section
+            title={t("plate_t")}
+            footer={draft.title_plate ? t("plate_hint") : undefined}
+          >
             <Group>
-              <ToggleCell title={t("x_plate")} subtitle={t("x_plate_x")} on={!!draft.title_plate} onChange={(v) => set("title_plate", v)} />
+              <ToggleCell
+                title={t("x_plate")}
+                subtitle={t("x_plate_x")}
+                on={!!draft.title_plate}
+                onChange={(v) => set("title_plate", v)}
+              />
               {draft.title_plate && (
                 <>
-                  <TextInput value={draft.title_author ?? ""} onChange={(v) => set("title_author", v)} label={t("f_author")} placeholder={t("f_author_ph")} maxLength={120} />
-                  <TextInput value={draft.title_group ?? ""} onChange={(v) => set("title_group", v)} label={t("f_group")} placeholder={t("f_group_ph")} maxLength={60} />
-                  <TextInput value={draft.title_teacher ?? ""} onChange={(v) => set("title_teacher", v)} label={t("f_teacher")} placeholder={t("f_teacher_ph")} maxLength={120} />
+                  <TextInput
+                    value={draft.title_author ?? ""}
+                    onChange={(v) => set("title_author", v)}
+                    label={t("f_author")}
+                    placeholder={t("f_author_ph")}
+                    maxLength={120}
+                  />
+                  <TextInput
+                    value={draft.title_group ?? ""}
+                    onChange={(v) => set("title_group", v)}
+                    label={t("f_group")}
+                    placeholder={t("f_group_ph")}
+                    maxLength={60}
+                  />
+                  <TextInput
+                    value={draft.title_teacher ?? ""}
+                    onChange={(v) => set("title_teacher", v)}
+                    label={t("f_teacher")}
+                    placeholder={t("f_teacher_ph")}
+                    maxLength={120}
+                  />
                 </>
               )}
             </Group>
@@ -276,7 +423,12 @@ export function NewOrder() {
             <div className="mt-8">
               <Group>
                 {draft.design === "ours" ? (
-                  <Cell title={t("f_style")} value={style?.name ?? t("f_style_none")} chevron onClick={() => setStylePicker(true)} />
+                  <Cell
+                    title={t("f_style")}
+                    value={style?.name ?? t("f_style_none")}
+                    chevron
+                    onClick={() => setStylePicker(true)}
+                  />
                 ) : (
                   <TextInput
                     value={draft.template_url ?? ""}
@@ -304,49 +456,88 @@ export function NewOrder() {
                   value={
                     <PriceTag
                       now={money(tierPrice(c.prices, tier, first))}
-                      old={tierOld(c.prices, tier, first) ? money(tierOld(c.prices, tier, first)!) : null}
+                      old={
+                        tierOld(c.prices, tier, first)
+                          ? money(tierOld(c.prices, tier, first)!)
+                          : null
+                      }
                       sum={t("sum")}
                     />
                   }
                   checked={draft.slides === tier}
                   onClick={() =>
-                    setDraft((d) => ({ ...d, slides: tier, deadline: tier === "s30" && d.deadline === "urgent" ? null : d.deadline }))
+                    setDraft((d) => ({
+                      ...d,
+                      slides: tier,
+                      deadline:
+                        tier === "s30" && d.deadline === "urgent"
+                          ? null
+                          : d.deadline,
+                    }))
                   }
                 />
               ))}
             </Group>
           </Section>
-          <Section title={t("f_deadline")} id="need-deadline" need={need("deadline")}>
+          <Section
+            title={t("f_deadline")}
+            id="need-deadline"
+            need={need("deadline")}
+          >
             <Group>
               {DEADLINES.map((d) => (
-                <Cell
-                  key={d}
-                  title={t(deadlineKey(d))}
-                  subtitle={t(`${deadlineKey(d)}_x` as Parameters<typeof t>[0])}
-                  value={d === "urgent" ? <CostTag on={draft.deadline === d}>+{money(urgentExtra)} {t("sum")}</CostTag> : undefined}
-                  checked={draft.deadline === d}
-                  disabled={d === "urgent" && draft.slides === "s30"}
-                  onClick={() => set("deadline", d)}
-                />
+                <Fragment key={d}>
+                  <Cell
+                    title={t(deadlineKey(d))}
+                    subtitle={t(
+                      `${deadlineKey(d)}_x` as Parameters<typeof t>[0],
+                    )}
+                    value={
+                      d === "urgent" ? (
+                        <CostTag on={draft.deadline === d}>
+                          +{money(urgentExtra)} {t("sum")}
+                        </CostTag>
+                      ) : undefined
+                    }
+                    checked={draft.deadline === d}
+                    disabled={d === "urgent" && draft.slides === "s30"}
+                    onClick={() => set("deadline", d)}
+                  />
+                  {d === "normal" && draft.deadline === "normal" && (
+                    <div
+                      className={`field-cell due-cell${need("due") ? " need" : ""}`}
+                    >
+                      <div className="field-label">{t("f_due")}</div>
+                      <input
+                        className="field"
+                        type="datetime-local"
+                        min={toLocalInput(earliestNormal())}
+                        step={1800}
+                        value={
+                          draft.due_at
+                            ? toLocalInput(new Date(draft.due_at))
+                            : ""
+                        }
+                        onChange={(e) =>
+                          set(
+                            "due_at",
+                            e.target.value
+                              ? new Date(e.target.value).toISOString()
+                              : null,
+                          )
+                        }
+                      />
+                    </div>
+                  )}
+                </Fragment>
               ))}
             </Group>
           </Section>
-          <Section title={t("f_extras")}>
-            <Group>
-              <ToggleCell
-                title={t("x_text")}
-                subtitle={t("x_text_x")}
-                on={draft.extra_text}
-                onChange={(v) => set("extra_text", v)}
-              />
-              <ToggleCell
-                title={t("x_humor")}
-                subtitle={t("x_humor_x")}
-                on={draft.need_humor}
-                onChange={(v) => set("need_humor", v)}
-              />
-            </Group>
-          </Section>
+          {draft.deadline === "normal" && draft.due_at && !dueOk && (
+            <p className="due-warn">
+              {t("due_too_soon", { h: NORMAL_MIN_HOURS })}
+            </p>
+          )}
           {/* Платное — отдельным блоком, с суммой */}
           <Section title={t("f_paid")}>
             <Group>
@@ -357,7 +548,9 @@ export function NewOrder() {
                   notesFree && me.data?.package ? (
                     <CostTag free>{t("in_price")}</CostTag>
                   ) : (
-                    <CostTag on={draft.extra_notes}>+{money(c.prices.extra_notes)} {t("sum")}</CostTag>
+                    <CostTag on={draft.extra_notes}>
+                      +{money(c.prices.extra_notes)} {t("sum")}
+                    </CostTag>
                   )
                 }
                 on={draft.extra_notes}
@@ -365,7 +558,14 @@ export function NewOrder() {
               />
             </Group>
           </Section>
-          {shown && <PriceCard q={shown} old={full} lines={lines} slides={draft.slides} />}
+          {shown && (
+            <PriceCard
+              q={shown}
+              old={full}
+              lines={lines}
+              slides={draft.slides}
+            />
+          )}
         </>
       )}
 
@@ -374,44 +574,122 @@ export function NewOrder() {
           <Section>
             <Group>
               <Cell title={draft.topic} onClick={() => setStep(1)} chevron />
-              <Cell title={t("d_slides")} value={draft.slides && t(slidesKey(draft.slides))} onClick={() => setStep(2)} />
-              <Cell title={t("d_deadline")} value={draft.deadline && t(deadlineKey(draft.deadline))} onClick={() => setStep(2)} />
-              <Cell title={t("d_lang")} value={{ ru: "Русский", uz: "O‘zbek", en: "English" }[draft.pres_lang]} onClick={() => setStep(1)} />
               <Cell
-                title={t("d_design")}
-                value={draft.design === "own" ? t("ds_own") : style?.name ?? t("ds_ours")}
+                title={t("d_slides")}
+                value={draft.slides && t(slidesKey(draft.slides))}
+                onClick={() => setStep(2)}
+              />
+              <Cell
+                title={t("d_deadline")}
+                value={
+                  draft.deadline === "normal" && draft.due_at
+                    ? formatDue(draft.due_at, lang)
+                    : draft.deadline && t(deadlineKey(draft.deadline))
+                }
+                onClick={() => setStep(2)}
+              />
+              <Cell
+                title={t("d_lang")}
+                value={
+                  { ru: "Русский", uz: "O‘zbek", en: "English" }[
+                    draft.pres_lang
+                  ]
+                }
                 onClick={() => setStep(1)}
               />
-              {draft.title_plate && (draft.title_author || draft.title_group || draft.title_teacher) && (
-                <Cell
-                  title={t("x_plate")}
-                  subtitle={[draft.title_author, draft.title_group, draft.title_teacher].filter((x) => x?.trim()).join(" · ")}
-                  onClick={() => setStep(1)}
-                />
-              )}
+              <Cell
+                title={t("d_design")}
+                value={
+                  draft.design === "own"
+                    ? t("ds_own")
+                    : (style?.name ?? t("ds_ours"))
+                }
+                onClick={() => setStep(1)}
+              />
+              {draft.title_plate &&
+                (draft.title_author ||
+                  draft.title_group ||
+                  draft.title_teacher) && (
+                  <Cell
+                    title={t("x_plate")}
+                    subtitle={[
+                      draft.title_author,
+                      draft.title_group,
+                      draft.title_teacher,
+                    ]
+                      .filter((x) => x?.trim())
+                      .join(" · ")}
+                    onClick={() => setStep(1)}
+                  />
+                )}
             </Group>
           </Section>
 
           <Section title={`${t("more_t")} · ${t("optional")}`}>
             <Group>
-              <TextArea value={draft.comment ?? ""} onChange={(v) => set("comment", v)} label={t("f_comment")} placeholder={t("f_comment_ph")} maxLength={400} rows={2} />
-              <TextArea value={draft.sources ?? ""} onChange={(v) => set("sources", v)} label={t("f_sources")} placeholder={t("f_sources_ph")} maxLength={1500} rows={2} />
-              <TextInput value={draft.contact ?? ""} onChange={(v) => set("contact", v)} label={t("f_contact")} placeholder={t("f_contact_ph")} maxLength={60} inputMode="tel" />
+              <TextArea
+                value={draft.comment ?? ""}
+                onChange={(v) => set("comment", v)}
+                label={t("f_comment")}
+                placeholder={t("f_comment_ph")}
+                maxLength={400}
+                rows={2}
+              />
+              <TextArea
+                value={draft.sources ?? ""}
+                onChange={(v) => set("sources", v)}
+                label={t("f_sources")}
+                placeholder={t("f_sources_ph")}
+                maxLength={1500}
+                rows={2}
+              />
+              <TextInput
+                value={draft.contact ?? ""}
+                onChange={(v) => set("contact", v)}
+                label={t("f_contact")}
+                placeholder={t("f_contact_ph")}
+                maxLength={60}
+                inputMode="tel"
+              />
             </Group>
             <div className="mt-8">
               <Group>
-                <ToggleCell title={t("f_files")} on={draft.has_source_files} onChange={(v) => set("has_source_files", v)} />
+                <ToggleCell
+                  title={t("f_files")}
+                  on={draft.has_source_files}
+                  onChange={(v) => set("has_source_files", v)}
+                />
               </Group>
             </div>
           </Section>
 
-          {shown ? <PriceCard q={shown} old={full} lines={lines} slides={draft.slides} /> : <Skeleton height={28} width={140} />}
+          {shown ? (
+            <PriceCard
+              q={shown}
+              old={full}
+              lines={lines}
+              slides={draft.slides}
+            />
+          ) : (
+            <Skeleton height={28} width={140} />
+          )}
         </>
       )}
 
-      {!paid && <MainButton text={buttonText} muted={missing.length > 0} loading={submit.isPending} onClick={next} />}
+      {!paid && (
+        <MainButton
+          text={buttonText}
+          muted={missing.length > 0}
+          loading={submit.isPending}
+          onClick={next}
+        />
+      )}
 
-      <Sheet open={stylePicker} onClose={() => setStylePicker(false)} title={t("f_style")}>
+      <Sheet
+        open={stylePicker}
+        onClose={() => setStylePicker(false)}
+        title={t("f_style")}
+      >
         <Group>
           <Cell
             title={t("f_style_none")}
@@ -424,7 +702,18 @@ export function NewOrder() {
           {c?.styles.map((s) => (
             <Cell
               key={s.key}
-              icon={<img src={s.images[0]} alt="" style={{ width: 30, height: 30, objectFit: "cover", borderRadius: 7 }} />}
+              icon={
+                <img
+                  src={s.images[0]}
+                  alt=""
+                  style={{
+                    width: 30,
+                    height: 30,
+                    objectFit: "cover",
+                    borderRadius: 7,
+                  }}
+                />
+              }
               iconBg="transparent"
               title={s.name}
               subtitle={s.hint}
@@ -441,7 +730,17 @@ export function NewOrder() {
   );
 }
 
-function PriceCard({ q, old, lines, slides }: { q: Quote; old?: number | null; lines: PriceLine[] | null; slides: SlideTier | null }) {
+function PriceCard({
+  q,
+  old,
+  lines,
+  slides,
+}: {
+  q: Quote;
+  old?: number | null;
+  lines: PriceLine[] | null;
+  slides: SlideTier | null;
+}) {
   const t = useT();
   const label = (l: PriceLine) =>
     l.key === "base"
@@ -449,7 +748,10 @@ function PriceCard({ q, old, lines, slides }: { q: Quote; old?: number | null; l
         ? t(slidesKey(slides))
         : t("price_base")
       : l.key === "package"
-        ? t("price_package", { cost: q.package_cost, left: q.package_left_after ?? 0 })
+        ? t("price_package", {
+            cost: q.package_cost,
+            left: q.package_left_after ?? 0,
+          })
         : l.key === "urgent"
           ? t("dl_urgent")
           : t("x_notes");
@@ -461,7 +763,10 @@ function PriceCard({ q, old, lines, slides }: { q: Quote; old?: number | null; l
       <div className="card price-card">
         {showLines &&
           lines!.map((l) => (
-            <div key={l.key} className={`price-line${l.key === "urgent" || l.key === "notes" ? " extra" : ""}`}>
+            <div
+              key={l.key}
+              className={`price-line${l.key === "urgent" || l.key === "notes" ? " extra" : ""}`}
+            >
               <span>{label(l)}</span>
               <span className="tabular">
                 {l.key === "base" || l.key === "package" ? "" : "+"}
@@ -471,16 +776,36 @@ function PriceCard({ q, old, lines, slides }: { q: Quote; old?: number | null; l
           ))}
         {!showLines && q.paid_from === "package" && (
           <div className="price-line">
-            <span>{t("price_package", { cost: q.package_cost, left: q.package_left_after ?? 0 })}</span>
+            <span>
+              {t("price_package", {
+                cost: q.package_cost,
+                left: q.package_left_after ?? 0,
+              })}
+            </span>
           </div>
         )}
-        <div className={`row spread price-total${showLines ? " sep" : ""}`} style={{ flexWrap: "wrap", gap: 8 }}>
-          <span className="subhead secondary">{t(q.paid_from === "package" ? "price_extra" : "price_total")}</span>
+        <div
+          className={`row spread price-total${showLines ? " sep" : ""}`}
+          style={{ flexWrap: "wrap", gap: 8 }}
+        >
+          <span className="subhead secondary">
+            {t(q.paid_from === "package" ? "price_extra" : "price_total")}
+          </span>
           <span className="title2 tabular">
-            <PriceTag now={money(q.price)} old={q.first_order_discount && old && old > q.price ? money(old) : null} sum={t("sum")} />
+            <PriceTag
+              now={money(q.price)}
+              old={
+                q.first_order_discount && old && old > q.price
+                  ? money(old)
+                  : null
+              }
+              sum={t("sum")}
+            />
           </span>
         </div>
-        {q.first_order_discount && <span className="badge gold mt-8">{t("price_first")}</span>}
+        {q.first_order_discount && (
+          <span className="badge gold mt-8">{t("price_first")}</span>
+        )}
       </div>
     </Section>
   );

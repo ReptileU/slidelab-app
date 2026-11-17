@@ -117,6 +117,7 @@ class OrderOut(BaseModel):
     topic: str
     slides: SlideTier
     deadline: Deadline
+    due_at: datetime | None = None
     pres_lang: Lang
     design: Design
     style_key: str | None

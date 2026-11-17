@@ -43,7 +43,7 @@ KIND_ACC = {"cover": "обложку", "deck": "презентацию", "edit":
 SLIDES_RU = {SlideTier.S10: "до 15", SlideTier.S20: "16–20", SlideTier.S30: "21–30"}
 DEADLINE_RU = {
     Deadline.URGENT: "⚡ Срочно (+50%)",
-    Deadline.NORMAL: "📅 Обычно — срок обсудим в чате",
+    Deadline.NORMAL: "📅 Обычно — к дате клиента",
     Deadline.RELAXED: "🐢 Не спешу",
 }
 # status.json хранит статус в словаре прежнего бота
@@ -59,6 +59,13 @@ LEGACY_STATUS = {
 
 FORMAT_ORDER = ["pptx", "pdf", "png", "docx"]
 _UNSAFE = re.compile(r'[\\/:*?"<>|]')
+
+
+def due_tashkent(value: datetime | None) -> str:
+    """Срок клиента для задания — по Ташкенту, чтобы не путаться с UTC."""
+    if value is None:
+        return ""
+    return as_utc(value).astimezone(LOCAL_TZ).strftime("%d.%m.%Y %H:%M") + " (Ташкент)"
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,7 +121,8 @@ class Pipeline:
             "client_lang": order.ui_lang.value,
             "topic": order.topic,
             "slides": SLIDES_RU[order.slides],
-            "deadline": DEADLINE_RU[order.deadline],
+            # дата клиента — в той же строке: формат задания не меняется
+            "deadline": f"📅 Нужна к {due_tashkent(order.due_at)}" if order.due_at else DEADLINE_RU[order.deadline],
             "presentation_lang": order.pres_lang.value,
             "design": "свой шаблон клиента" if order.design is Design.OWN else "дизайн делаем мы по теме",
             "template_link": order.template_url or "",

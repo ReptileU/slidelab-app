@@ -5,15 +5,15 @@
 """
 
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
-from slidelab.core.enums import Lang, OrderSource, OrderStatus, PaidFrom, Stage
-from slidelab.core.errors import ForbiddenError, InvalidTransitionError, PaymentRequiredError
+from slidelab.core.enums import Deadline, Lang, OrderSource, OrderStatus, PaidFrom, Stage
+from slidelab.core.errors import DueTooSoonError, ForbiddenError, InvalidTransitionError, PaymentRequiredError
 from slidelab.core.models import Order, OrderEvent, Revision
-from slidelab.core.models.base import utcnow
+from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.schemas.order import OrderDraft
 from slidelab.core.services import pricing
 from slidelab.core.services.packages import PackageService
@@ -30,6 +30,8 @@ TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
     S.REVISION: frozenset({S.DONE, S.CANCELLED}),
     S.CANCELLED: frozenset(),
 }
+
+NORMAL_MIN_HOURS = 48  # «Обычно» — не раньше чем через двое суток; быстрее — «Срочно» за доплату
 
 PRICE_EDITABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT})
 # Оплату принимаем заранее — с момента заказа и до начала работы
@@ -50,6 +52,15 @@ class OrderService:
         balance = await self.packages.balance(user_id)
         return pricing.quote(req, rules, first_order=first_order, package=balance)
 
+    def _due(self, draft: OrderDraft) -> datetime | None:
+        """Срок к дате — только у «Обычно» и не раньше чем через NORMAL_MIN_HOURS: быстрее — это «Срочно»."""
+        if draft.deadline is not Deadline.NORMAL or draft.due_at is None:
+            return None
+        due = as_utc(draft.due_at).replace(tzinfo=None)
+        if due < self.clock().replace(tzinfo=None) + timedelta(hours=NORMAL_MIN_HOURS):
+            raise DueTooSoonError(f"Раньше чем через {NORMAL_MIN_HOURS} ч — только «Срочно»")
+        return due
+
     async def create(
         self,
         user_id: int,
@@ -64,6 +75,7 @@ class OrderService:
             if existing is not None:
                 return existing
 
+        due_at = self._due(draft)
         q = await self.quote(user_id, draft.quote_request())
         style_id = await repo.get_style_id(self.session, draft.style_key) if draft.style_key else None
         order = Order(
@@ -71,6 +83,7 @@ class OrderService:
             topic=draft.topic,
             slides=draft.slides,
             deadline=draft.deadline,
+            due_at=due_at,
             pres_lang=draft.pres_lang,
             design=draft.design,
             style_id=style_id,

@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from datetime import timedelta
 from typing import Any
 
 import pytest
@@ -16,7 +17,7 @@ from slidelab.core.enums import (
     SlideTier,
     Stage,
 )
-from slidelab.core.errors import ForbiddenError, InvalidTransitionError, PaymentRequiredError
+from slidelab.core.errors import DueTooSoonError, ForbiddenError, InvalidTransitionError, PaymentRequiredError
 from slidelab.core.models import Order, OrderEvent, UserPackage
 from slidelab.core.models.base import as_utc
 from slidelab.core.schemas.order import OrderDraft
@@ -341,3 +342,16 @@ async def test_stage_change_resets_watch_alert(orders: OrderService, make_user: 
     order.alerted = "cover_todo|late"
     await to_cover(orders, order)
     assert order.alerted is None
+
+
+async def test_normal_order_keeps_due_date_and_rejects_too_soon(
+    orders: OrderService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    now = orders.clock().replace(tzinfo=None)
+    order = await orders.create(user.id, draft(due_at=now + timedelta(days=3)))
+    assert order.due_at is not None and order.due_at > now + timedelta(days=2)
+    with pytest.raises(DueTooSoonError):  # быстрее двух суток — только «Срочно»
+        await orders.create(user.id, draft(due_at=now + timedelta(hours=20)))
+    urgent = await orders.create(user.id, draft(deadline=Deadline.URGENT, due_at=now + timedelta(hours=5)))
+    assert urgent.due_at is None  # у «Срочно» дата не хранится

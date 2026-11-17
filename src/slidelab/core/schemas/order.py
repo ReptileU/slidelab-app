@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, StringConstraints, model_validator
@@ -33,6 +34,7 @@ class OrderDraft(BaseModel):
     topic: Topic
     slides: SlideTier
     deadline: Deadline
+    due_at: datetime | None = None  # к какому сроку нужна — только для «Обычно»
     pres_lang: Lang
     design: Design
     style_key: str | None = None

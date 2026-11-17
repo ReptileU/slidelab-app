@@ -17,7 +17,7 @@ class SlideTier(StrEnum):
 
 class Deadline(StrEnum):
     URGENT = "urgent"  # +50%, только до 20 слайдов
-    NORMAL = "normal"  # срок обсуждаем в чате
+    NORMAL = "normal"  # к дате, которую выбрал клиент (не раньше чем через NORMAL_MIN_HOURS)
     RELAXED = "relaxed"  # не спешу
 
 

@@ -1,7 +1,7 @@
 """Тексты сообщений, собранные из данных: карточка заказа, прайс, пакеты."""
 
 import html
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from slidelab.core.enums import Deadline, Design, Lang, OrderSource, OrderStatus, PaidFrom, Stage
 from slidelab.core.i18n import money, t
@@ -42,6 +42,18 @@ def date_short(value: object) -> str:
     return as_utc(value).strftime("%d.%m") if isinstance(value, datetime) else ""
 
 
+def due_text(value: datetime) -> str:
+    """Срок клиента по Ташкенту: «20.11 к 15:00»."""
+    local = as_utc(value) + timedelta(hours=5)
+    return local.strftime("%d.%m к %H:%M")
+
+
+def deadline_ru(order: Order) -> str:
+    if order.due_at is not None:
+        return f"📅 Нужна {due_text(order.due_at)}"
+    return DEADLINE_RU[order.deadline]
+
+
 def staff_card(order: Order, user: User, style_name: str | None = None) -> str:
     """Карточка заказа для владельца. Строка «ID:» нужна, чтобы ответ реплаем ушёл клиенту."""
     e = html.escape
@@ -51,7 +63,7 @@ def staff_card(order: Order, user: User, style_name: str | None = None) -> str:
         f"{SOURCE_RU[order.source]} · общение: {LANG_RU[order.ui_lang]}",
         "",
         f"<b>{e(order.topic)}</b>",
-        f"{order.slides.value[1:]} слайдов · {DEADLINE_RU[order.deadline]} · {LANG_RU[order.pres_lang]}",
+        f"{order.slides.value[1:]} слайдов · {deadline_ru(order)} · {LANG_RU[order.pres_lang]}",
     ]
     if order.design is Design.OWN:
         lines.append("Дизайн: шаблон клиента" + (f" — {e(order.template_url)}" if order.template_url else ""))

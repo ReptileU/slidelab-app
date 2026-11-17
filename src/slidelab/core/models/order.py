@@ -38,6 +38,7 @@ class Order(CreatedAtMixin, Base):
     topic: Mapped[str] = mapped_column(String(TOPIC_MAX))
     slides: Mapped[SlideTier] = mapped_column(str_enum(SlideTier))
     deadline: Mapped[Deadline] = mapped_column(str_enum(Deadline))
+    due_at: Mapped[datetime | None]  # к какому сроку нужна (UTC); выбирают при «Обычно»
     pres_lang: Mapped[Lang] = mapped_column(str_enum(Lang))
     design: Mapped[Design] = mapped_column(str_enum(Design))
     style_id: Mapped[int | None] = mapped_column(ForeignKey("showcase_styles.id"))
