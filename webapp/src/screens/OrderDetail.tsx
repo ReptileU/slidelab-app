@@ -8,9 +8,10 @@ import { useLang, useMe, useOrder, useT } from "../lib/app";
 import { formatDate, money } from "../lib/i18n";
 import { deadlineKey, hintKey, slidesKey, STATUS_BADGE, statusKey, stepState, timelineSteps } from "../lib/order";
 import { alert, confirm, haptic } from "../lib/tg";
-import type { Order } from "../lib/types";
+import type { Order, Package } from "../lib/types";
 import { Button, Cell, Group, Img, Section, Sheet, Skeleton, TextArea, Toast } from "../ui";
 import { PaySheet } from "../ui/PaySheet";
+import { ReturnOverlay } from "../ui/ReturnOverlay";
 import { SlideViewer } from "../ui/SlideViewer";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 
@@ -106,22 +107,33 @@ function OrderView({ order }: { order: Order }) {
   // Отмена: не оплачен — заказ удаляется; из пакета — презентация возвращается в пакет;
   // оплачен деньгами — оплата переходит на следующий заказ
   const paidCash = !!order.is_paid && order.paid_from === "cash" && order.price > 0 && !order.by_voucher;
+  const meQ = useMe();
   const fromPack = order.paid_from === "package";
   // срок пакета вышел — презентация вернётся не в пакет, а купоном
-  const packAlive = !!useMe().data?.package;
+  const packAlive = !!meQ.data?.package;
   const unpaid = !order.is_paid && !order.by_voucher && !fromPack;
+  const [back, setBack] = useState<{ pkg: Package | null; coupon: boolean } | null>(null);
   const cancel = useMutation({
-    mutationFn: () => api.cancelOrder(order.id),
-    onSuccess: (o) => {
-      haptic.success();
+    mutationFn: async () => {
+      const o = await api.cancelOrder(order.id);
+      // свежий пакет — чтобы показать, сколько в нём стало после возврата
+      const me = await api.me().catch(() => null);
+      return { o, me };
+    },
+    onSuccess: ({ o, me }) => {
       qc.invalidateQueries({ queryKey: ["orders"] });
-      qc.invalidateQueries({ queryKey: ["me"] });
+      if (me) qc.setQueryData(["me"], me);
+      else qc.invalidateQueries({ queryKey: ["me"] });
       if (unpaid) {
+        haptic.success();
         nav("/orders", { replace: true });
         return;
       }
       refresh(o);
-      setToast(t(o.voucher_open ? "cancel_ok_kept" : "cancel_ok_pack"));
+      // оплата вернулась: в пакет — карта (разбитая собирается), иначе — купон
+      const pkg = o.voucher_open ? null : (me?.package ?? null);
+      if (o.voucher_open || pkg) setBack({ pkg, coupon: !!o.voucher_open });
+      else setToast(t("cancel_ok_pack"));
     },
     onError: fail,
   });
@@ -325,6 +337,15 @@ function OrderView({ order }: { order: Order }) {
         </div>
       </Sheet>
 
+      {back && (
+        <ReturnOverlay
+          pkg={back.pkg}
+          holder={meQ.data?.first_name || "SlideLab"}
+          cost={order.package_cost}
+          slides={order.slides}
+          onDone={() => setBack(null)}
+        />
+      )}
       <Toast text={toast} onDone={() => setToast(null)} />
     </>
   );

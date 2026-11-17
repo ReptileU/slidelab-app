@@ -1434,3 +1434,40 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 @media (min-width: 1024px) {
   .tab-plus-coupon { top: 0; left: 40px; margin-left: 0; }
 }
+
+/* ── Отмена оплаченного заказа: оплата возвращается (обратная анимация) ── */
+.ret-ov.ok .paid-mark { opacity: 1; transform: none; }
+.ret-ov.ok .paid-mark circle { animation: paid-draw 0.45s ease-out forwards; }
+.ret-ov.ok .paid-mark path { animation: paid-draw 0.3s 0.32s ease-out forwards; }
+/* разбитая карта собирается: осколки прилетают с тех мест, куда разлетелись */
+.ret-ov.mended .paid-card { animation: paid-fade 0.3s ease both; }
+.ret-ov.mended .shard { animation: shard-back 1.2s cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.ret-ov.mended .shard.l { --from: translate(-30%, 60vh) rotate(-28deg); }
+.ret-ov.mended .shard.r { --from: translate(30%, 55vh) rotate(24deg); animation-delay: 0.08s; }
+@keyframes shard-back { from { transform: var(--from); opacity: 0; } 70% { opacity: 1; } }
+.ret-ov.mended.ok .paid-card { animation: ret-pulse 0.5s var(--spring); }
+@keyframes ret-pulse { 50% { transform: scale(1.04); filter: brightness(1.25); } }
+/* купон на одну презентацию */
+.coupon {
+  position: relative; overflow: hidden; display: flex; height: 150px; border-radius: 18px; color: #2b1d00;
+  background: linear-gradient(135deg, #fff3c4 0%, #f0c85a 40%, #d9a53a 70%, #fbe39a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 18px 50px rgba(224, 176, 74, 0.35);
+  /* вырезы по бокам у линии отрыва */
+  -webkit-mask: radial-gradient(circle 13px at 72% 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 13px at 72% 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+  mask: radial-gradient(circle 13px at 72% 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 13px at 72% 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+}
+.coupon-main { flex: 0 0 72%; display: flex; align-items: center; gap: 12px; padding: 0 18px; min-width: 0; }
+.coupon-main b { display: block; white-space: nowrap; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+.coupon-main small { display: block; margin-top: 4px; font-size: 14px; opacity: 0.7; }
+.coupon-stub { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  border-left: 2px dashed rgba(43, 29, 0, 0.35); }
+.coupon-stub span { font-size: 11px; font-weight: 800; letter-spacing: 0.18em; writing-mode: vertical-rl; rotate: 180deg; opacity: 0.6; }
+.coupon-stub i { font-style: normal; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 6px; border: 1.5px solid currentColor;
+  transform: rotate(-8deg) scale(2); opacity: 0; }
+.ret-ov.ok .coupon-stub i { animation: stamp 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) forwards; }
+@keyframes stamp { to { transform: rotate(-8deg) scale(1); opacity: 0.85; } }
+.coupon-shine { position: absolute; inset: 0; width: 40%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  transform: translateX(-130%) skewX(-18deg); animation: coupon-shine 1.4s 0.6s ease-out both; }
+@keyframes coupon-shine { to { transform: translateX(330%) skewX(-18deg); } }
