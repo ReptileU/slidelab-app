@@ -208,6 +208,17 @@ async def cancel(order_id: int, viewer: ViewerDep, session: SessionDep, flows: F
     return (await _out(session, [order], with_events=True))[0]
 
 
+@router.post("/{order_id}/hide")
+async def hide(order_id: int, viewer: ViewerDep, session: SessionDep) -> OkOut:
+    """Убрать отменённый заказ из списка (данные остаются у нас; купон от него продолжает действовать)."""
+    order = await _own(session, viewer.user, order_id)
+    if order.status is not OrderStatus.CANCELLED:
+        raise HTTPException(status_code=409, detail="Удалить из списка можно только отменённый заказ")
+    order.hidden = True
+    await session.commit()
+    return OkOut()
+
+
 @router.post("/{order_id}/cover-first")
 async def cover_first(order_id: int, viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> OrderOut:
     """«Сразу всю» нажали случайно — до оплаты возвращаем заказ к бесплатной обложке."""

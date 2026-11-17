@@ -137,6 +137,19 @@ function OrderView({ order }: { order: Order }) {
     },
     onError: fail,
   });
+  // Отменённый заказ можно убрать из списка; купон от него остаётся
+  const hide = useMutation({
+    mutationFn: () => api.hideOrder(order.id),
+    onSuccess: () => {
+      haptic.success();
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      nav("/orders", { replace: true });
+    },
+    onError: fail,
+  });
+  const askHide = async () => {
+    if (await confirm(t(order.voucher_open ? "hide_q_coupon" : "hide_q"))) hide.mutate();
+  };
   const askCancel = async () => {
     const q = unpaid ? "cancel_q_unpaid" : fromPack && packAlive ? "cancel_q_pack" : fromPack ? "cancel_q_paid" : paidCash || order.by_voucher ? "cancel_q_paid" : "cancel_q_unpaid";
     if (await confirm(t(q))) cancel.mutate();
@@ -283,6 +296,12 @@ function OrderView({ order }: { order: Order }) {
       {payNow && (
         <button className="cover-first" disabled={coverFirst.isPending} onClick={() => coverFirst.mutate()}>
           {t("cover_first")}
+        </button>
+      )}
+
+      {order.status === "cancelled" && (
+        <button className="order-cancel" disabled={hide.isPending} onClick={askHide}>
+          {t("hide_order")}
         </button>
       )}
 

@@ -300,3 +300,19 @@ async def test_order_thumb_is_first_slide(env: dict[str, Any]) -> None:
     r = await c.get(f"/api/orders/{oid}/thumb", headers=auth())
     assert r.status_code == 200 and r.content[:2] == b"\xff\xd8"
     assert (sent / ".thumb.jpg").exists()
+
+
+async def test_cancelled_order_can_be_removed_from_list(env: dict[str, Any]) -> None:
+    from slidelab.core.enums import OrderStatus
+
+    c: AsyncClient = env["client"]
+    oid = (await c.post("/api/orders", json=ORDER, headers=auth())).json()["id"]
+    assert (await c.post(f"/api/orders/{oid}/hide", headers=auth())).status_code == 409  # ещё не отменён
+    async with env["sm"]() as s:  # отменил менеджер, как старый заказ #6
+        order = await s.get(Order, oid)
+        assert order is not None
+        order.status = OrderStatus.CANCELLED
+        await s.commit()
+    assert (await c.post(f"/api/orders/{oid}/hide", headers=auth(888))).status_code == 404  # чужой
+    assert (await c.post(f"/api/orders/{oid}/hide", headers=auth())).json() == {"ok": True}
+    assert oid not in [o["id"] for o in (await c.get("/api/orders", headers=auth())).json()]

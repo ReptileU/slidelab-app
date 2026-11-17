@@ -47,6 +47,7 @@ export const api = {
   orders: () => request<Order[]>("/orders"),
   order: (id: number) => request<Order>(`/orders/${id}`),
   approveCover: (id: number) => post<Order>(`/orders/${id}/approve-cover`),
+  hideOrder: (id: number) => post<{ ok: boolean }>(`/orders/${id}/hide`),
   cancelOrder: (id: number) => post<Order>(`/orders/${id}/cancel`),
   coverFirst: (id: number) => post<Order>(`/orders/${id}/cover-first`),
   redoCover: (id: number, text: string) => post(`/orders/${id}/redo-cover`, { text }),
