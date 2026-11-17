@@ -1,5 +1,5 @@
 import { Check, Copy, CreditCard, ImagePlus, Star } from "lucide-react";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 import { ApiError } from "../lib/api";
 import { useCatalog, useT } from "../lib/app";
@@ -65,6 +65,7 @@ export function PaySheet({
   sendReceipt,
   onPaid,
   onReceipt,
+  extra,
 }: {
   open: boolean;
   title: string;
@@ -74,6 +75,8 @@ export function PaySheet({
   sendReceipt: (image: string) => Promise<unknown>;
   onPaid: () => void;
   onReceipt: () => void;
+  /** Под способами оплаты — например «Хочу сначала бесплатную титулку» */
+  extra?: ReactNode;
 }) {
   const t = useT();
   const catalog = useCatalog();
@@ -246,6 +249,7 @@ export function PaySheet({
           </div>
         </>
       )}
+      {extra}
     </Sheet>
   );
 }

@@ -187,6 +187,19 @@ async def approve_cover(order_id: int, viewer: ViewerDep, session: SessionDep, f
     return (await _out(session, [order], with_events=True))[0]
 
 
+@router.post("/{order_id}/cover-first")
+async def cover_first(order_id: int, viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> OrderOut:
+    """«Сразу всю» нажали случайно — до оплаты возвращаем заказ к бесплатной обложке."""
+    await _own(session, viewer.user, order_id)
+    order = await OrderService(session).cover_first(order_id, viewer.user.id)
+    await flows.write_brief(order, viewer.user)
+    await flows.sync(order)
+    await session.commit()
+    await flows.n.refresh_card(order, "↩️ передумал платить сразу — делаем бесплатную обложку")
+    await session.commit()
+    return (await _out(session, [order], with_events=True))[0]
+
+
 @router.post("/{order_id}/redo-cover")
 async def redo_cover(order_id: int, body: RevisionIn, viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> OkOut:
     await _own(session, viewer.user, order_id)

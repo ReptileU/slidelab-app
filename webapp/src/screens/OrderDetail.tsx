@@ -88,6 +88,17 @@ function OrderView({ order }: { order: Order }) {
     },
     onError: fail,
   });
+  // «Оплатить сразу всю» нажали случайно — до оплаты возвращаемся к бесплатной титулке
+  const coverFirst = useMutation({
+    mutationFn: () => api.coverFirst(order.id),
+    onSuccess: (o) => {
+      setSheet(null);
+      refresh(o);
+      haptic.success();
+      setToast(t("cover_first_ok"));
+    },
+    onError: fail,
+  });
   const files = useMutation({
     mutationFn: () => api.sendFiles(order.id),
     onSuccess: () => setToast(t("files_sent")),
@@ -208,6 +219,12 @@ function OrderView({ order }: { order: Order }) {
         </Group>
       </Section>
 
+      {payNow && (
+        <button className="cover-first" disabled={coverFirst.isPending} onClick={() => coverFirst.mutate()}>
+          {t("cover_first")}
+        </button>
+      )}
+
       {main && <MainButton text={main.text} loading={main.loading} onClick={main.run} />}
 
       <PaySheet
@@ -222,6 +239,13 @@ function OrderView({ order }: { order: Order }) {
           setTimeout(() => refresh(), 1500);
         }}
         onReceipt={() => setToast(t("pay_shot_sent"))}
+        extra={
+          payNow ? (
+            <button className="cover-first" disabled={coverFirst.isPending} onClick={() => coverFirst.mutate()}>
+              {t("cover_first")}
+            </button>
+          ) : null
+        }
       />
 
       <Sheet open={sheet === "redo" || sheet === "revise"} onClose={() => setSheet(null)} title={sheet === "redo" ? t("redo_t") : t("revise_t")}>

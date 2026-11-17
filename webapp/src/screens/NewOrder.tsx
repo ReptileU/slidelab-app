@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Zap } from "lucide-react";
 import { Fragment, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -233,7 +234,7 @@ export function NewOrder() {
   }, []);
 
   const submit = useMutation({
-    mutationFn: () => {
+    mutationFn: (full: boolean) => {
       const { key, title_plate, ...fields } = draft;
       const plate = (v?: string | null) =>
         title_plate ? v?.trim() || null : null;
@@ -255,6 +256,7 @@ export function NewOrder() {
         title_author: plate(draft.title_author),
         title_group: plate(draft.title_group),
         title_teacher: plate(draft.title_teacher),
+        skip_cover: full,
       };
       return api.createOrder(body, key);
     },
@@ -307,7 +309,13 @@ export function NewOrder() {
     if (step < 3) {
       setStep(step + 1);
       window.scrollTo({ top: 0 });
-    } else submit.mutate();
+    } else go(false);
+  };
+  // full=true — «Оплатить сразу всю»; основная кнопка всегда бесплатная титулка
+  const go = (full: boolean) => {
+    if (submit.isPending) return;
+    if (full) haptic.tap();
+    submit.mutate(full);
   };
   const buttonText = missing.length
     ? t("left", {
@@ -319,9 +327,7 @@ export function NewOrder() {
       ? t("next")
       : shown?.paid_from === "package"
         ? t("send") // из пакета презентация списывается сразу — «бесплатно» тут было бы неправдой
-        : draft.skip_cover
-          ? t("send_pay_now", { price: `${money(shown?.price ?? 0)} ${t("sum")}` })
-          : t("send_free_cover");
+        : t("send_free_cover");
 
   return (
     <div className="page no-tabbar">
@@ -671,50 +677,26 @@ export function NewOrder() {
             </div>
           </Section>
 
-          {/* Как начать: бесплатная титулка сначала или сразу вся презентация с оплатой */}
-          <Section title={t("start_t")}>
-            <div className="start-pick">
-              <button
-                className={`start-opt${!draft.skip_cover ? " on" : ""}`}
-                onClick={() => {
-                  haptic.select();
-                  set("skip_cover", false);
-                }}
-              >
-                <span className="start-radio" />
-                <span className="start-txt">
-                  <b>{t("start_cover")}</b>
-                  <small>{t("start_cover_x")}</small>
-                </span>
-                <span className="start-tag free">{t("start_free")}</span>
-              </button>
-              <button
-                className={`start-opt${draft.skip_cover ? " on" : ""}`}
-                onClick={() => {
-                  haptic.select();
-                  set("skip_cover", true);
-                }}
-              >
-                <span className="start-radio" />
-                <span className="start-txt">
-                  <b>{t("start_full")}</b>
-                  <small>{t("start_full_x")}</small>
-                </span>
-                <span className="start-tag fast">{t("start_fast")}</span>
-              </button>
-            </div>
-          </Section>
-
           {shown ? (
             <PriceCard
               q={shown}
               old={full}
               lines={lines}
               slides={draft.slides}
-              payNow={!!draft.skip_cover}
             />
           ) : (
             <Skeleton height={28} width={140} />
+          )}
+
+          {/* Вторая кнопка: не ждать титулку, а оплатить и получить всю презентацию */}
+          {shown && shown.paid_from !== "package" && shown.price > 0 && !missing.length && (
+            <div className="full-now">
+              <button className="full-now-btn" disabled={submit.isPending} onClick={() => go(true)}>
+                <Zap size={18} />
+                <span>{t("send_pay_now", { price: `${money(shown.price)} ${t("sum")}` })}</span>
+              </button>
+              <p className="footnote secondary">{t("full_now_x")}</p>
+            </div>
           )}
         </>
       )}

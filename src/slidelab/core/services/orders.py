@@ -152,6 +152,19 @@ class OrderService:
             self.set_stage(order, Stage.COVER_OK)
         return order
 
+    async def cover_first(self, order_id: int, user_id: int) -> Order:
+        """Нажал «Сразу всю» случайно: пока не заплатил, возвращаем к бесплатной обложке."""
+        order = await repo.get_order(self.session, order_id, for_update=True)
+        self._own(order, user_id)
+        if not order.skip_cover:
+            return order  # уже обычный заказ — повторное нажатие
+        if order.is_paid or order.status is not S.NEW:
+            raise InvalidTransitionError("Заказ уже оплачен — делаем всю презентацию")
+        order.skip_cover = False
+        self.set_stage(order, Stage.COVER_TODO)
+        await self.session.flush()
+        return order
+
     async def request_cover_change(self, order_id: int, user_id: int) -> Order:
         """Клиент хочет другую обложку — конвейер делает её заново."""
         order = await repo.get_order(self.session, order_id, for_update=True)

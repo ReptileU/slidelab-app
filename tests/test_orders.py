@@ -374,3 +374,16 @@ async def test_full_now_from_package_starts_at_once(
     await packages.activate(user.id, PlanCode.MONTH)
     order = await orders.create(user.id, draft(skip_cover=True))
     assert (order.status, order.stage, order.is_paid) == (S.WORK, Stage.DECK_TODO, True)
+
+
+async def test_full_now_can_go_back_to_free_cover_until_paid(
+    orders: OrderService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    order = await orders.create(user.id, draft(skip_cover=True))
+    back = await orders.cover_first(order.id, user.id)
+    assert (back.skip_cover, back.stage, back.status) == (False, Stage.COVER_TODO, S.NEW)
+    paid = await orders.create(user.id, draft(skip_cover=True))
+    await orders.mark_paid(paid, actor_id=None)
+    with pytest.raises(InvalidTransitionError):  # уже оплатил — назад нельзя
+        await orders.cover_first(paid.id, user.id)

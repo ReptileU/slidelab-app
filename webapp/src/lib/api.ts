@@ -47,6 +47,7 @@ export const api = {
   orders: () => request<Order[]>("/orders"),
   order: (id: number) => request<Order>(`/orders/${id}`),
   approveCover: (id: number) => post<Order>(`/orders/${id}/approve-cover`),
+  coverFirst: (id: number) => post<Order>(`/orders/${id}/cover-first`),
   redoCover: (id: number, text: string) => post(`/orders/${id}/redo-cover`, { text }),
   orderInvoice: (id: number, provider: "stars" | "card") =>
     post<Invoice>(`/orders/${id}/invoice`, { provider, app: true }),

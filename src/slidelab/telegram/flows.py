@@ -43,10 +43,13 @@ class Flows:
 
     # --- заказ создан -----------------------------------------------------------
 
-    async def order_created(self, order: Order, user: User, materials: list[Material] | None = None) -> None:
+    async def write_brief(self, order: Order, user: User) -> None:
         style = await self.session.get(ShowcaseStyle, order.style_id) if order.style_id else None
         style_name = (style.texts.get("ru") or {}).get("name") if style else None
         self.pipeline.write_brief(order, views.client_name(user), style_name)
+
+    async def order_created(self, order: Order, user: User, materials: list[Material] | None = None) -> None:
+        await self.write_brief(order, user)
         if materials:
             await self.save_materials(order.id, materials)
 
