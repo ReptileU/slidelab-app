@@ -298,8 +298,8 @@ class OrderService:
                 raise PaymentRequiredError(f"Заказ #{order.id} не оплачен")
             self.set_stage(order, Stage.DECK_TODO)
         elif to is S.CANCELLED:
-            if order.package_cost:
-                await self.packages.refund(order)
+            if order.package_cost and not await self.packages.refund(order):
+                order.voucher_open = True  # срок пакета вышел — презентация не пропадает, а становится купоном
             if order.voucher_from_id is not None:  # был оплачен отменённым заказом — возвращаем ту оплату
                 old = await repo.get_order(self.session, order.voucher_from_id, for_update=True)
                 old.voucher_open = True

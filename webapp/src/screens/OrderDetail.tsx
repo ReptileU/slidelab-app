@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
-import { useLang, useOrder, useT } from "../lib/app";
+import { useLang, useMe, useOrder, useT } from "../lib/app";
 import { formatDate, money } from "../lib/i18n";
 import { deadlineKey, hintKey, slidesKey, STATUS_BADGE, statusKey, stepState, timelineSteps } from "../lib/order";
 import { alert, confirm, haptic } from "../lib/tg";
@@ -107,6 +107,8 @@ function OrderView({ order }: { order: Order }) {
   // оплачен деньгами — оплата переходит на следующий заказ
   const paidCash = !!order.is_paid && order.paid_from === "cash" && order.price > 0 && !order.by_voucher;
   const fromPack = order.paid_from === "package";
+  // срок пакета вышел — презентация вернётся не в пакет, а купоном
+  const packAlive = !!useMe().data?.package;
   const unpaid = !order.is_paid && !order.by_voucher && !fromPack;
   const cancel = useMutation({
     mutationFn: () => api.cancelOrder(order.id),
@@ -119,12 +121,12 @@ function OrderView({ order }: { order: Order }) {
         return;
       }
       refresh(o);
-      setToast(t(fromPack ? "cancel_ok_pack" : "cancel_ok_kept"));
+      setToast(t(o.voucher_open ? "cancel_ok_kept" : "cancel_ok_pack"));
     },
     onError: fail,
   });
   const askCancel = async () => {
-    const q = unpaid ? "cancel_q_unpaid" : fromPack ? "cancel_q_pack" : paidCash || order.by_voucher ? "cancel_q_paid" : "cancel_q_unpaid";
+    const q = unpaid ? "cancel_q_unpaid" : fromPack && packAlive ? "cancel_q_pack" : fromPack ? "cancel_q_paid" : paidCash || order.by_voucher ? "cancel_q_paid" : "cancel_q_unpaid";
     if (await confirm(t(q))) cancel.mutate();
   };
   const files = useMutation({

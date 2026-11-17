@@ -97,20 +97,24 @@ class PackageService:
         await self.session.flush()
         return package
 
-    async def refund(self, order: Order) -> None:
-        """Вернуть списанное за отменённый заказ. Если ничего не списывали — ничего не делает."""
+    async def refund(self, order: Order) -> bool:
+        """Вернуть списанное за отменённый заказ в действующий пакет.
+
+        False — действующего пакета нет (срок вышел): вернуть некуда, вызывающий код выдаёт купон.
+        Если ничего не списывали — True, делать нечего.
+        """
         entries = await repo.order_package_debits(self.session, order.id)
         owed = -sum(e.delta for e in entries)
         if owed <= 0:
-            return
-        # Возвращаем в действующий пакет (старый мог уже перенестись в новый), иначе — туда, откуда списали
+            return True
+        # Возвращаем в действующий пакет (старый мог уже перенестись в новый)
         target = await repo.get_active_package(self.session, order.user_id, self.clock(), for_update=True)
         if target is None:
-            target = await self.session.get(UserPackage, entries[-1].user_package_id)
-        assert target is not None
+            return False
         target.left += owed
         self._ledger(target, owed, LedgerReason.REFUND, order)
         await self.session.flush()
+        return True
 
     # --- зачёт заказа в пакет ---
 

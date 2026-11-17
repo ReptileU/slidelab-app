@@ -443,3 +443,17 @@ async def test_cancel_last_presentation_of_package_gives_it_back(
     assert (await packages.balance(user.id)).left == 1  # type: ignore[union-attr]
     again = await orders.create(user.id, draft())  # и её снова можно потратить
     assert again.paid_from is PaidFrom.PACKAGE and again.is_paid
+
+
+async def test_cancel_after_package_expired_gives_coupon(
+    orders: OrderService, packages: PackageService, clock: FakeClock, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    await packages.activate(user.id, PlanCode.WEEK)
+    order = await orders.create(user.id, draft(skip_cover=True))
+    assert order.status is S.WORK and order.paid_from is PaidFrom.PACKAGE
+    clock.advance(days=60)  # пакет истёк, пока делали презентацию
+    await orders.cancel_by_client(order.id, user.id)
+    assert order.voucher_open  # вернуть в пакет некуда — купон
+    q = await orders.quote(user.id, draft().quote_request())
+    assert (q.voucher, q.price) == (True, 0)
