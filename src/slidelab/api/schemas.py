@@ -37,6 +37,8 @@ class MeOut(BaseModel):
     # Оплаченные презентации от отменённых заказов: объём первой (её возьмут в зачёт) и сколько всего
     voucher: SlideTier | None = None
     vouchers: int = 0
+    voucher_list: list[SlideTier] = Field(default_factory=list)  # объём каждого купона — для кошелька
+    wallet_cover: str | None = None  # версия обложки кошелька (меняется при замене фото)
 
 
 class LangIn(BaseModel):
@@ -150,6 +152,12 @@ class InvoiceIn(BaseModel):
 class PayCardOut(BaseModel):
     label: str
     number: str
+
+
+class WalletCoverIn(BaseModel):
+    """Фото для обложки кошелька — data:image/...;base64,..."""
+
+    image: str = Field(max_length=6_000_000)
 
 
 class ReceiptIn(BaseModel):

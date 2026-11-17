@@ -44,6 +44,8 @@ export interface Me {
   active_orders: number;
   voucher?: SlideTier | null; // оплаченная презентация от отменённого заказа — её объём
   vouchers?: number;
+  voucher_list?: SlideTier[]; // объём каждого купона
+  wallet_cover?: string | null; // своя обложка кошелька (версия), null — классическая
 }
 
 export interface Prices {

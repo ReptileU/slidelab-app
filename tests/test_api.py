@@ -51,7 +51,8 @@ async def env(tmp_path: Path) -> AsyncIterator[dict[str, Any]]:
         await s.commit()
 
     settings = Settings(  # type: ignore[call-arg]
-        _env_file=None, bot_token=TOKEN, managers_chat_id=MANAGERS_CHAT, pay_uzum="8600 0000", work_dir=tmp_path
+        _env_file=None, bot_token=TOKEN, managers_chat_id=MANAGERS_CHAT, pay_uzum="8600 0000", work_dir=tmp_path,
+        data_dir=tmp_path / "data",
     )
     app = create_app(settings)
     bot, tg = make_bot()
@@ -316,3 +317,24 @@ async def test_cancelled_order_can_be_removed_from_list(env: dict[str, Any]) -> 
     assert (await c.post(f"/api/orders/{oid}/hide", headers=auth(888))).status_code == 404  # чужой
     assert (await c.post(f"/api/orders/{oid}/hide", headers=auth())).json() == {"ok": True}
     assert oid not in [o["id"] for o in (await c.get("/api/orders", headers=auth())).json()]
+
+
+async def test_wallet_cover_from_photo(env: dict[str, Any]) -> None:
+    import base64
+    from io import BytesIO
+
+    from PIL import Image
+
+    c: AsyncClient = env["client"]
+    buf = BytesIO()
+    Image.new("RGB", (900, 1600), (200, 40, 90)).save(buf, "JPEG")  # вертикальное фото с телефона
+    photo = "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+    assert (await c.get("/api/me/wallet-cover", headers=auth())).status_code == 404
+    me = (await c.post("/api/me/wallet-cover", json={"image": photo}, headers=auth())).json()
+    assert me["wallet_cover"]
+    res = await c.get("/api/me/wallet-cover", headers=auth())
+    assert res.status_code == 200 and Image.open(BytesIO(res.content)).size == (1200, 760)  # кадр под кошелёк
+    bad = await c.post("/api/me/wallet-cover", json={"image": "data:image/jpeg;base64,AAAA"}, headers=auth())
+    assert bad.status_code >= 400
+    assert (await c.delete("/api/me/wallet-cover", headers=auth())).json()["wallet_cover"] is None
+    assert (await c.get("/api/me/wallet-cover", headers=auth())).status_code == 404

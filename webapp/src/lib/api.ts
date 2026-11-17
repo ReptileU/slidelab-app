@@ -79,6 +79,17 @@ export const api = {
   myReview: () => request<MyReview | null>("/reviews/mine"),
   withdrawReview: (id: number) => request(`/reviews/${id}`, { method: "DELETE" }),
 
+  setWalletCover: (image: string) => post<Me>("/me/wallet-cover", { image }),
+  resetWalletCover: () => request<Me>("/me/wallet-cover", { method: "DELETE" }),
+  /** Обложка кошелька — с авторизацией, как и обложка заказа */
+  async walletCoverUrl(): Promise<string> {
+    const headers = new Headers();
+    if (initData) headers.set("Authorization", `tma ${initData}`);
+    const res = await fetch("./api/me/wallet-cover", { headers });
+    if (!res.ok) throw new ApiError(res.status, "wallet", res.statusText);
+    return URL.createObjectURL(await res.blob());
+  },
+
   /** Обложка — с авторизацией, поэтому через fetch и blob, а не <img src>. */
   async coverUrl(id: number): Promise<string> {
     const headers = new Headers();

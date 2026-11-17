@@ -18,3 +18,5 @@ class User(CreatedAtMixin, Base):
     is_manager: Mapped[bool] = mapped_column(default=False)
     # тема клиента в супергруппе менеджеров
     forum_topic_id: Mapped[int | None]
+    # Кошелёк в профиле: обложка из фото клиента (имя файла в data/wallet), None — классическая кожа
+    wallet_cover: Mapped[str | None] = mapped_column(String(64))

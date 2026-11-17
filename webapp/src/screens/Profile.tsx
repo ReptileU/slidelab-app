@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Package, Palette, Star, SunMoon } from "lucide-react";
+import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Palette, Star, SunMoon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -8,8 +8,7 @@ import { useCatalog, useLang, useMe, useOrders, useT } from "../lib/app";
 import { alert, confirm, getThemeMode, haptic, hasTelegramColors, openTelegramUrl, setThemeMode, type ThemeMode } from "../lib/tg";
 import type { Lang } from "../lib/types";
 import { Button, Cell, Group, Section, Sheet, TextArea, Toast } from "../ui";
-import { PackCard } from "../ui/PackCard";
-import { VoucherCard } from "../ui/VoucherCard";
+import { Wallet } from "../ui/Wallet";
 
 const LANGS: Record<Lang, string> = { ru: "Русский", uz: "O‘zbekcha", en: "English" };
 
@@ -52,35 +51,17 @@ export function Profile() {
         </div>
       </div>
 
-      {!!user?.vouchers && (
-        <Section>
-          <VoucherCard />
-        </Section>
-      )}
-
-      {pkg ? (
-        <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
-          <PackCard pkg={pkg} holder={user?.first_name || "SlideLab"} hint={false} />
-          {pkg.left <= 1 && (
-            <div style={{ marginTop: 18 }}>
-              <Button kind="tinted" onClick={() => nav("/packages")}>
-                {t("prof_renew")}
-              </Button>
-            </div>
-          )}
-        </Section>
-      ) : (
-        <Section>
-          <button className="prof-teaser" onClick={() => nav("/packages")}>
-            <Package size={30} />
-            <div>
-              <div className="headline">{t("prof_teaser_t")}</div>
-              <div className="footnote secondary">{t("prof_teaser_s")}</div>
-            </div>
-            <span className="prof-teaser-go">{t("prof_teaser_go")} ›</span>
-          </button>
-        </Section>
-      )}
+      {/* Кошелёк: карта пакета и купоны; без пакета — кнопка к пакетам */}
+      <Section title={t("wallet_t")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
+        <Wallet />
+        {pkg && pkg.left <= 1 && (
+          <div style={{ marginTop: 18 }}>
+            <Button kind="tinted" onClick={() => nav("/packages")}>
+              {t("prof_renew")}
+            </Button>
+          </div>
+        )}
+      </Section>
 
       <Section>
         <Group icons>

@@ -4,6 +4,7 @@ import { type ReactNode, useRef, useState } from "react";
 import { ApiError } from "../lib/api";
 import { useCatalog, useT } from "../lib/app";
 import { money } from "../lib/i18n";
+import { shrink } from "../lib/image";
 import { alert, haptic, openInvoice } from "../lib/tg";
 import type { Invoice } from "../lib/types";
 import { Button, Cell, Group, Sheet } from ".";
@@ -33,25 +34,6 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 /** Скриншот → JPEG до 1600 px: быстро отправляется и читается без потерь. */
-async function shrink(file: File): Promise<string> {
-  const url = URL.createObjectURL(file);
-  try {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(img.naturalWidth * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("canvas");
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL("image/jpeg", 0.85);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
-}
-
 /**
  * Выбор способа оплаты. Звёзды — счёт Telegram, не выходя из приложения.
  * Перевод — тоже здесь: номера карт копируются касанием, скриншот оплаты уходит владельцу.
