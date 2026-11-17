@@ -8,7 +8,7 @@ import { money } from "../lib/i18n";
 import { DEADLINES, deadlineKey, estimate, slidesKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { alert, haptic } from "../lib/tg";
 import { unlockAudio } from "../lib/sound";
-import type { Design, Lang, OrderDraft, Package, Quote } from "../lib/types";
+import type { Deadline, Design, Lang, OrderDraft, Package, Quote, SlideTier } from "../lib/types";
 import { PaidOverlay } from "../ui/PaidOverlay";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 import { Cell, Group, PriceTag, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
@@ -39,7 +39,7 @@ function emptyDraft(lang: Lang): Draft {
     extra_text: false,
     extra_notes: false,
     need_humor: false,
-    title_plate: false,
+    title_plate: true,
     title_author: "",
     title_group: "",
     title_teacher: "",
@@ -119,6 +119,11 @@ export function NewOrder() {
   // Цена без скидки — чтобы зачеркнуть её рядом со скидочной
   const full: number | null =
     c && draft.slides ? estimate(c.prices, { ...draft, slides: draft.slides }, null, null, notesFree).price : null;
+  // Сколько именно стоит «срочно» для выбранного объёма (пока объём не выбран — для самого маленького)
+  const urgentTier: SlideTier = draft.slides && draft.slides !== "s30" ? draft.slides : "s10";
+  const urgentCalc = (deadline: Deadline) =>
+    c ? estimate(c.prices, { ...draft, slides: urgentTier, deadline }, first, me.data?.package ?? null, notesFree).price : 0;
+  const urgentExtra = urgentCalc("urgent") - urgentCalc("normal");
 
   const [paid, setPaid] = useState<{ order: number; cost: number; pkg: Package } | null>(null);
   // звук «оплачено» на iOS играет только после касания — «будим» звук на первом касании формы
@@ -228,6 +233,19 @@ export function NewOrder() {
               <TextArea value={draft.topic} onChange={(v) => set("topic", v)} placeholder={t("f_topic_ph")} maxLength={300} rows={2} />
             </Group>
           </Section>
+          {/* Подпись на титульном — сразу после темы: студенту она нужна почти всегда, выключается одним касанием */}
+          <Section title={t("plate_t")} footer={draft.title_plate ? t("plate_hint") : undefined}>
+            <Group>
+              <ToggleCell title={t("x_plate")} subtitle={t("x_plate_x")} on={!!draft.title_plate} onChange={(v) => set("title_plate", v)} />
+              {draft.title_plate && (
+                <>
+                  <TextInput value={draft.title_author ?? ""} onChange={(v) => set("title_author", v)} label={t("f_author")} placeholder={t("f_author_ph")} maxLength={120} />
+                  <TextInput value={draft.title_group ?? ""} onChange={(v) => set("title_group", v)} label={t("f_group")} placeholder={t("f_group_ph")} maxLength={60} />
+                  <TextInput value={draft.title_teacher ?? ""} onChange={(v) => set("title_teacher", v)} label={t("f_teacher")} placeholder={t("f_teacher_ph")} maxLength={120} />
+                </>
+              )}
+            </Group>
+          </Section>
           <Section title={t("f_plang")}>
             <Segmented
               value={draft.pres_lang}
@@ -302,7 +320,7 @@ export function NewOrder() {
                 <Cell
                   key={d}
                   title={t(deadlineKey(d))}
-                  subtitle={t(`${deadlineKey(d)}_x` as Parameters<typeof t>[0], { pct: c.prices.urgent_pct })}
+                  subtitle={t(`${deadlineKey(d)}_x` as Parameters<typeof t>[0], { sum: `${money(urgentExtra)} ${t("sum")}` })}
                   checked={draft.deadline === d}
                   disabled={d === "urgent" && draft.slides === "s30"}
                   onClick={() => set("deadline", d)}
@@ -314,13 +332,13 @@ export function NewOrder() {
             <Group>
               <ToggleCell
                 title={t("x_text")}
-                subtitle={`+${money(c.prices.extra_text)} ${t("sum")}`}
+                subtitle={`${t("x_text_x")} +${money(c.prices.extra_text)} ${t("sum")}`}
                 on={draft.extra_text}
                 onChange={(v) => set("extra_text", v)}
               />
               <ToggleCell
                 title={t("x_notes")}
-                subtitle={`+${money(c.prices.extra_notes)} ${t("sum")}`}
+                subtitle={`${t("x_notes_x")} +${money(c.prices.extra_notes)} ${t("sum")}`}
                 on={draft.extra_notes}
                 onChange={(v) => set("extra_notes", v)}
               />
@@ -330,14 +348,6 @@ export function NewOrder() {
                 on={draft.need_humor}
                 onChange={(v) => set("need_humor", v)}
               />
-              <ToggleCell title={t("x_plate")} subtitle={t("x_plate_x")} on={!!draft.title_plate} onChange={(v) => set("title_plate", v)} />
-              {draft.title_plate && (
-                <>
-                  <TextInput value={draft.title_author ?? ""} onChange={(v) => set("title_author", v)} label={t("f_author")} placeholder={t("f_author_ph")} maxLength={120} />
-                  <TextInput value={draft.title_group ?? ""} onChange={(v) => set("title_group", v)} label={t("f_group")} placeholder={t("f_group_ph")} maxLength={60} />
-                  <TextInput value={draft.title_teacher ?? ""} onChange={(v) => set("title_teacher", v)} label={t("f_teacher")} placeholder={t("f_teacher_ph")} maxLength={120} />
-                </>
-              )}
             </Group>
           </Section>
           {shown && <PriceCard q={shown} old={full} />}
@@ -361,7 +371,7 @@ export function NewOrder() {
                 <Cell
                   title={t("x_plate")}
                   subtitle={[draft.title_author, draft.title_group, draft.title_teacher].filter((x) => x?.trim()).join(" · ")}
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(1)}
                 />
               )}
             </Group>

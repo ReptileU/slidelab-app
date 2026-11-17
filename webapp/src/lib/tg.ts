@@ -223,10 +223,16 @@ export function initTelegram(): void {
   safe(() => webApp.expand());
   // Свайп вниз не закрывает и не сворачивает приложение — закрыть можно только крестиком (Telegram 7.7+)
   if (webApp.isVersionAtLeast("7.7")) safe(() => webApp.disableVerticalSwipes?.());
-  // На телефоне — на весь экран (Telegram 8.0+): у окна нет шапки-шторки, за которую его можно стянуть вниз,
-  // остаются только кнопки Telegram сверху — закрыть можно лишь крестиком. На компьютере окно оставляем обычным.
-  if (webApp.isVersionAtLeast("8.0") && ["ios", "android"].includes(webApp.platform) && !webApp.isFullscreen) {
-    safe(() => webApp.requestFullscreen?.());
+  // На весь экран на любом устройстве, включая компьютер (Telegram 8.0+): у окна нет шапки-шторки, за которую его
+  // можно стянуть вниз, закрыть можно лишь крестиком. Старый Telegram так не умеет — там остаётся обычное окно.
+  if (webApp.isVersionAtLeast("8.0")) {
+    const goFull = () => {
+      if (!webApp.isFullscreen) safe(() => webApp.requestFullscreen?.());
+    };
+    goFull();
+    // Пока окно ещё выезжает, Telegram может не принять запрос — повторяем чуть позже и при первом касании
+    window.setTimeout(goFull, 700);
+    window.addEventListener("pointerdown", goFull, { once: true });
   }
   // Запасной вариант для iOS и старых версий: страница всегда прокручиваемая и никогда не стоит в самом верху,
   // поэтому жест вниз прокручивает страницу, а не утаскивает окно приложения.
