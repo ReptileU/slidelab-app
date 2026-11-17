@@ -1,4 +1,4 @@
-import { FileText, Home as HomeIcon, Package, Plus, Presentation, UserRound } from "lucide-react";
+import { FileText, Home as HomeIcon, Package, Plus, Presentation, Ticket, UserRound } from "lucide-react";
 import { lazy, Suspense, useEffect } from "react";
 import { Navigate, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 
@@ -65,12 +65,14 @@ export function App() {
         </Routes>
       </Suspense>
       {NOW_TABS.includes(location.pathname) && <NowBar />}
-      {TABS.includes(location.pathname) && <TabBar activeOrders={me.data?.active_orders ?? 0} />}
+      {TABS.includes(location.pathname) && (
+        <TabBar activeOrders={me.data?.active_orders ?? 0} vouchers={me.data?.vouchers ?? 0} />
+      )}
     </>
   );
 }
 
-function TabBar({ activeOrders }: { activeOrders: number }) {
+function TabBar({ activeOrders, vouchers }: { activeOrders: number; vouchers: number }) {
   const t = useT();
   const nav = useNavigate();
   const tab = ({ to, icon: Icon, label, badge }: { to: string; icon: typeof HomeIcon; label: string; badge?: number }) => (
@@ -98,6 +100,13 @@ function TabBar({ activeOrders }: { activeOrders: number }) {
         <i>
           <Plus strokeWidth={2.4} />
         </i>
+        {/* купон: есть оплаченная презентация от отменённого заказа */}
+        {vouchers > 0 && (
+          <b className="tab-plus-coupon" aria-label={t("voucher_card_one")}>
+            <Ticket strokeWidth={2.4} />
+            {vouchers > 1 && <span>{vouchers}</span>}
+          </b>
+        )}
         {/* подпись видна только в боковом меню на широком экране */}
         <span className="tab-plus-label">{t("cta_order")}</span>
       </button>

@@ -1418,3 +1418,19 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 }
 .hero-voucher svg { color: var(--paid); flex: none; margin-top: 2px; }
 .hero-voucher small { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; opacity: 0.7; }
+
+/* Купончик у «+»: есть оплаченная презентация */
+.tab-plus-coupon {
+  position: absolute; z-index: 2; top: -31px; left: 50%; margin-left: 10px;
+  display: inline-flex; align-items: center; gap: 2px; height: 22px; min-width: 22px; padding: 0 5px;
+  border-radius: 11px; color: #3a2a00; font: 700 12px/1 inherit;
+  background: linear-gradient(180deg, #ffe08a, var(--paid));
+  box-shadow: 0 0 0 2px var(--bar, var(--bg)), 0 3px 8px rgba(0, 0, 0, 0.3);
+  animation: coupon-pop 0.5s var(--spring) both;
+}
+.tab-plus-coupon svg { width: 13px !important; height: 13px !important; transform: none !important; }
+:root.has-now .tab-plus-coupon { top: -23px; }
+@keyframes coupon-pop { from { transform: scale(0) rotate(-20deg); } }
+@media (min-width: 1024px) {
+  .tab-plus-coupon { top: 0; left: 40px; margin-left: 0; }
+}
