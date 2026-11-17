@@ -387,3 +387,45 @@ async def test_full_now_can_go_back_to_free_cover_until_paid(
     await orders.mark_paid(paid, actor_id=None)
     with pytest.raises(InvalidTransitionError):  # уже оплатил — назад нельзя
         await orders.cover_first(paid.id, user.id)
+
+
+async def test_client_cancel_unpaid_is_removed(orders: OrderService, make_user: Callable[..., Any]) -> None:
+    user = await make_user()
+    order = await orders.create(user.id, draft())
+    gone = await orders.cancel_by_client(order.id, user.id)
+    assert (gone.status, gone.hidden, gone.voucher_open) == (S.CANCELLED, True, False)
+
+
+async def test_client_cancel_paid_keeps_presentation_for_next_order(
+    orders: OrderService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    first = await orders.create(user.id, draft(skip_cover=True))
+    await orders.mark_paid(first, actor_id=None)
+    assert first.status is S.WORK
+    cancelled = await orders.cancel_by_client(first.id, user.id)
+    assert (cancelled.status, cancelled.voucher_open, cancelled.hidden) == (S.CANCELLED, True, False)
+
+    # следующий такой же заказ — база уже оплачена, платить только за доплаты (срочность)
+    plain = await orders.quote(user.id, draft().quote_request())
+    assert (plain.price, plain.voucher) == (0, True)
+    urgent = await orders.quote(user.id, draft(deadline=Deadline.URGENT).quote_request())
+    assert urgent.voucher and urgent.price > 0
+
+    second = await orders.create(user.id, draft())
+    assert second.is_paid and second.voucher_from_id == first.id and not first.voucher_open
+    # оплата использована один раз
+    assert not (await orders.quote(user.id, draft().quote_request())).voucher
+
+    # отменили и второй — оплата снова ждёт следующего заказа
+    await orders.cancel_by_client(second.id, user.id)
+    assert first.voucher_open and not second.voucher_open
+
+
+async def test_client_cannot_cancel_done(orders: OrderService, make_user: Callable[..., Any]) -> None:
+    user = await make_user()
+    order = await orders.create(user.id, draft(skip_cover=True))
+    await orders.mark_paid(order, actor_id=None)
+    await orders.deliver(order, actor_id=None)
+    with pytest.raises(InvalidTransitionError):
+        await orders.cancel_by_client(order.id, user.id)

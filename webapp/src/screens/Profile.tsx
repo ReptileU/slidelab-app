@@ -9,6 +9,7 @@ import { alert, confirm, getThemeMode, haptic, hasTelegramColors, openTelegramUr
 import type { Lang } from "../lib/types";
 import { Button, Cell, Group, Section, Sheet, TextArea, Toast } from "../ui";
 import { PackCard } from "../ui/PackCard";
+import { VoucherCard } from "../ui/VoucherCard";
 
 const LANGS: Record<Lang, string> = { ru: "Русский", uz: "O‘zbekcha", en: "English" };
 
@@ -50,6 +51,12 @@ export function Profile() {
           </div>
         </div>
       </div>
+
+      {!!user?.vouchers && (
+        <Section>
+          <VoucherCard />
+        </Section>
+      )}
 
       {pkg ? (
         <Section title={t("pkg_my")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>

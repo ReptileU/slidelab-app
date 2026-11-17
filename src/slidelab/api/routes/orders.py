@@ -77,6 +77,8 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
             due_at=o.due_at,
             skip_cover=o.skip_cover,
             is_paid=o.is_paid,
+            voucher_open=o.voucher_open,
+            by_voucher=o.voucher_from_id is not None,
             pres_lang=o.pres_lang,
             design=o.design,
             style_key=style_keys.get(o.style_id) if o.style_id else None,
@@ -108,6 +110,7 @@ async def quote(body: QuoteIn, viewer: ViewerDep, session: SessionDep) -> QuoteO
         package_cost=q.package_cost,
         package_left_after=q.package_left_after,
         first_order_discount=q.first_order_discount,
+        voucher=q.voucher,
     )
 
 
@@ -183,6 +186,24 @@ async def approve_cover(order_id: int, viewer: ViewerDep, session: SessionDep, f
         await flows.n.refresh_card(order, "👍 обложка одобрена в приложении, оплачено — Claude делает презентацию")
     else:
         await flows.n.refresh_card(order, "👍 обложка одобрена в приложении — ждём оплату")
+    await session.commit()
+    return (await _out(session, [order], with_events=True))[0]
+
+
+@router.post("/{order_id}/cancel")
+async def cancel(order_id: int, viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> OrderOut:
+    """Клиент отменяет заказ: не оплачен — удаляется, оплачен — оплата переходит на следующий заказ."""
+    await _own(session, viewer.user, order_id)
+    order = await OrderService(session).cancel_by_client(order_id, viewer.user.id)
+    await flows.sync(order)
+    await session.commit()
+    if order.voucher_open:
+        note = "❌ клиент отменил — оплата перейдёт на его следующий заказ"
+    elif order.package_cost:
+        note = "❌ клиент отменил — презентация вернулась в пакет"
+    else:
+        note = "❌ клиент удалил заказ до оплаты"
+    await flows.n.refresh_card(order, note)
     await session.commit()
     return (await _out(session, [order], with_events=True))[0]
 

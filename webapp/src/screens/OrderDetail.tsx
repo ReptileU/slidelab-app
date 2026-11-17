@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -7,7 +7,7 @@ import { api, ApiError } from "../lib/api";
 import { useLang, useOrder, useT } from "../lib/app";
 import { formatDate, money } from "../lib/i18n";
 import { deadlineKey, hintKey, slidesKey, STATUS_BADGE, statusKey, stepState, timelineSteps } from "../lib/order";
-import { alert, haptic } from "../lib/tg";
+import { alert, confirm, haptic } from "../lib/tg";
 import type { Order } from "../lib/types";
 import { Button, Cell, Group, Img, Section, Sheet, Skeleton, TextArea, Toast } from "../ui";
 import { PaySheet } from "../ui/PaySheet";
@@ -30,8 +30,12 @@ export function OrderDetail() {
   );
 }
 
+// Клиент может сам отменить заказ, пока презентацию не сдали
+const CANCELLABLE = new Set(["new", "cover", "awaiting_payment", "work"]);
+
 function OrderView({ order }: { order: Order }) {
   const t = useT();
+  const nav = useNavigate();
   const { lang } = useLang();
   const qc = useQueryClient();
   const [cover, setCover] = useState<string | null>(null);
@@ -99,6 +103,30 @@ function OrderView({ order }: { order: Order }) {
     },
     onError: fail,
   });
+  // Отмена: не оплачен — заказ удаляется; из пакета — презентация возвращается в пакет;
+  // оплачен деньгами — оплата переходит на следующий заказ
+  const paidCash = !!order.is_paid && order.paid_from === "cash" && order.price > 0 && !order.by_voucher;
+  const fromPack = order.paid_from === "package";
+  const unpaid = !order.is_paid && !order.by_voucher && !fromPack;
+  const cancel = useMutation({
+    mutationFn: () => api.cancelOrder(order.id),
+    onSuccess: (o) => {
+      haptic.success();
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["me"] });
+      if (unpaid) {
+        nav("/orders", { replace: true });
+        return;
+      }
+      refresh(o);
+      setToast(t(fromPack ? "cancel_ok_pack" : "cancel_ok_kept"));
+    },
+    onError: fail,
+  });
+  const askCancel = async () => {
+    const q = unpaid ? "cancel_q_unpaid" : fromPack ? "cancel_q_pack" : paidCash || order.by_voucher ? "cancel_q_paid" : "cancel_q_unpaid";
+    if (await confirm(t(q))) cancel.mutate();
+  };
   const files = useMutation({
     mutationFn: () => api.sendFiles(order.id),
     onSuccess: () => setToast(t("files_sent")),
@@ -143,6 +171,23 @@ function OrderView({ order }: { order: Order }) {
           {payNow ? t("hint_full_pay") : order.skip_cover && order.status === "new" ? t("hint_work") : t(hintKey(order.status))}
         </p>
       </div>
+
+      {order.voucher_open && (
+        <Section>
+          <div className="voucher-note">
+            <Ticket size={22} />
+            <div className="grow">
+              <div className="headline">{t("voucher_kept_t")}</div>
+              <div className="footnote secondary">{t("voucher_kept_s")}</div>
+            </div>
+          </div>
+          <div className="mt-12">
+            <Button kind="tinted" onClick={() => nav("/order")}>
+              {t("voucher_use")}
+            </Button>
+          </div>
+        </Section>
+      )}
 
       {order.has_deck && (
         <Section title={t("v_title")}>
@@ -213,7 +258,9 @@ function OrderView({ order }: { order: Order }) {
             value={
               order.paid_from === "package"
                 ? `${t("d_from_package")}${order.price ? ` + ${price}` : ""}`
-                : price
+                : order.by_voucher
+                  ? `${t("d_by_voucher")}${order.price ? ` + ${price}` : ""}`
+                  : price
             }
           />
         </Group>
@@ -222,6 +269,12 @@ function OrderView({ order }: { order: Order }) {
       {payNow && (
         <button className="cover-first" disabled={coverFirst.isPending} onClick={() => coverFirst.mutate()}>
           {t("cover_first")}
+        </button>
+      )}
+
+      {CANCELLABLE.has(order.status) && (
+        <button className="order-cancel" disabled={cancel.isPending} onClick={askCancel}>
+          {t(unpaid ? "cancel_delete" : "cancel_order")}
         </button>
       )}
 

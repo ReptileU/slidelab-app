@@ -42,6 +42,8 @@ export interface Me {
   first_order_price: number | null;
   package: Package | null;
   active_orders: number;
+  voucher?: SlideTier | null; // оплаченная презентация от отменённого заказа — её объём
+  vouchers?: number;
 }
 
 export interface Prices {
@@ -97,6 +99,7 @@ export interface Quote {
   package_cost: number;
   package_left_after: number | null;
   first_order_discount: boolean;
+  voucher?: boolean; // база оплачена отменённым заказом
 }
 
 export interface OrderDraft {
@@ -132,6 +135,8 @@ export interface Order {
   status: OrderStatus;
   skip_cover?: boolean;
   is_paid?: boolean;
+  voucher_open?: boolean; // отменён после оплаты — оплата ждёт следующего заказа
+  by_voucher?: boolean; // оплачен отменённым заказом
   price: number;
   paid_from: PaidFrom;
   package_cost: number;

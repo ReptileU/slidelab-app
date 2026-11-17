@@ -5,6 +5,7 @@ import type { Key } from "../lib/i18n";
 import { haptic } from "../lib/tg";
 import { Img, Logo, Section, Skeleton, useGlare } from "../ui";
 import { Promos } from "../ui/Promos";
+import { VoucherCard } from "../ui/VoucherCard";
 import { WorksCarousel } from "../ui/WorksCarousel";
 
 export function Home() {
@@ -42,6 +43,7 @@ export function Home() {
       </header>
 
       {/* 3. Рекламные плитки: первая презентация, пакеты, бонус-пакет */}
+      <VoucherCard />
       <Promos />
 
       {/* 4. Доказательства: работы и стили */}

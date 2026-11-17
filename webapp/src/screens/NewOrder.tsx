@@ -174,6 +174,7 @@ export function NewOrder() {
   // Цена видна сразу, даже пока сервер не ответил (или недоступен); его ответ — точнее, он в приоритете
   const notesFree = !!c?.plans.find((p) => p.code === me.data?.package?.plan)
     ?.notes_free;
+  const voucher = me.data?.voucher ?? null; // оплаченная презентация от отменённого заказа
   const local: Quote | null =
     c && draft.slides
       ? estimate(
@@ -182,6 +183,7 @@ export function NewOrder() {
           first,
           me.data?.package ?? null,
           notesFree,
+          voucher,
         )
       : null;
   const shown = (step2Ok && quote.data) || local;
@@ -207,6 +209,7 @@ export function NewOrder() {
           first,
           me.data?.package ?? null,
           notesFree,
+          voucher,
         ).price
       : 0;
   const urgentExtra = urgentCalc("urgent") - urgentCalc("normal");
@@ -218,6 +221,7 @@ export function NewOrder() {
           first,
           me.data?.package ?? null,
           notesFree,
+          voucher,
         )
       : null;
 
@@ -774,6 +778,8 @@ function PriceCard({
       ? slides
         ? t(slidesKey(slides))
         : t("price_base")
+      : l.key === "voucher"
+        ? t(l.amount ? "price_voucher_more" : "price_voucher")
       : l.key === "package"
         ? t("price_package", {
             cost: q.package_cost,
@@ -784,7 +790,7 @@ function PriceCard({
           : t("x_notes");
   // строки показываем, только если они сходятся с итогом сервера — иначе одна сумма
   const sum = lines?.reduce((a, l) => a + l.amount, 0);
-  const showLines = !!lines && sum === q.price && lines.length > 1;
+  const showLines = !!lines && sum === q.price && (lines.length > 1 || (lines[0]?.key === "voucher" && lines[0].amount > 0));
   return (
     <Section title={t("price_t")} footer={payNow ? t("price_pay_now") : t("price_free_now")}>
       <div className="card price-card">
@@ -796,11 +802,22 @@ function PriceCard({
             >
               <span>{label(l)}</span>
               <span className="tabular">
-                {l.key === "base" || l.key === "package" ? "" : "+"}
-                {money(l.amount)} {t("sum")}
+                {l.key === "voucher" && !l.amount ? (
+                  <span className="secondary">{t("price_voucher_paid")}</span>
+                ) : (
+                  <>
+                    {l.key === "base" || l.key === "package" || l.key === "voucher" ? "" : "+"}
+                    {money(l.amount)} {t("sum")}
+                  </>
+                )}
               </span>
             </div>
           ))}
+        {!showLines && q.voucher && (
+          <div className="price-line">
+            <span>{t("price_voucher")}</span>
+          </div>
+        )}
         {!showLines && q.paid_from === "package" && (
           <div className="price-line">
             <span>
@@ -816,13 +833,13 @@ function PriceCard({
           style={{ flexWrap: "wrap", gap: 8 }}
         >
           <span className="subhead secondary">
-            {t(q.paid_from === "package" ? "price_extra" : "price_total")}
+            {t(q.paid_from === "package" || q.voucher ? "price_extra" : "price_total")}
           </span>
           <span className="title2 tabular">
             <PriceTag
               now={money(q.price)}
               old={
-                q.first_order_discount && old && old > q.price
+                (q.first_order_discount || q.voucher) && old && old > q.price
                   ? money(old)
                   : null
               }

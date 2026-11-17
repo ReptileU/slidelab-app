@@ -20,6 +20,7 @@ async def get_me(viewer: ViewerDep, session: SessionDep) -> MeOut:
     active = await session.scalar(
         select(func.count(Order.id)).where(Order.user_id == user.id, Order.status.in_(repo.ACTIVE_STATUSES))
     )
+    vouchers = await repo.open_vouchers(session, user.id)
     return MeOut(
         id=user.id,
         first_name=user.first_name,
@@ -33,6 +34,8 @@ async def get_me(viewer: ViewerDep, session: SessionDep) -> MeOut:
         if package
         else None,
         active_orders=int(active or 0),
+        voucher=vouchers[0].slides if vouchers else None,
+        vouchers=len(vouchers),
     )
 
 

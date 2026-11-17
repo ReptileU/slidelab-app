@@ -34,6 +34,9 @@ class MeOut(BaseModel):
     first_order_price: int | None  # есть только у нового клиента
     package: PackageOut | None
     active_orders: int
+    # Оплаченные презентации от отменённых заказов: объём первой (её возьмут в зачёт) и сколько всего
+    voucher: SlideTier | None = None
+    vouchers: int = 0
 
 
 class LangIn(BaseModel):
@@ -105,6 +108,7 @@ class QuoteOut(BaseModel):
     package_cost: int
     package_left_after: int | None
     first_order_discount: bool
+    voucher: bool = False
 
 
 class EventOut(BaseModel):
@@ -125,6 +129,8 @@ class OrderOut(BaseModel):
     status: OrderStatus
     price: int
     is_paid: bool = False
+    voucher_open: bool = False  # отменён, оплата ждёт следующего заказа
+    by_voucher: bool = False  # оплачен отменённым заказом
     paid_from: PaidFrom
     package_cost: int
     revisions_left: int

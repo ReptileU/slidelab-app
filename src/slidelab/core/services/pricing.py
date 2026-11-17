@@ -5,6 +5,8 @@
 2. Срочно: +urgent_pct %, только до 20 слайдов.
 3. Текст слайдов входит в цену. Доплачиваются только срочность и речь для выступления (у VIP речь бесплатно).
 4. Если в пакете хватает остатка, база не берётся: доплачиваются только срочность (от обычной базы) и речь.
+5. Есть оплаченная презентация от отменённого заказа — база не берётся (больше слайдов — только разница),
+   доплачиваются срочность и речь. Она идёт в зачёт раньше пакета: у пакета есть срок, у неё нет.
 """
 
 from collections.abc import Mapping
@@ -48,6 +50,7 @@ class Quote:
     package_cost: int  # сколько презентаций спишется из пакета (0 — не из пакета)
     package_left_after: int | None
     first_order_discount: bool
+    voucher: bool = False  # база оплачена отменённым заказом
 
 
 def package_cost(slides: SlideTier) -> int:
@@ -77,10 +80,26 @@ def quote(
     *,
     first_order: bool = False,
     package: PackageBalance | None = None,
+    voucher: SlideTier | None = None,
 ) -> Quote:
     validate(req)
     base = rules.base[req.slides]
     cost = package_cost(req.slides)
+
+    if voucher is not None:
+        price = max(0, base - rules.base[voucher])  # больше слайдов, чем в отменённом, — только разница
+        if req.deadline is Deadline.URGENT:
+            price += percent_of(base, rules.urgent_pct)
+        if req.extra_notes:
+            price += rules.extra_notes
+        return Quote(
+            price=price,
+            paid_from=PaidFrom.CASH,
+            package_cost=0,
+            package_left_after=None,
+            first_order_discount=False,
+            voucher=True,
+        )
 
     if package is not None and package.left >= cost:
         price = 0

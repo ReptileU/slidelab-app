@@ -36,6 +36,8 @@ NORMAL_MIN_HOURS = 48  # «Обычно» — не раньше чем чере�
 PRICE_EDITABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT})
 # Оплату принимаем заранее — с момента заказа и до начала работы
 PAYABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT})
+# Клиент сам отменяет заказ, пока презентацию не сдали
+CLIENT_CANCELLABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT, S.WORK})
 
 
 class OrderService:
@@ -50,7 +52,9 @@ class OrderService:
         rules = await repo.get_price_rules(self.session)
         first_order = not await repo.has_orders(self.session, user_id)
         balance = await self.packages.balance(user_id)
-        return pricing.quote(req, rules, first_order=first_order, package=balance)
+        vouchers = await repo.open_vouchers(self.session, user_id)
+        voucher = vouchers[0].slides if vouchers else None
+        return pricing.quote(req, rules, first_order=first_order, package=balance, voucher=voucher)
 
     def _due(self, draft: OrderDraft) -> datetime | None:
         """Срок к дате — только у «Обычно» и не раньше чем через NORMAL_MIN_HOURS: быстрее — это «Срочно»."""
@@ -113,6 +117,10 @@ class OrderService:
         )
         self.session.add(order)
         await self.session.flush()
+        if q.voucher:  # оплата отменённого заказа уходит в этот
+            old = (await repo.open_vouchers(self.session, user_id, for_update=True))[0]
+            old.voucher_open = False
+            order.voucher_from_id = old.id
         if order.skip_cover and order.is_paid:  # из пакета без доплаты — сразу в работу
             await self._apply(order, S.WORK, None, comment="сразу всю презентацию — из пакета")
         if order.paid_from is PaidFrom.PACKAGE:
@@ -162,6 +170,27 @@ class OrderService:
             raise InvalidTransitionError("Заказ уже оплачен — делаем всю презентацию")
         order.skip_cover = False
         self.set_stage(order, Stage.COVER_TODO)
+        await self.session.flush()
+        return order
+
+    async def cancel_by_client(self, order_id: int, user_id: int) -> Order:
+        """Клиент отменил заказ сам.
+
+        Не оплачен — просто удаляем из списка. Оплачен из пакета — презентация возвращается в пакет.
+        Оплачен деньгами — деньги не теряются: следующая презентация уже оплачена, платить только за доплаты.
+        """
+        order = await repo.get_order(self.session, order_id, for_update=True)
+        self._own(order, user_id)
+        if order.status is S.CANCELLED:
+            return order
+        if order.status not in CLIENT_CANCELLABLE:
+            raise InvalidTransitionError("Презентация уже готова — отменить нельзя, напишите нам")
+        keep = order.is_paid and order.paid_from is PaidFrom.CASH and order.price > 0 and order.voucher_from_id is None
+        await self._apply(order, S.CANCELLED, user_id, comment="отменил клиент")
+        if keep:
+            order.voucher_open = True
+        elif not order.is_paid and order.voucher_from_id is None:
+            order.hidden = True  # не оплачен — убираем из списка
         await self.session.flush()
         return order
 
@@ -271,6 +300,9 @@ class OrderService:
         elif to is S.CANCELLED:
             if order.package_cost:
                 await self.packages.refund(order)
+            if order.voucher_from_id is not None:  # был оплачен отменённым заказом — возвращаем ту оплату
+                old = await repo.get_order(self.session, order.voucher_from_id, for_update=True)
+                old.voucher_open = True
             order.stage = None  # убираем из конвейера: Claude и сторож его больше не видят
             order.credit_until = None
 

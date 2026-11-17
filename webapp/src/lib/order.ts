@@ -55,9 +55,17 @@ export function estimate(
   firstOrderPrice: number | null,
   pkg: Package | null,
   notesFree: boolean,
+  voucher: SlideTier | null = null,
 ): Quote {
   const round = (x: number) => Math.floor((x * prices.urgent_pct + 50) / 100);
   const cost = d.slides === "s30" ? 2 : 1;
+  if (voucher) {
+    // презентация уже оплачена отменённым заказом: больше слайдов — только разница, плюс доплаты
+    let x = Math.max(0, prices[d.slides] - prices[voucher]);
+    if (d.deadline === "urgent") x += round(prices[d.slides]);
+    if (d.extra_notes) x += prices.extra_notes;
+    return { price: x, paid_from: "cash", package_cost: 0, package_left_after: null, first_order_discount: false, voucher: true };
+  }
   if (pkg && pkg.left >= cost) {
     // текст входит в цену — доплачиваются только срочность и речь (у VIP речь бесплатно)
     let x = d.deadline === "urgent" ? round(prices[d.slides]) : 0;
@@ -73,7 +81,7 @@ export function estimate(
 
 /** Из чего складывается цена — строки для карточки «Стоимость». Сумма строк равна estimate().price. */
 export interface PriceLine {
-  key: "base" | "package" | "urgent" | "notes";
+  key: "base" | "package" | "voucher" | "urgent" | "notes";
   amount: number;
 }
 export function breakdown(
@@ -82,9 +90,16 @@ export function breakdown(
   firstOrderPrice: number | null,
   pkg: Package | null,
   notesFree: boolean,
+  voucher: SlideTier | null = null,
 ): PriceLine[] {
   const round = (x: number) => Math.floor((x * prices.urgent_pct + 50) / 100);
   const cost = d.slides === "s30" ? 2 : 1;
+  if (voucher) {
+    const lines: PriceLine[] = [{ key: "voucher", amount: Math.max(0, prices[d.slides] - prices[voucher]) }];
+    if (d.deadline === "urgent") lines.push({ key: "urgent", amount: round(prices[d.slides]) });
+    if (d.extra_notes) lines.push({ key: "notes", amount: prices.extra_notes });
+    return lines;
+  }
   const fromPkg = !!pkg && pkg.left >= cost;
   const base = fromPkg ? 0 : d.slides === "s10" && firstOrderPrice ? firstOrderPrice : prices[d.slides];
   const lines: PriceLine[] = [{ key: fromPkg ? "package" : "base", amount: base }];

@@ -188,3 +188,15 @@ async def orders_to_watch(session: AsyncSession) -> list[Order]:
     """Незавершённые заказы для сторожа."""
     stmt = select(Order).where(Order.status.in_(ACTIVE_STATUSES), Order.hidden.is_(False), Order.no_alert.is_(False))
     return list((await session.scalars(stmt)).all())
+
+
+async def open_vouchers(session: AsyncSession, user_id: int, *, for_update: bool = False) -> list[Order]:
+    """Отменённые оплаченные заказы клиента, чья оплата ещё не пошла в зачёт, — старые первыми."""
+    stmt = (
+        select(Order)
+        .where(Order.user_id == user_id, Order.voucher_open.is_(True), Order.status == OrderStatus.CANCELLED)
+        .order_by(Order.id)
+    )
+    if for_update:
+        stmt = stmt.with_for_update()
+    return list((await session.scalars(stmt)).all())
