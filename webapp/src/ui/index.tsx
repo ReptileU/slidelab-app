@@ -132,7 +132,12 @@ export function ToggleCell({
 
 /** Плашка цены у опции: «+5 000 сум» — платная, «В цене» — бесплатная. */
 export function CostTag({ children, free = false, on = false }: { children: ReactNode; free?: boolean; on?: boolean }) {
-  return <span className={`cost-tag${free ? " free" : ""}${on ? " on" : ""}`}>{children}</span>;
+  return (
+    <span className={`cost-tag${free ? " free" : ""}${on ? " on" : ""}`}>
+      {!free && <i className="cost-coin" aria-hidden />}
+      {children}
+    </span>
+  );
 }
 
 export function Segmented<T extends string>({

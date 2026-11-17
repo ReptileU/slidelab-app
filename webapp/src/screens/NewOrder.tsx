@@ -331,15 +331,25 @@ export function NewOrder() {
               ))}
             </Group>
           </Section>
-          <Section title={t("f_extras")} footer={t("extras_paid")}>
+          <Section title={t("f_extras")}>
             <Group>
               <ToggleCell
                 title={t("x_text")}
                 subtitle={t("x_text_x")}
-                tag={<CostTag free>{t("in_price")}</CostTag>}
                 on={draft.extra_text}
                 onChange={(v) => set("extra_text", v)}
               />
+              <ToggleCell
+                title={t("x_humor")}
+                subtitle={t("x_humor_x")}
+                on={draft.need_humor}
+                onChange={(v) => set("need_humor", v)}
+              />
+            </Group>
+          </Section>
+          {/* Платное — отдельным блоком, с суммой */}
+          <Section title={t("f_paid")}>
+            <Group>
               <ToggleCell
                 title={t("x_notes")}
                 subtitle={t("x_notes_x")}
@@ -352,13 +362,6 @@ export function NewOrder() {
                 }
                 on={draft.extra_notes}
                 onChange={(v) => set("extra_notes", v)}
-              />
-              <ToggleCell
-                title={t("x_humor")}
-                subtitle={t("x_humor_x")}
-                tag={<CostTag free>{t("in_price")}</CostTag>}
-                on={draft.need_humor}
-                onChange={(v) => set("need_humor", v)}
               />
             </Group>
           </Section>
