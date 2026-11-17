@@ -140,6 +140,16 @@ class Flows:
                 f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
                 user=user,
             )
+        if result.prize is not None and result.package is None:
+            # Бонус-пакет: выпал купон на одну презентацию (без срока)
+            settings = self.settings
+            markup = None if settings.legacy_webapp else kb.open_lucky(user.lang or Lang.RU, settings.webapp_url)
+            await self.n.client(user, "lucky_paid_coupon", markup)
+            await self.n.staff(
+                f"🎁 Бонус-пакет оплачен · {amount} · выпал купон на 1 презентацию\n"
+                f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
+                user=user,
+            )
         if result.package is not None and result.prize is not None:
             # Бонус-пакет: что выпало, клиент смотрит в приложении — там «коробка» открывается красиво
             pkg = result.package

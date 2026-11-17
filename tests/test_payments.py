@@ -180,11 +180,24 @@ async def test_lucky_pack_adds_to_current_and_keeps_its_rank(
 ) -> None:
     user = await make_user()
     await payments.packages.activate(user.id, PlanCode.MONTH)
-    result = await buy_lucky(payments, user.id, BoxPrize.ONE)
-    assert result.package is not None
-    assert (result.package.left, result.package.plan_code) == (5, PlanCode.MONTH)  # 4 + 1, пакет не «понизился»
+    two = await buy_lucky(payments, user.id, BoxPrize.TWO)
+    assert two.package is not None
+    assert (two.package.left, two.package.plan_code) == (6, PlanCode.MONTH)  # 4 + 2, пакет не «понизился»
     vip = await buy_lucky(payments, user.id, BoxPrize.VIP)
-    assert vip.package is not None and (vip.package.left, vip.package.plan_code) == (15, PlanCode.VIP)
+    assert vip.package is not None and (vip.package.left, vip.package.plan_code) == (16, PlanCode.VIP)
+
+
+async def test_lucky_one_is_a_coupon_not_a_package(
+    payments: PaymentService, session: AsyncSession, make_user: Callable[..., Any]
+) -> None:
+    from slidelab.core import repositories as repo
+
+    user = await make_user()
+    result = await buy_lucky(payments, user.id, BoxPrize.ONE)
+    assert result.package is None
+    (coupon,) = await repo.open_coupons(session, user.id)  # купон без срока
+    box = await payments.lucky.pending(user.id)
+    assert box is not None and box.coupon_id == coupon.id and box.user_package_id is None
 
 
 async def test_lucky_pack_limit_per_week(

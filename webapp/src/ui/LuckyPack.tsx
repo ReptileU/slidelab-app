@@ -2,12 +2,17 @@ import { Gift, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useLang, useT } from "../lib/app";
+import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
 import { playReveal, playTap, unlockAudio } from "../lib/sound";
 import { haptic } from "../lib/tg";
-import type { LuckyInfo, LuckyPrize } from "../lib/types";
+import type { BoxPrize, LuckyInfo, LuckyPrize, PlanCode } from "../lib/types";
 import { presWord } from "../lib/words";
+import { Coupon } from "./Coupon";
+import { PackCard } from "./PackCard";
+
+/** Выпавший пакет — карта того же тарифа, что начислен на сервере (services/lucky.py). */
+const PRIZE_PLAN: Record<Exclude<BoxPrize, "one">, PlanCode> = { two: "week", four: "month", vip: "vip" };
 
 const TAPS = 3; // сколько раз нажать, чтобы пакет открылся
 const clamp = (v: number) => Math.max(-1, Math.min(1, v));
@@ -94,8 +99,8 @@ export function LuckyCard({
           {info.odds.map((o) => (
             <div key={o.prize} className={`lucky-row${o.prize === "vip" ? " vip" : ""}`}>
               <span className="lucky-row-n">
-                {o.prize === "vip" ? `VIP · ${o.count}` : o.count}
-                {o.prize !== "vip" && <small> {presWord(lang, o.count)}</small>}
+                {o.prize === "one" ? t("lucky_row_coupon") : o.prize === "vip" ? t("lucky_row_vip") : t("lucky_row_pack")}{" "}
+                <small>· {o.count}</small>
               </span>
               <span className="lucky-bar">
                 <i style={{ width: `${Math.max(3, (o.percent / top) * 100)}%` }} />
@@ -130,6 +135,8 @@ export function LuckyCard({
 export function LuckyReveal({ prize, onDone }: { prize: LuckyPrize; onDone: () => void }) {
   const t = useT();
   const { lang } = useLang();
+  const holder = useMe().data?.first_name || "SlideLab";
+  const days: Record<string, number> = Object.fromEntries((useCatalog().data?.plans ?? []).map((p) => [p.code, p.days]));
   const tilt = useTilt<HTMLButtonElement>();
   const [taps, setTaps] = useState(0);
   const [open, setOpen] = useState(false);
@@ -201,9 +208,29 @@ export function LuckyReveal({ prize, onDone }: { prize: LuckyPrize; onDone: () =
           </div>
           <div className="lr-prize">
             <div className="lr-got">{t("lucky_got")}</div>
-            {prize.prize === "vip" && <div className="lr-vip">{t("lucky_vip")}</div>}
-            <div className="lr-num tabular silver-text">{prize.count}</div>
-            <div className="lr-unit">{presWord(lang, prize.count)}</div>
+            {/* что выпало — сразу той карточкой, что ляжет в кошелёк: купон или карта пакета */}
+            <div className="lr-card">
+              {prize.prize === "one" ? (
+                <Coupon slides="s20" />
+              ) : (
+                <PackCard
+                  pkg={{
+                    plan: PRIZE_PLAN[prize.prize as Exclude<BoxPrize, "one">],
+                    left: prize.count,
+                    total: prize.count,
+                    expires_at: new Date(Date.now() + (days[PRIZE_PLAN[prize.prize as Exclude<BoxPrize, "one">]] ?? 30) * 864e5).toISOString(),
+                  }}
+                  holder={holder}
+                  hint={false}
+                  still
+                />
+              )}
+            </div>
+            <div className="lr-unit">
+              {prize.prize === "one"
+                ? t("lucky_got_coupon")
+                : t(prize.prize === "vip" ? "lucky_got_vip" : "lucky_got_pack", { n: prize.count, word: presWord(lang, prize.count) })}
+            </div>
           </div>
           <button className="lr-take" onClick={onDone}>
             {t("lucky_take")}

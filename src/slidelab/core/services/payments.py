@@ -13,9 +13,18 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
-from slidelab.core.enums import LedgerReason, OrderStatus, PaymentProvider, PaymentStatus, PlanCode
+from slidelab.core.enums import (
+    BoxPrize,
+    CouponOrigin,
+    LedgerReason,
+    OrderStatus,
+    PaymentProvider,
+    PaymentStatus,
+    PlanCode,
+    SlideTier,
+)
 from slidelab.core.errors import InvalidTransitionError
-from slidelab.core.models import Gift, Order, PackageBox, Payment, UserPackage
+from slidelab.core.models import Coupon, Gift, Order, PackageBox, Payment, UserPackage
 from slidelab.core.models.base import utcnow
 from slidelab.core.services.gifts import GiftService
 from slidelab.core.services.lucky import LuckyService, Prize
@@ -160,12 +169,21 @@ class PaymentService:
         if payment.plan_code is PlanCode.LUCKY:
             # Розыгрыш — в момент оплаты: презентации начисляются сразу, даже если клиент не откроет «коробку»
             prize = self.lucky.roll()
-            package = await self.packages.activate(payment.user_id, prize.plan, LedgerReason.BONUS, count=prize.count)
-            payment.user_package_id = package.id
+            coupon = None
+            if prize.code is BoxPrize.ONE:  # одна презентация — купон без срока, а не пакет
+                coupon = Coupon(user_id=payment.user_id, slides=SlideTier.S20, origin=CouponOrigin.BONUS)
+                self.session.add(coupon)
+                await self.session.flush()
+            else:
+                package = await self.packages.activate(
+                    payment.user_id, prize.plan, LedgerReason.BONUS, count=prize.count
+                )
+                payment.user_package_id = package.id
             self.session.add(
                 PackageBox(
                     user_id=payment.user_id,
-                    user_package_id=package.id,
+                    user_package_id=package.id if package else None,
+                    coupon_id=coupon.id if coupon else None,
                     prize=prize.code,
                     count=prize.count,
                     created_at=self.orders.clock(),

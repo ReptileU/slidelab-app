@@ -63,6 +63,7 @@ TEXTS: dict[str, str] = {
     "gift_err_revoked": "Bu sovg‘a bekor qilingan.",
     "gift_err_self": "Bu sizning sovg‘angiz 🙂 Havolani do‘stingizga yuboring.",
     "gift_err_missing": "Sovg‘a topilmadi — havolani tekshiring.",
+    "lucky_paid_coupon": "⟦gift|🎁⟧<b>Bonus-paket to‘landi</b>\nIlovada oching — nima tushganini ko‘ring.",
     "lucky_paid": "⟦gift|🎁⟧<b>Bonus-paket to‘landi</b>\nTaqdimotlar allaqachon qo‘shildi: jami {left} ta, {date} gacha.\nIlovada paketni oching — nima tushganini ko‘ring.",
     "packages_note": "<i>21–30 slayd paketdan 2 ta yechadi. Faqat shoshilinchlik va chiqish uchun nutq alohida to‘lanadi.</i>",
     "my_package": "\n\n<b>Paketingiz</b>: {total} tadan {left} ta qoldi, {date} gacha.",

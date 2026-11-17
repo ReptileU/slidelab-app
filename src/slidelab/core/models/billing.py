@@ -68,7 +68,8 @@ class PackageBox(CreatedAtMixin, Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    user_package_id: Mapped[int] = mapped_column(ForeignKey("user_packages.id"))
+    user_package_id: Mapped[int | None] = mapped_column(ForeignKey("user_packages.id"))  # выпал пакет
+    coupon_id: Mapped[int | None] = mapped_column(ForeignKey("coupons.id", use_alter=True))  # выпал купон
     prize: Mapped[BoxPrize] = mapped_column(str_enum(BoxPrize))
     count: Mapped[int]  # сколько презентаций начислено
     opened_at: Mapped[datetime | None]

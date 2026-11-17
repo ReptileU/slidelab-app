@@ -63,6 +63,7 @@ TEXTS: dict[str, str] = {
     "gift_err_revoked": "This gift was cancelled.",
     "gift_err_self": "This is your own gift 🙂 Send the link to a friend.",
     "gift_err_missing": "Gift not found — check the link.",
+    "lucky_paid_coupon": "⟦gift|🎁⟧<b>Bonus pack paid</b>\nOpen it in the app to see what you got.",
     "lucky_paid": "⟦gift|🎁⟧<b>Bonus pack paid</b>\nPresentations are already added: {left} available, until {date}.\nOpen the pack in the app to see what you got.",
     "packages_note": "<i>21–30 slides use two presentations. Only urgency and the speech are paid separately.</i>",
     "my_package": "\n\n<b>Your pack</b>: {left} of {total} left, until {date}.",
