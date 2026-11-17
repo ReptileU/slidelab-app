@@ -1,3 +1,4 @@
+import { Ticket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { useCatalog, useMe, useOrders, useT } from "../lib/app";
@@ -5,7 +6,6 @@ import type { Key } from "../lib/i18n";
 import { haptic } from "../lib/tg";
 import { Img, Logo, Section, Skeleton, useGlare } from "../ui";
 import { Promos } from "../ui/Promos";
-import { VoucherCard } from "../ui/VoucherCard";
 import { WorksCarousel } from "../ui/WorksCarousel";
 
 export function Home() {
@@ -34,6 +34,16 @@ export function Home() {
         <p className="subhead" style={{ margin: "10px 0 22px" }}>
           {t("hero_sub")}
         </p>
+        {/* Отменённый оплаченный заказ — прямо в главной карточке, без отдельной плашки с ещё одной «Заказать» */}
+        {!!me.data?.vouchers && (
+          <div className="hero-voucher">
+            <Ticket size={18} />
+            <span>
+              {me.data.vouchers === 1 ? t("voucher_card_one") : t("voucher_card_many", { n: me.data.vouchers })}
+              <small>{t("voucher_hero_s")}</small>
+            </span>
+          </div>
+        )}
         <button className="btn btn-inverse" onClick={() => go("ours")}>
           {t("cta_order")}
         </button>
@@ -43,7 +53,6 @@ export function Home() {
       </header>
 
       {/* 3. Рекламные плитки: первая презентация, пакеты, бонус-пакет */}
-      <VoucherCard />
       <Promos />
 
       {/* 4. Доказательства: работы и стили */}
