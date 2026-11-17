@@ -143,3 +143,52 @@ export function playReveal(big: boolean): void {
     /* без звука — не страшно */
   }
 }
+
+/** Рвётся бумага: шумовые «рывки» по волокнам, фильтр уходит вверх, в конце — короткий щелчок отрыва. */
+export function playTear(): void {
+  const c = context();
+  if (!c) return;
+  try {
+    if (c.state === "suspended") void c.resume();
+    const now = c.currentTime + 0.01;
+    const dur = 0.42;
+    const len = Math.floor(c.sampleRate * dur);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    // волокна: шум, рваный по амплитуде мелкими «зубцами»
+    let grain = 0;
+    for (let i = 0; i < len; i++) {
+      if (i % Math.floor(c.sampleRate * 0.006) === 0) grain = 0.25 + Math.random() * 0.75;
+      const p = i / len;
+      const env = Math.min(1, p * 12) * Math.pow(1 - p, 1.4);
+      data[i] = (Math.random() * 2 - 1) * grain * env;
+    }
+    const src = c.createBufferSource();
+    src.buffer = buf;
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.Q.value = 0.9;
+    bp.frequency.setValueAtTime(1400, now);
+    bp.frequency.exponentialRampToValueAtTime(4200, now + dur);
+    const g = c.createGain();
+    g.gain.value = 0.9;
+    src.connect(bp).connect(g).connect(c.destination);
+    src.start(now);
+    // щелчок в момент, когда корешок отходит
+    const clen = Math.floor(c.sampleRate * 0.03);
+    const cb = c.createBuffer(1, clen, c.sampleRate);
+    const cd = cb.getChannelData(0);
+    for (let i = 0; i < clen; i++) cd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / clen, 4);
+    const click = c.createBufferSource();
+    click.buffer = cb;
+    const hp = c.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 2500;
+    const cg = c.createGain();
+    cg.gain.value = 0.5;
+    click.connect(hp).connect(cg).connect(c.destination);
+    click.start(now + dur - 0.02);
+  } catch {
+    /* без звука — не страшно */
+  }
+}

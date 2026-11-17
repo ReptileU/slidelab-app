@@ -1,11 +1,10 @@
-import { Ticket } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useT } from "../lib/app";
-import { slidesKey } from "../lib/order";
 import { playPaid } from "../lib/sound";
 import { haptic } from "../lib/tg";
 import type { Package, SlideTier } from "../lib/types";
+import { Coupon } from "./Coupon";
 import { PackCard } from "./PackCard";
 
 type Phase = "in" | "ok";
@@ -56,22 +55,7 @@ export function ReturnOverlay({
 
   let body;
   if (!pkg) {
-    body = (
-      <div className="coupon">
-        <span className="coupon-shine" />
-        <div className="coupon-main">
-          <Ticket size={26} />
-          <div>
-            <b>{t("coupon_one")}</b>
-            <small>{t(slidesKey(slides))}</small>
-          </div>
-        </div>
-        <div className="coupon-stub">
-          <span>SLIDELAB</span>
-          <i>{t("coupon_paid")}</i>
-        </div>
-      </div>
-    );
+    body = <Coupon slides={slides} stamp />;
   } else {
     const card = <PackCard pkg={pkg} holder={holder} hint={false} still />;
     body = mended ? (

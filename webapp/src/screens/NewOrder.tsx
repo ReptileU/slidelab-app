@@ -32,6 +32,7 @@ import type {
   Quote,
   SlideTier,
 } from "../lib/types";
+import { CouponTear } from "../ui/CouponTear";
 import { PaidOverlay } from "../ui/PaidOverlay";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 import {
@@ -225,6 +226,7 @@ export function NewOrder() {
         )
       : null;
 
+  const [torn, setTorn] = useState<{ order: number; slides: SlideTier; pay: boolean } | null>(null);
   const [paid, setPaid] = useState<{
     order: number;
     cost: number;
@@ -275,6 +277,12 @@ export function NewOrder() {
           cost: order.package_cost,
           pkg: { ...pkg, left: Math.max(0, pkg.left - order.package_cost) },
         });
+        return;
+      }
+      // Оплачено купоном (отменённым заказом) — купон рвётся, потом экран заказа
+      if (order.by_voucher) {
+        qc.invalidateQueries({ queryKey: ["me"] });
+        setTorn({ order: order.id, slides: order.slides, pay: !!order.skip_cover && !order.is_paid && order.price > 0 });
         return;
       }
       haptic.success();
@@ -335,6 +343,14 @@ export function NewOrder() {
 
   return (
     <div className="page no-tabbar">
+      {torn && (
+        <CouponTear
+          slides={torn.slides}
+          onDone={() =>
+            nav(torn.pay ? `/orders/${torn.order}?pay=1` : `/order/done/${torn.order}`, { replace: true })
+          }
+        />
+      )}
       {paid && (
         <PaidOverlay
           pkg={paid.pkg}
@@ -705,7 +721,7 @@ export function NewOrder() {
         </>
       )}
 
-      {!paid && (
+      {!paid && !torn && (
         <MainButton
           text={buttonText}
           muted={missing.length > 0}

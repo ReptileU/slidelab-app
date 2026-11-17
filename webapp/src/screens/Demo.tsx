@@ -8,7 +8,9 @@ import type { BoxPrize, LuckyInfo, LuckyPrize, Package, PlanCode } from "../lib/
 import { Button, Section, Segmented } from "../ui";
 import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
 import { PackCard } from "../ui/PackCard";
+import { CouponTear } from "../ui/CouponTear";
 import { PaidOverlay } from "../ui/PaidOverlay";
+import { ReturnOverlay } from "../ui/ReturnOverlay";
 import { BackButton } from "../ui/TelegramButtons";
 
 const PLANS: Record<string, { total: number }> = { week: { total: 2 }, month: { total: 4 }, vip: { total: 10 } };
@@ -35,6 +37,12 @@ export function Demo() {
   const me = useMe();
   const [plan, setPlan] = useState<PlanCode>("month");
   const [show, setShow] = useState<null | "paid" | "last">(null);
+  const [coupon, setCoupon] = useState<null | "tear" | "back" | "mend">(null);
+  const play = (k: "tear" | "back" | "mend") => {
+    haptic.tap();
+    unlockAudio();
+    setCoupon(k);
+  };
   const [prize, setPrize] = useState<BoxPrize>("one");
   const [box, setBox] = useState<LuckyPrize | null>(null);
   const openDemo = () => {
@@ -93,6 +101,17 @@ export function Demo() {
           </Button>
         </div>
       </Section>
+      <Section title="Купон и отмена" footer="Купон появляется, когда клиент отменил оплаченный заказ.">
+        <div className="stack gap-12">
+          <Button onClick={() => play("tear")}>Оплата купоном — купон рвётся</Button>
+          <Button kind="tinted" onClick={() => play("back")}>
+            Отмена — выезжает купон
+          </Button>
+          <Button kind="tinted" onClick={() => play("mend")}>
+            Отмена последней из пакета — карта собирается
+          </Button>
+        </div>
+      </Section>
       <Section title="Бонус-пакет">
         <LuckyCard info={LUCKY_DEMO} preview onBuy={openDemo} onOpen={openDemo} />
       </Section>
@@ -111,6 +130,17 @@ export function Demo() {
           <Button onClick={openDemo}>Открыть бонус-пакет</Button>
         </div>
       </Section>
+      {coupon === "tear" && <CouponTear slides="s20" onDone={() => setCoupon(null)} />}
+      {(coupon === "back" || coupon === "mend") && (
+        <ReturnOverlay
+          key={coupon}
+          pkg={coupon === "mend" ? { ...pkg, left: 1 } : null}
+          holder={holder}
+          cost={1}
+          slides="s20"
+          onDone={() => setCoupon(null)}
+        />
+      )}
       {box && <LuckyReveal key={box.prize} prize={box} onDone={() => setBox(null)} />}
       {show && (
         <PaidOverlay
