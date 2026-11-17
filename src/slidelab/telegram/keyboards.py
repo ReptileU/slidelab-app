@@ -132,6 +132,11 @@ def open_wallet(lang: Lang, url: str) -> InlineKeyboardMarkup:
     return _rows(InlineKeyboardButton(text=t(lang, "btn_wallet"), web_app=WebAppInfo(url=f"{url}{sep}go=profile")))
 
 
+def claim_gift(lang: Lang, url: str) -> InlineKeyboardMarkup:
+    """Кнопка на открытке подарка — у друга после пересылки она тоже работает."""
+    return _rows(InlineKeyboardButton(text=t(lang, "btn_claim_gift"), url=url))
+
+
 def share_gift(lang: Lang, url: str) -> InlineKeyboardMarkup:
     """Под сообщением о купленном подарке: переслать ссылку другу."""
     share = "https://t.me/share/url?" + urlencode({"url": url, "text": t(lang, "gift_share_text")})

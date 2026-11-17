@@ -116,6 +116,8 @@ async def claim_gift(code: str, message: Message, session: AsyncSession, user: U
     await message.answer(text, reply_markup=markup)
     if giver is not None:
         await flows.n.client(giver, "gift_claimed", name=html.escape(views.client_name(user)))
+    if not await repo.has_orders(session, user.id):  # пришёл по подарку впервые — знакомим с ботом
+        await greet(message, user, flows.n)
 
 
 async def greet(message: Message, user: User, notifier: Notifier, *, back: bool = False) -> None:

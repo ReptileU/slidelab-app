@@ -11,7 +11,17 @@ from aiogram import Bot
 from aiogram.client.session.base import BaseSession
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.methods import TelegramMethod
-from aiogram.types import Chat, File, ForumTopic, Message, MessageId, TelegramObject, User
+from aiogram.types import (
+    Chat,
+    File,
+    ForumTopic,
+    Message,
+    MessageId,
+    PhotoSize,
+    PreparedInlineMessage,
+    TelegramObject,
+    User,
+)
 
 TOKEN = "42:TEST-token-for-slidelab"
 
@@ -44,11 +54,19 @@ class FakeSession(BaseSession):
             return "https://t.me/$fake_invoice"
         if returning is Message:
             chat_id = getattr(method, "chat_id", 1)
+            photo = (
+                [PhotoSize(file_id=f"photo{next(self._ids)}", file_unique_id="u", width=1280, height=720)]
+                if type(method).__name__ == "SendPhoto"
+                else None
+            )
             return Message(
                 message_id=next(self._ids),
                 date=datetime.now(UTC),
                 chat=Chat(id=int(chat_id), type="private"),
+                photo=photo,
             )
+        if returning is PreparedInlineMessage:
+            return PreparedInlineMessage(id=f"prep{next(self._ids)}", expiration_date=datetime.now(UTC))
         if returning is MessageId:
             return MessageId(message_id=next(self._ids))
         if returning is ForumTopic:

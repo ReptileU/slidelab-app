@@ -9,6 +9,7 @@ import secrets
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -161,6 +162,16 @@ class GiftService:
                 )
             )
         return gift.count
+
+
+ASSETS = Path(__file__).resolve().parent.parent.parent / "assets" / "gifts"
+
+
+def gift_card_path(gift: Gift, lang: str) -> Path:
+    """Картинка открытки: купон или пакет (по тарифу), на языке дарителя."""
+    kind = "coupon" if gift.kind is GiftKind.COUPON else (gift.plan_code.value if gift.plan_code else "month")
+    path = ASSETS / f"gift_{kind}_{lang}.jpg"
+    return path if path.is_file() else ASSETS / f"gift_{kind}_ru.jpg"
 
 
 def link(bot_username: str, gift: Gift) -> str:

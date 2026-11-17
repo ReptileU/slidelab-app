@@ -36,6 +36,7 @@ interface WebApp {
   openTelegramLink(url: string): void;
   openLink(url: string): void;
   downloadFile?(params: { url: string; file_name: string }, cb?: (accepted: boolean) => void): void;
+  shareMessage?(id: string, cb?: (sent: boolean) => void): void; // Bot API 8.0: готовое сообщение от бота
   showAlert(message: string, cb?: () => void): void;
   showConfirm(message: string, cb: (ok: boolean) => void): void;
   MainButton: BottomButton;
@@ -256,4 +257,17 @@ export function initTelegram(): void {
   safe(setVh);
   safe(() => webApp.onEvent("viewportChanged", setVh));
   safe(() => webApp.onEvent("themeChanged", applyTheme));
+}
+
+/** Поделиться готовым сообщением бота (открытка с кнопкой). false — Telegram не умеет (старая версия). */
+export function shareMessage(id: string): Promise<boolean | null> {
+  const app = tg;
+  if (!app?.shareMessage || !app.isVersionAtLeast("8.0")) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    try {
+      app.shareMessage!(id, (sent) => resolve(sent));
+    } catch {
+      resolve(null);
+    }
+  });
 }

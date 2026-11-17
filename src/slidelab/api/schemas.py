@@ -179,6 +179,10 @@ class GiftOut(BaseModel):
     created_at: datetime
 
 
+class GiftShareOut(BaseModel):
+    prepared_id: str | None = None  # для WebApp.shareMessage; None — открытка только в чате с ботом
+
+
 class WalletCoverIn(BaseModel):
     """Фото для обложки кошелька — data:image/...;base64,..."""
 

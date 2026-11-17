@@ -81,6 +81,7 @@ export const api = {
 
   gifts: () => request<Gift[]>("/gifts"),
   makeGift: (body: { kind: "coupon"; coupon_id: number } | { kind: "pack" }) => post<Gift>("/gifts", body),
+  shareGift: (id: number) => post<{ prepared_id: string | null }>(`/gifts/${id}/share`),
   revokeGift: (id: number) => request(`/gifts/${id}`, { method: "DELETE" }),
   setWalletCover: (image: string) => post<Me>("/me/wallet-cover", { image }),
   resetWalletCover: () => request<Me>("/me/wallet-cover", { method: "DELETE" }),

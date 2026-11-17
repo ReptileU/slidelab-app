@@ -6,13 +6,13 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
-from aiogram.types import FSInputFile, InlineKeyboardMarkup
+from aiogram.types import FSInputFile, InlineKeyboardMarkup, InlineQueryResultCachedPhoto
 from sqlalchemy import select
 
-from slidelab.core.enums import Lang, PaidFrom, PaymentProvider, PlanCode
+from slidelab.core.enums import GiftKind, Lang, PaidFrom, PaymentProvider, PlanCode, SlideTier
 from slidelab.core.i18n import money, t
-from slidelab.core.models import Order, PackagePlan, ShowcaseStyle, User
-from slidelab.core.services.gifts import link
+from slidelab.core.models import Coupon, Gift, Order, PackagePlan, ShowcaseStyle, User
+from slidelab.core.services.gifts import gift_card_path, link
 from slidelab.core.services.payments import PaidResult, PaymentService
 from slidelab.core.services.pipeline import Pipeline, fmt_of, formats_of
 from slidelab.telegram import keyboards as kb
@@ -129,11 +129,11 @@ class Flows:
                 user=user,
             )
         if result.gift is not None:
-            # Пакет куплен в подарок: ссылка для друга и кнопка «Отправить»
+            # Пакет куплен в подарок: открытка с кнопкой «Забрать подарок» — её пересылают другу
             g = result.gift
             plan_name = t(user.lang, "plan_" + (g.plan_code.value if g.plan_code else "month"))
-            url = link(self.settings.bot_username, g)
-            await self.n.client(user, "gift_bought", kb.share_gift(user.lang or Lang.RU, url), plan=plan_name, link=url)
+            await self.n.client(user, "gift_bought", plan=plan_name)
+            await self.gift_card(g, user)
             await self.n.staff(
                 f"🎁 Пакет «{t(None, 'plan_' + (g.plan_code.value if g.plan_code else 'month'))}» "
                 f"куплен в подарок · {amount}\n"
@@ -175,6 +175,61 @@ class Flows:
             else:
                 await self.n.client(user, "paid_early", id=order.id)
                 await self.n.refresh_card(order, f"💰 оплачено {amount} — начнём после одобрения обложки")
+
+    # --- подарок: открытка ----------------------------------------------------------
+
+    def gift_caption(self, gift: Gift, giver: User, coupon_slides: SlideTier | None = None) -> str:
+        """Текст открытки — для друга, который, может быть, ещё ни разу не открывал бота."""
+        lang = giver.lang or Lang.RU
+        name = html.escape(views.client_name(giver))
+        if gift.kind is GiftKind.COUPON:
+            slides = t(lang, f"slides_{(coupon_slides or SlideTier.S20).value}")
+            return t(lang, "gift_card_coupon", name=name, slides=slides)
+        return t(lang, "gift_card_pack", name=name, count=gift.count)
+
+    async def gift_card(self, gift: Gift, giver: User) -> str | None:
+        """Открытка в чат дарителя: картинка, текст и кнопка «Забрать подарок» — переслать другу.
+
+        Пересланное сообщение сохраняет кнопку, так что работает в любом Telegram. Возвращает file_id фото.
+        """
+        lang = giver.lang or Lang.RU
+        coupon = await self.session.get(Coupon, gift.coupon_id) if gift.coupon_id else None
+        caption = self.gift_caption(gift, giver, coupon.slides if coupon else None)
+        markup = kb.claim_gift(lang, link(self.settings.bot_username, gift))
+        photo: str | FSInputFile = gift.card_file_id or FSInputFile(gift_card_path(gift, lang))
+        try:
+            msg = await self.bot.send_photo(giver.tg_id, photo, caption=caption, reply_markup=markup)
+        except TelegramAPIError as e:
+            log.warning("Открытка подарка %s не отправлена: %s", gift.id, e)
+            return None
+        await self.bot.send_message(giver.tg_id, t(lang, "gift_card_forward"))
+        if msg.photo:
+            gift.card_file_id = msg.photo[-1].file_id
+        return gift.card_file_id
+
+    async def prepare_gift_share(self, gift: Gift, giver: User) -> str | None:
+        """Готовое сообщение для «Поделиться» в Mini App (Telegram 8.0+): друг увидит открытку с кнопкой."""
+        file_id = gift.card_file_id or await self.gift_card(gift, giver)
+        if not file_id:
+            return None
+        coupon = await self.session.get(Coupon, gift.coupon_id) if gift.coupon_id else None
+        try:
+            prepared = await self.bot.save_prepared_inline_message(
+                user_id=giver.tg_id,
+                result=InlineQueryResultCachedPhoto(
+                    id=gift.code,
+                    photo_file_id=file_id,
+                    caption=self.gift_caption(gift, giver, coupon.slides if coupon else None),
+                    parse_mode="HTML",
+                    reply_markup=kb.claim_gift(giver.lang or Lang.RU, link(self.settings.bot_username, gift)),
+                ),
+                allow_user_chats=True,
+                allow_group_chats=True,
+            )
+        except TelegramAPIError as e:
+            log.warning("Подарок %s: не получилось подготовить сообщение для пересылки: %s", gift.id, e)
+            return None
+        return prepared.id
 
     # --- обложка ----------------------------------------------------------------
 

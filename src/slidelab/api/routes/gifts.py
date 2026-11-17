@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, HTTPException
 
-from slidelab.api.deps import SessionDep, SettingsDep, ViewerDep
-from slidelab.api.schemas import GiftIn, GiftOut, OkOut
-from slidelab.core.enums import GiftKind
+from slidelab.api.deps import FlowsDep, SessionDep, SettingsDep, ViewerDep
+from slidelab.api.schemas import GiftIn, GiftOut, GiftShareOut, OkOut
+from slidelab.core.enums import GiftKind, GiftStatus
 from slidelab.core.models import Coupon, Gift
 from slidelab.core.services.gifts import GiftService, link
 
@@ -45,6 +45,20 @@ async def make_gift(body: GiftIn, viewer: ViewerDep, session: SessionDep, settin
         gift = await service.gift_pack(viewer.user.id)
     await session.commit()
     return await _out(service, gift, settings.bot_username)
+
+
+@router.post("/{gift_id}/share")
+async def share_gift(gift_id: int, viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> GiftShareOut:
+    """Открытка для друга: приходит в чат с ботом (можно переслать) и, где Telegram умеет,
+    готовое сообщение для «Поделиться» прямо из приложения."""
+    gift = await session.get(Gift, gift_id)
+    if gift is None or gift.from_user_id != viewer.user.id:
+        raise HTTPException(status_code=404, detail="Подарок не найден")
+    if gift.status is not GiftStatus.PENDING:
+        raise HTTPException(status_code=409, detail="Подарок уже забрали или отменили")
+    prepared = await flows.prepare_gift_share(gift, viewer.user)
+    await session.commit()
+    return GiftShareOut(prepared_id=prepared)
 
 
 @router.delete("/{gift_id}")

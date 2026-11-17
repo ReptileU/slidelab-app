@@ -342,3 +342,29 @@ async def test_wallet_cover_from_photo(env: dict[str, Any]) -> None:
     assert bad.status_code >= 400
     assert (await c.delete("/api/me/wallet-cover", headers=auth())).json()["wallet_cover"] is None
     assert (await c.get("/api/me/wallet-cover", headers=auth())).status_code == 404
+
+
+async def test_gift_card_to_forward_and_prepared_share(env: dict[str, Any]) -> None:
+    from sqlalchemy import select
+
+    from slidelab.core.enums import CouponOrigin, SlideTier
+    from slidelab.core.models import Coupon, User
+
+    c: AsyncClient = env["client"]
+    await c.get("/api/me", headers=auth())  # клиент заведён
+    async with env["sm"]() as s:
+        user = (await s.scalars(select(User).where(User.tg_id == CLIENT_TG))).one()
+        coupon = Coupon(user_id=user.id, slides=SlideTier.S20, origin=CouponOrigin.CANCEL)
+        s.add(coupon)
+        await s.commit()
+        cid = coupon.id
+    gift = (await c.post("/api/gifts", json={"kind": "coupon", "coupon_id": cid}, headers=auth())).json()
+    assert "start=gift_" in gift["link"]
+    shared = (await c.post(f"/api/gifts/{gift['id']}/share", headers=auth())).json()
+    assert shared["prepared_id"]
+    photos = env["tg"].of("SendPhoto")
+    assert len(photos) == 1 and gift["link"] in str(photos[0].reply_markup)  # открытка с кнопкой «Забрать»
+    assert "дарит тебе презентацию" in photos[0].caption
+    await c.post(f"/api/gifts/{gift['id']}/share", headers=auth())
+    assert len(env["tg"].of("SendPhoto")) == 1  # открытка уже есть — второй раз в чат не шлём
+    assert (await c.post(f"/api/gifts/{gift['id']}/share", headers=auth(888))).status_code == 404

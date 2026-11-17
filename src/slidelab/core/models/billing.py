@@ -155,3 +155,4 @@ class Gift(CreatedAtMixin, Base):
     status: Mapped[GiftStatus] = mapped_column(str_enum(GiftStatus), default=GiftStatus.PENDING)
     to_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     done_at: Mapped[datetime | None]  # когда забрали или отменили
+    card_file_id: Mapped[str | None] = mapped_column(String(256))  # открытка в Telegram — для пересылки другу

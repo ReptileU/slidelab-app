@@ -4,10 +4,10 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
-import { useMe, useT } from "../lib/app";
+import { useCatalog, useMe, useT } from "../lib/app";
 import { shrink } from "../lib/image";
 import { copyText } from "../lib/clipboard";
-import { alert, confirm, haptic, openTelegramUrl } from "../lib/tg";
+import { alert, confirm, haptic, openTelegramUrl, shareMessage } from "../lib/tg";
 import { slidesKey } from "../lib/order";
 import type { Gift, SlideTier } from "../lib/types";
 import { Button, Cell, Group, Sheet, Toast } from ".";
@@ -27,6 +27,7 @@ export function Wallet() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const me = useMe().data;
+  const catalog = useCatalog();
   const [open, setOpen] = useState<number | null>(null);
   const [skin, setSkin] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
@@ -109,8 +110,29 @@ export function Wallet() {
     },
     onError: fail,
   });
-  const share = (g: Gift) =>
-    openTelegramUrl(`https://t.me/share/url?url=${encodeURIComponent(g.link)}&text=${encodeURIComponent(t("gift_share_text"))}`);
+  // Отправить другу открытку: в новом Telegram — сразу выбор чата, в старом — открытка приходит в чат с ботом,
+  // её пересылают (кнопка «Забрать подарок» сохраняется). Человек, ни разу не открывавший бота, видит рекламу.
+  const [sharing, setSharing] = useState(false);
+  const share = async (g: Gift) => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const { prepared_id } = await api.shareGift(g.id);
+      const sent = prepared_id ? await shareMessage(prepared_id) : null;
+      if (sent === null) {
+        setToast(t("gift_card_in_chat"));
+        const bot = catalog.data?.bot_username;
+        if (bot) setTimeout(() => openTelegramUrl(`https://t.me/${bot}`), 900);
+      } else if (sent) {
+        haptic.success();
+        setToast(t("gift_sent"));
+      }
+    } catch (e) {
+      fail(e);
+    } finally {
+      setSharing(false);
+    }
+  };
   const copy = async (g: Gift) => {
     if (await copyText(g.link)) {
       haptic.success();
@@ -169,7 +191,9 @@ export function Wallet() {
                 subtitle={t("gift_pending_s")}
                 value={
                   <span className="gift-acts">
-                    <button onClick={() => share(g)}>{t("gift_send_short")}</button>
+                    <button disabled={sharing} onClick={() => void share(g)}>
+                      {t("gift_send_short")}
+                    </button>
                     <button
                       className="danger"
                       disabled={revoke.isPending}
@@ -233,7 +257,9 @@ export function Wallet() {
               <b>{giftTitle(made)}</b>
               <span>{t("gift_ready_s")}</span>
             </div>
-            <Button onClick={() => share(made)}>{t("gift_send_tg")}</Button>
+            <Button disabled={sharing} onClick={() => void share(made)}>
+              {t("gift_send_tg")}
+            </Button>
             <div className="mt-12">
               <Button kind="tinted" onClick={() => void copy(made)}>
                 {t("gift_copy")}
