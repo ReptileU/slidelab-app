@@ -313,7 +313,9 @@ export function NewOrder() {
       })
     : step < 3
       ? t("next")
-      : t("send");
+      : shown?.paid_from === "package"
+        ? t("send") // из пакета презентация списывается сразу — «бесплатно» тут было бы неправдой
+        : t("send_free_cover");
 
   return (
     <div className="page no-tabbar">
