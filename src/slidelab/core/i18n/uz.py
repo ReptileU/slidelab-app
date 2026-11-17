@@ -129,6 +129,8 @@ TEXTS: dict[str, str] = {
     "order_created": (
         "⟦order⟧<b>#{id} buyurtma qabul qilindi</b>\nBepul muqova tayyorlayapmiz — shu yerga yuboraman.{package}"
     ),
+    "order_created_full": "⟦order⟧<b>#{id} buyurtma qabul qilindi</b>\nSiz butun taqdimotni darhol tanladingiz. To‘lang — muqovani kutmasdan boshlaymiz.{package}",
+    "order_created_full_paid": "⟦order⟧<b>#{id} buyurtma qabul qilindi</b>\nButun taqdimotni darhol qilamiz — shu yerga yuboraman.{package}",
     "order_created_files": "\n\nMateriallar bormi? Istalgan chatdan shu yerga forward qiling — telefonga saqlash shart emas.",
     "order_created_tpl": "\n\nShabloningizni yuboring: fayl yoki ochiq havola.",
     "package_used": "\n\nPaketdan {cost} ta yechildi, {left} ta qoldi.",

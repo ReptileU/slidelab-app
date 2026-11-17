@@ -114,6 +114,10 @@ class Pipeline:
 
     def write_brief(self, order: Order, client_name: str, style_name: str | None = None) -> None:
         comment = order.comment or ""
+        if order.skip_cover:
+            comment = (
+                f"Клиент выбрал сразу всю презентацию: обложку не согласовывали, делайте целиком. {comment}".strip()
+            )
         if style_name:
             comment = f"Стиль из витрины: {style_name}. {comment}".strip()
         brief = {

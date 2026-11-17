@@ -22,7 +22,7 @@ S = OrderStatus
 
 # Допустимые переходы. Отмена возможна на любом этапе до готовности.
 TRANSITIONS: dict[OrderStatus, frozenset[OrderStatus]] = {
-    S.NEW: frozenset({S.COVER, S.CANCELLED}),
+    S.NEW: frozenset({S.COVER, S.WORK, S.CANCELLED}),  # WORK — «сразу всю», без обложки
     S.COVER: frozenset({S.AWAITING_PAYMENT, S.WORK, S.CANCELLED}),
     S.AWAITING_PAYMENT: frozenset({S.WORK, S.COVER, S.CANCELLED}),  # COVER — передумал по обложке
     S.WORK: frozenset({S.DONE, S.CANCELLED}),
@@ -105,12 +105,16 @@ class OrderService:
             paid_from=q.paid_from,
             package_cost=q.package_cost,
             is_paid=q.price == 0,  # пакет без доплаты — уже оплачено
-            stage=Stage.COVER_TODO,  # бесплатную обложку конвейер начинает сразу
+            skip_cover=draft.skip_cover,
+            # бесплатную обложку конвейер начинает сразу; «сразу всю» ждёт оплаты и обложку не делает
+            stage=None if draft.skip_cover else Stage.COVER_TODO,
             stage_at=self.clock(),
             idempotency_key=idempotency_key,
         )
         self.session.add(order)
         await self.session.flush()
+        if order.skip_cover and order.is_paid:  # из пакета без доплаты — сразу в работу
+            await self._apply(order, S.WORK, None, comment="сразу всю презентацию — из пакета")
         if order.paid_from is PaidFrom.PACKAGE:
             await self.packages.debit(order)
         self._event(order, None, S.NEW, actor_id=user_id)
@@ -167,7 +171,8 @@ class OrderService:
         """
         order.is_paid = True
         cover_ready = order.status is S.COVER and order.stage in (Stage.COVER_SENT, Stage.COVER_OK)
-        if order.status is S.AWAITING_PAYMENT or cover_ready:
+        full_now = order.skip_cover and order.status is S.NEW  # «сразу всю»: обложку не ждём
+        if order.status is S.AWAITING_PAYMENT or cover_ready or full_now:
             await self._apply(order, S.WORK, actor_id, comment="оплачено")
             return True
         await self.session.flush()
@@ -244,6 +249,8 @@ class OrderService:
         current = order.status
         if to not in TRANSITIONS[current]:
             raise InvalidTransitionError(f"Заказ #{order.id}: нельзя перейти из {current} в {to}")
+        if current is S.NEW and to is S.WORK and not order.skip_cover:  # мимо обложки — только «сразу всю»
+            raise InvalidTransitionError(f"Заказ #{order.id}: сначала обложка")
         if to is S.WORK:
             if not order.is_paid:
                 raise PaymentRequiredError(f"Заказ #{order.id} не оплачен")

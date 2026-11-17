@@ -355,3 +355,22 @@ async def test_normal_order_keeps_due_date_and_rejects_too_soon(
         await orders.create(user.id, draft(due_at=now + timedelta(hours=20)))
     urgent = await orders.create(user.id, draft(deadline=Deadline.URGENT, due_at=now + timedelta(hours=5)))
     assert urgent.due_at is None  # у «Срочно» дата не хранится
+
+
+async def test_full_now_skips_cover_and_starts_after_payment(
+    orders: OrderService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    order = await orders.create(user.id, draft(skip_cover=True))
+    assert (order.status, order.stage, order.is_paid) == (S.NEW, None, False)  # без оплаты не начинаем
+    assert await orders.mark_paid(order, actor_id=None)
+    assert (order.status, order.stage) == (S.WORK, Stage.DECK_TODO)
+
+
+async def test_full_now_from_package_starts_at_once(
+    orders: OrderService, packages: PackageService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    await packages.activate(user.id, PlanCode.MONTH)
+    order = await orders.create(user.id, draft(skip_cover=True))
+    assert (order.status, order.stage, order.is_paid) == (S.WORK, Stage.DECK_TODO, True)

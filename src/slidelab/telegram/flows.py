@@ -61,7 +61,11 @@ class Flows:
             package = t(lang, "package_used", cost=order.package_cost, left=balance.left if balance else 0)
             if order.price:
                 package += t(lang, "package_extra", price=money(order.price))
-        text = t(lang, "order_created", id=order.id, package=package)
+        if order.skip_cover:
+            key = "order_created_full_paid" if order.is_paid else "order_created_full"
+            text = t(lang, key, id=order.id, package=package)
+        else:
+            text = t(lang, "order_created", id=order.id, package=package)
         if order.design.value == "own" and not order.template_url:
             text += t(lang, "order_created_tpl")
         elif order.has_source_files:

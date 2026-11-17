@@ -75,6 +75,8 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
             slides=o.slides,
             deadline=o.deadline,
             due_at=o.due_at,
+            skip_cover=o.skip_cover,
+            is_paid=o.is_paid,
             pres_lang=o.pres_lang,
             design=o.design,
             style_key=style_keys.get(o.style_id) if o.style_id else None,

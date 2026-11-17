@@ -104,6 +104,7 @@ export interface OrderDraft {
   slides: SlideTier;
   deadline: Deadline;
   due_at?: string | null; // ISO, к какому сроку нужна — только для «Обычно»
+  skip_cover?: boolean; // «Сразу всю презентацию» — без бесплатной обложки, оплата сразу
   pres_lang: Lang;
   design: Design;
   style_key?: string | null;
@@ -129,6 +130,8 @@ export interface Order {
   design: Design;
   style_key: string | null;
   status: OrderStatus;
+  skip_cover?: boolean;
+  is_paid?: boolean;
   price: number;
   paid_from: PaidFrom;
   package_cost: number;

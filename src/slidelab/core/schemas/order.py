@@ -35,6 +35,7 @@ class OrderDraft(BaseModel):
     slides: SlideTier
     deadline: Deadline
     due_at: datetime | None = None  # к какому сроку нужна — только для «Обычно»
+    skip_cover: bool = False  # «Сразу всю презентацию» — без бесплатной обложки, оплата сразу
     pres_lang: Lang
     design: Design
     style_key: str | None = None

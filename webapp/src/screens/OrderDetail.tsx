@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { useLang, useOrder, useT } from "../lib/app";
@@ -35,7 +35,14 @@ function OrderView({ order }: { order: Order }) {
   const { lang } = useLang();
   const qc = useQueryClient();
   const [cover, setCover] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<"pay" | "redo" | "revise" | null>(null);
+  // «Сразу всю презентацию»: после заказа приходим сюда с ?pay=1 — окно оплаты открыто сразу
+  const [params, setParams] = useSearchParams();
+  const payNow = !!order.skip_cover && order.status === "new" && !order.is_paid && order.price > 0;
+  const [sheet, setSheet] = useState<"pay" | "redo" | "revise" | null>(payNow && params.get("pay") === "1" ? "pay" : null);
+  useEffect(() => {
+    if (params.get("pay")) setParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [text, setText] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
@@ -100,6 +107,7 @@ function OrderView({ order }: { order: Order }) {
   const price = `${money(order.price)} ${t("sum")}`;
 
   const main = (() => {
+    if (payNow) return { text: t("pay_full_btn", { price }), run: () => setSheet("pay"), loading: false };
     switch (order.status) {
       case "cover":
         return { text: order.price > 0 ? t("cover_like_pay", { price }) : t("cover_like"), run: () => approve.mutate(), loading: approve.isPending };
@@ -121,7 +129,7 @@ function OrderView({ order }: { order: Order }) {
         </div>
         <h1 className="title2 mt-8">{order.topic}</h1>
         <p className="subhead secondary" style={{ margin: "6px 0 0" }}>
-          {t(hintKey(order.status))}
+          {payNow ? t("hint_full_pay") : order.skip_cover && order.status === "new" ? t("hint_work") : t(hintKey(order.status))}
         </p>
       </div>
 

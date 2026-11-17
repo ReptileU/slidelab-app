@@ -118,11 +118,13 @@ class OrderOut(BaseModel):
     slides: SlideTier
     deadline: Deadline
     due_at: datetime | None = None
+    skip_cover: bool = False
     pres_lang: Lang
     design: Design
     style_key: str | None
     status: OrderStatus
     price: int
+    is_paid: bool = False
     paid_from: PaidFrom
     package_cost: int
     revisions_left: int

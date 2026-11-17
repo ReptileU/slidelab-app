@@ -273,6 +273,10 @@ export function NewOrder() {
       }
       haptic.success();
       qc.invalidateQueries({ queryKey: ["me"] });
+      if (order.skip_cover && !order.is_paid && order.price > 0) {
+        nav(`/orders/${order.id}?pay=1`, { replace: true }); // «сразу всю» — сразу к оплате
+        return;
+      }
       nav(`/order/done/${order.id}`, { replace: true });
     },
     onError: (e) => {
@@ -315,7 +319,9 @@ export function NewOrder() {
       ? t("next")
       : shown?.paid_from === "package"
         ? t("send") // из пакета презентация списывается сразу — «бесплатно» тут было бы неправдой
-        : t("send_free_cover");
+        : draft.skip_cover
+          ? t("send_pay_now", { price: `${money(shown?.price ?? 0)} ${t("sum")}` })
+          : t("send_free_cover");
 
   return (
     <div className="page no-tabbar">
@@ -665,12 +671,47 @@ export function NewOrder() {
             </div>
           </Section>
 
+          {/* Как начать: бесплатная титулка сначала или сразу вся презентация с оплатой */}
+          <Section title={t("start_t")}>
+            <div className="start-pick">
+              <button
+                className={`start-opt${!draft.skip_cover ? " on" : ""}`}
+                onClick={() => {
+                  haptic.select();
+                  set("skip_cover", false);
+                }}
+              >
+                <span className="start-radio" />
+                <span className="start-txt">
+                  <b>{t("start_cover")}</b>
+                  <small>{t("start_cover_x")}</small>
+                </span>
+                <span className="start-tag free">{t("start_free")}</span>
+              </button>
+              <button
+                className={`start-opt${draft.skip_cover ? " on" : ""}`}
+                onClick={() => {
+                  haptic.select();
+                  set("skip_cover", true);
+                }}
+              >
+                <span className="start-radio" />
+                <span className="start-txt">
+                  <b>{t("start_full")}</b>
+                  <small>{t("start_full_x")}</small>
+                </span>
+                <span className="start-tag fast">{t("start_fast")}</span>
+              </button>
+            </div>
+          </Section>
+
           {shown ? (
             <PriceCard
               q={shown}
               old={full}
               lines={lines}
               slides={draft.slides}
+              payNow={!!draft.skip_cover}
             />
           ) : (
             <Skeleton height={28} width={140} />
@@ -733,11 +774,13 @@ export function NewOrder() {
 }
 
 function PriceCard({
+  payNow = false,
   q,
   old,
   lines,
   slides,
 }: {
+  payNow?: boolean;
   q: Quote;
   old?: number | null;
   lines: PriceLine[] | null;
@@ -761,7 +804,7 @@ function PriceCard({
   const sum = lines?.reduce((a, l) => a + l.amount, 0);
   const showLines = !!lines && sum === q.price && lines.length > 1;
   return (
-    <Section title={t("price_t")} footer={t("price_free_now")}>
+    <Section title={t("price_t")} footer={payNow ? t("price_pay_now") : t("price_free_now")}>
       <div className="card price-card">
         {showLines &&
           lines!.map((l) => (

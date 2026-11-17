@@ -127,6 +127,8 @@ TEXTS: dict[str, str] = {
     "notes_label": "speech for the talk",
     # --- request received ---
     "order_created": ("⟦order⟧<b>Order #{id} received</b>\nWe're making a free cover — I'll send it here.{package}"),
+    "order_created_full": "⟦order⟧<b>Order #{id} received</b>\nYou chose the whole presentation right away. Pay and we start without waiting for a cover.{package}",
+    "order_created_full_paid": "⟦order⟧<b>Order #{id} received</b>\nWe are making the whole presentation right away — I'll send it here.{package}",
     "order_created_files": "\n\nHave materials? Forward them here from any chat — no need to save them to your phone.",
     "order_created_tpl": "\n\nSend your template: a file or a link with open access.",
     "package_used": "\n\n{cost} deducted from your pack, {left} left.",
