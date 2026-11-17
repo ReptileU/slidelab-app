@@ -33,10 +33,8 @@ TEXTS: dict[str, str] = {
         "16–20 slayd — {s20} so‘m\n"
         "21–30 slayd — {s30} so‘m\n\n"
         "🔥 <b>Birinchi taqdimot — {first} so‘m</b>, <s>{s10} so‘m</s> o‘rniga\n(15 slaydgacha, yangi mijozlar uchun chegirma)\n\n"
-        "Shoshilinch — +{urgent}% (20 slaydgacha)\n"
-        "Matnni yozib berish — +{text}\n"
-        "Chiqish uchun konspekt — +{notes}\n\n"
-        "<i>Narxga kiradi: mavzuga mos dizayn, rasm va grafiklar, PPTX va PDF, ikki tuzatish.</i>"
+        "⚡ Shoshilinch — +{urgent_s10} so‘m (15 slaydgacha), +{urgent_s20} so‘m (16–20 slayd)\n\n"
+        "<i>Qolgani narxga kiradi: mavzuga mos dizayn, slayd matni, chiqish uchun nutq, rasm va grafiklar, PPTX va PDF, ikki tuzatish.</i>"
     ),
     "btn_packages": "Paketlar — arzonroq",
     "packages": "⟦pack⟧<b>Paketlar</b>\nHar bir taqdimot arzonroq. Qoldiq yonmaydi — yangi paketga o‘tadi.",
@@ -47,7 +45,7 @@ TEXTS: dict[str, str] = {
     "plan_lucky": "Bonus-paket",
     "btn_open_lucky": "Bonus-paketni ochish",
     "lucky_paid": "⟦gift|🎁⟧<b>Bonus-paket to‘landi</b>\nTaqdimotlar allaqachon qo‘shildi: jami {left} ta, {date} gacha.\nIlovada paketni oching — nima tushganini ko‘ring.",
-    "packages_note": "<i>21–30 slayd paketdan 2 ta yechadi. Shoshilinch va matn alohida to‘lanadi.</i>",
+    "packages_note": "<i>21–30 slayd paketdan 2 ta yechadi. Faqat shoshilinchlik alohida to‘lanadi.</i>",
     "my_package": "\n\n<b>Paketingiz</b>: {total} tadan {left} ta qoldi, {date} gacha.",
     "btn_buy": "{plan} — {price} so‘m",
     "gift_promo": "\n\n⟦gift|🎁⟧{date} gacha — har qanday paketga Telegramda sovg‘a.",
@@ -97,8 +95,8 @@ TEXTS: dict[str, str] = {
     ),
     "btn_template_later": "Keyinroq yuboraman",
     "ask_extras": "<b>Qo‘shimcha</b>\nKeraklisini belgilang va «Keyingi»ni bosing.",
-    "x_text": "Matnni yozib berish · +5 000",
-    "x_notes": "Chiqish uchun konspekt · +5 000",
+    "x_text": "Matnni yozamiz · narxda",
+    "x_notes": "Chiqish uchun nutq · narxda",
     "x_humor": "Hazil bilan · bepul",
     "btn_next": "Keyingi",
     "ask_files": "<b>Materiallar</b>\nMa’ruza, qo‘llanma, o‘qituvchi talablari — fayl yoki matn yuboring. Bir nechtasi ham bo‘ladi.",
@@ -124,7 +122,7 @@ TEXTS: dict[str, str] = {
     "btn_cancel": "Bekor qilish",
     "humor_label": "hazil bilan",
     "text_label": "matn yozib berish",
-    "notes_label": "konspekt",
+    "notes_label": "chiqish uchun nutq",
     # --- ariza qabul qilindi ---
     "order_created": (
         "⟦order⟧<b>#{id} buyurtma qabul qilindi</b>\nBepul muqova tayyorlayapmiz — shu yerga yuboraman.{package}"

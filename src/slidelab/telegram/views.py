@@ -60,8 +60,8 @@ def staff_card(order: Order, user: User, style_name: str | None = None) -> str:
     extras = [
         label
         for label, on in (
-            ("текст под ключ", order.extra_text),
-            ("конспект", order.extra_notes),
+            ("текст слайдов", order.extra_text),
+            ("речь для выступления", order.extra_notes),
             ("с юмором", order.need_humor),
         )
         if on
@@ -112,8 +112,8 @@ def prices(lang: Lang | None, rule: PriceRule) -> str:
         s30=money(rule.s30),
         first=money(rule.first_order_s10),
         urgent=rule.urgent_pct,
-        text=money(rule.extra_text),
-        notes=money(rule.extra_notes),
+        urgent_s10=money((rule.s10 * rule.urgent_pct + 50) // 100),
+        urgent_s20=money((rule.s20 * rule.urgent_pct + 50) // 100),
     )
 
 

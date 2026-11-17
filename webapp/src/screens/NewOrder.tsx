@@ -36,8 +36,8 @@ function emptyDraft(lang: Lang): Draft {
     design: "ours",
     style_key: null,
     template_url: "",
-    extra_text: false,
-    extra_notes: false,
+    extra_text: true,
+    extra_notes: true,
     need_humor: false,
     title_plate: true,
     title_author: "",
@@ -328,17 +328,17 @@ export function NewOrder() {
               ))}
             </Group>
           </Section>
-          <Section title={t("f_extras")}>
+          <Section title={t("f_extras")} footer={t("extras_free")}>
             <Group>
               <ToggleCell
                 title={t("x_text")}
-                subtitle={`${t("x_text_x")} +${money(c.prices.extra_text)} ${t("sum")}`}
+                subtitle={t("x_text_x")}
                 on={draft.extra_text}
                 onChange={(v) => set("extra_text", v)}
               />
               <ToggleCell
                 title={t("x_notes")}
-                subtitle={`${t("x_notes_x")} +${money(c.prices.extra_notes)} ${t("sum")}`}
+                subtitle={t("x_notes_x")}
                 on={draft.extra_notes}
                 onChange={(v) => set("extra_notes", v)}
               />

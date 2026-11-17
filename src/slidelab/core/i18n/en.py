@@ -33,10 +33,8 @@ TEXTS: dict[str, str] = {
         "16–20 slides — {s20} UZS\n"
         "21–30 slides — {s30} UZS\n\n"
         "🔥 <b>First presentation — {first} UZS</b> instead of <s>{s10} UZS</s>\n(up to 15 slides, new clients)\n\n"
-        "Urgent — +{urgent}% (up to 20 slides)\n"
-        "Full text written for you — +{text}\n"
-        "Speaker notes — +{notes}\n\n"
-        "<i>Included: design for your topic, photos and charts, PPTX and PDF, two rounds of edits.</i>"
+        "⚡ Urgent — +{urgent_s10} UZS (up to 15 slides), +{urgent_s20} UZS (16–20 slides)\n\n"
+        "<i>Everything else is included: design for your topic, slide text, a speech for your talk, photos and charts, PPTX and PDF, two rounds of edits.</i>"
     ),
     "btn_packages": "Packs — cheaper",
     "packages": "⟦pack⟧<b>Packs</b>\nEach presentation is cheaper. The balance doesn't expire — it carries over to a new pack.",
@@ -47,7 +45,7 @@ TEXTS: dict[str, str] = {
     "plan_lucky": "Bonus pack",
     "btn_open_lucky": "Open bonus pack",
     "lucky_paid": "⟦gift|🎁⟧<b>Bonus pack paid</b>\nPresentations are already added: {left} available, until {date}.\nOpen the pack in the app to see what you got.",
-    "packages_note": "<i>21–30 slides use two presentations. Urgency and full text are paid separately.</i>",
+    "packages_note": "<i>21–30 slides use two presentations. Only urgency is paid separately.</i>",
     "my_package": "\n\n<b>Your pack</b>: {left} of {total} left, until {date}.",
     "btn_buy": "{plan} — {price} UZS",
     "gift_promo": "\n\n⟦gift|🎁⟧Until {date} — a Telegram gift with any pack.",
@@ -97,8 +95,8 @@ TEXTS: dict[str, str] = {
     ),
     "btn_template_later": "I'll send it later",
     "ask_extras": "<b>Extras</b>\nTick what you need and tap «Next».",
-    "x_text": "Full text · +5 000",
-    "x_notes": "Speaker notes · +5 000",
+    "x_text": "We write the text · included",
+    "x_notes": "Speech for your talk · included",
     "x_humor": "With humor · free",
     "btn_next": "Next",
     "ask_files": "<b>Materials</b>\nLecture, handout, teacher's requirements — send files or text. Several are fine.",
@@ -123,8 +121,8 @@ TEXTS: dict[str, str] = {
     "btn_restart": "Start over",
     "btn_cancel": "Cancel",
     "humor_label": "with humor",
-    "text_label": "full text",
-    "notes_label": "speaker notes",
+    "text_label": "slide text",
+    "notes_label": "speech for the talk",
     # --- request received ---
     "order_created": ("⟦order⟧<b>Order #{id} received</b>\nWe're making a free cover — I'll send it here.{package}"),
     "order_created_files": "\n\nHave materials? Forward them here from any chat — no need to save them to your phone.",

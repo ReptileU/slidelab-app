@@ -3,9 +3,9 @@
 Правила:
 1. База по числу слайдов; первая презентация (до 15 слайдов) нового клиента — по сниженной цене.
 2. Срочно: +urgent_pct %, только до 20 слайдов.
-3. «Текст под ключ» и «конспект» — фиксированные доплаты.
-4. Если в пакете хватает остатка, база не берётся: платятся только срочность (от обычной базы),
-   текст и конспект (у VIP конспект бесплатный).
+3. Текст слайдов и речь для выступления входят в цену — клиент только отмечает, нужны ли они.
+   Доплачивается одна срочность: за время платят, за содержимое — нет.
+4. Если в пакете хватает остатка, база не берётся: доплачивается только срочность (от обычной базы).
 """
 
 from collections.abc import Mapping
@@ -87,10 +87,6 @@ def quote(
         price = 0
         if req.deadline is Deadline.URGENT:
             price += percent_of(base, rules.urgent_pct)
-        if req.extra_text:
-            price += rules.extra_text
-        if req.extra_notes and not package.notes_free:
-            price += rules.extra_notes
         return Quote(
             price=price,
             paid_from=PaidFrom.PACKAGE,
@@ -103,10 +99,6 @@ def quote(
     price = rules.first_order_s10 if discount else base
     if req.deadline is Deadline.URGENT:
         price += percent_of(price, rules.urgent_pct)
-    if req.extra_text:
-        price += rules.extra_text
-    if req.extra_notes:
-        price += rules.extra_notes
     return Quote(
         price=price,
         paid_from=PaidFrom.CASH,

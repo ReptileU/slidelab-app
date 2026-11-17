@@ -202,13 +202,22 @@ async def test_package_debited_at_order_and_refunded_on_cancel(
     assert pkg.left == 4
 
 
-async def test_package_order_with_extras_is_not_paid_yet(
+async def test_package_order_with_text_is_fully_covered(
     orders: OrderService, packages: PackageService, make_user: Callable[..., Any]
 ) -> None:
     user = await make_user()
     await packages.activate(user.id, PlanCode.MONTH)
-    order = await orders.create(user.id, draft(extra_text=True))
-    assert (order.paid_from, order.price, order.is_paid) == (PaidFrom.PACKAGE, 5_000, False)
+    order = await orders.create(user.id, draft(extra_text=True, extra_notes=True))
+    assert (order.paid_from, order.price, order.is_paid) == (PaidFrom.PACKAGE, 0, True)  # текст и речь — в цене
+
+
+async def test_package_order_urgent_is_not_paid_yet(
+    orders: OrderService, packages: PackageService, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    await packages.activate(user.id, PlanCode.MONTH)
+    order = await orders.create(user.id, draft(deadline=Deadline.URGENT))
+    assert (order.paid_from, order.price, order.is_paid) == (PaidFrom.PACKAGE, 14_500, False)  # 50% от 29 000
 
 
 async def test_30_slides_take_two(

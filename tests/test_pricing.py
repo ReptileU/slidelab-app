@@ -36,10 +36,10 @@ def pkg(left: int, plan: PlanCode = PlanCode.MONTH) -> PackageBalance:
         (SlideTier.S10, U, False, False, False, 28_500),
         (SlideTier.S10, U, False, False, True, 14_850),  # срочность от сниженной цены
         (SlideTier.S20, U, False, False, False, 43_500),
-        (SlideTier.S20, N, True, False, False, 34_000),
-        (SlideTier.S20, N, True, True, False, 39_000),
-        (SlideTier.S20, U, True, True, False, 53_500),  # доплаты не умножаются на срочность
-        (SlideTier.S30, Deadline.RELAXED, False, True, False, 44_000),
+        (SlideTier.S20, N, True, False, False, 29_000),  # текст входит в цену
+        (SlideTier.S20, N, True, True, False, 29_000),  # и речь тоже
+        (SlideTier.S20, U, True, True, False, 43_500),  # доплачивается только срочность
+        (SlideTier.S30, Deadline.RELAXED, False, True, False, 39_000),
     ],
 )
 def test_cash_price(slides: SlideTier, deadline: Deadline, text: bool, notes: bool, first: bool, expected: int) -> None:
@@ -61,10 +61,9 @@ def test_urgent_not_allowed_for_30_slides() -> None:
         (SlideTier.S20, N, False, False, PlanCode.MONTH, 0),
         (SlideTier.S20, U, False, False, PlanCode.MONTH, 14_500),  # 50% от обычной базы
         (SlideTier.S10, U, False, False, PlanCode.MONTH, 9_500),
-        (SlideTier.S20, N, True, False, PlanCode.MONTH, 5_000),
-        (SlideTier.S20, N, False, True, PlanCode.MONTH, 5_000),
-        (SlideTier.S20, N, False, True, PlanCode.VIP, 0),  # у VIP конспект бесплатно
-        (SlideTier.S20, N, True, True, PlanCode.VIP, 5_000),
+        (SlideTier.S20, N, True, False, PlanCode.MONTH, 0),  # текст входит в цену
+        (SlideTier.S20, N, False, True, PlanCode.MONTH, 0),
+        (SlideTier.S20, U, True, True, PlanCode.VIP, 14_500),  # из пакета — только срочность
     ],
 )
 def test_package_price(

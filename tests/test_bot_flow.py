@@ -263,7 +263,7 @@ async def test_legacy_web_app_order(h: Harness) -> None:
     }
     await h.message(web_app_data=WebAppData(data=json.dumps(data), button_text="Order"))
     order = await h.order()
-    assert (order.topic, order.price, order.need_humor) == ("Japan after 1990", 9900 + 5000, True)
+    assert (order.topic, order.price, order.need_humor) == ("Japan after 1990", 9900, True)  # текст входит в цену
     assert order.comment == "Стиль из витрины: Minimal."
     async with h.sm() as s:
         user = await s.scalar(select(DbUser).where(DbUser.tg_id == CLIENT))
