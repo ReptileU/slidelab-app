@@ -5,13 +5,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
-import { DEADLINES, deadlineKey, estimate, slidesKey, TIERS, tierOld, tierPrice } from "../lib/order";
+import { breakdown, DEADLINES, deadlineKey, estimate, type PriceLine, slidesKey, TIERS, tierOld, tierPrice } from "../lib/order";
 import { alert, haptic } from "../lib/tg";
 import { unlockAudio } from "../lib/sound";
 import type { Deadline, Design, Lang, OrderDraft, Package, Quote, SlideTier } from "../lib/types";
 import { PaidOverlay } from "../ui/PaidOverlay";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
-import { Cell, Group, PriceTag, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
+import { Cell, CostTag, Group, PriceTag, Section, Segmented, Sheet, Skeleton, TextArea, TextInput, ToggleCell } from "../ui";
 
 const DRAFT_KEY = "sl_draft";
 
@@ -37,7 +37,7 @@ function emptyDraft(lang: Lang): Draft {
     style_key: null,
     template_url: "",
     extra_text: true,
-    extra_notes: true,
+    extra_notes: false,
     need_humor: false,
     title_plate: true,
     title_author: "",
@@ -124,6 +124,8 @@ export function NewOrder() {
   const urgentCalc = (deadline: Deadline) =>
     c ? estimate(c.prices, { ...draft, slides: urgentTier, deadline }, first, me.data?.package ?? null, notesFree).price : 0;
   const urgentExtra = urgentCalc("urgent") - urgentCalc("normal");
+  const lines: PriceLine[] | null =
+    c && draft.slides ? breakdown(c.prices, { ...draft, slides: draft.slides }, first, me.data?.package ?? null, notesFree) : null;
 
   const [paid, setPaid] = useState<{ order: number; cost: number; pkg: Package } | null>(null);
   // звук «оплачено» на iOS играет только после касания — «будим» звук на первом касании формы
@@ -320,7 +322,8 @@ export function NewOrder() {
                 <Cell
                   key={d}
                   title={t(deadlineKey(d))}
-                  subtitle={t(`${deadlineKey(d)}_x` as Parameters<typeof t>[0], { sum: `${money(urgentExtra)} ${t("sum")}` })}
+                  subtitle={t(`${deadlineKey(d)}_x` as Parameters<typeof t>[0])}
+                  value={d === "urgent" ? <CostTag on={draft.deadline === d}>+{money(urgentExtra)} {t("sum")}</CostTag> : undefined}
                   checked={draft.deadline === d}
                   disabled={d === "urgent" && draft.slides === "s30"}
                   onClick={() => set("deadline", d)}
@@ -328,29 +331,38 @@ export function NewOrder() {
               ))}
             </Group>
           </Section>
-          <Section title={t("f_extras")} footer={t("extras_free")}>
+          <Section title={t("f_extras")} footer={t("extras_paid")}>
             <Group>
               <ToggleCell
                 title={t("x_text")}
                 subtitle={t("x_text_x")}
+                tag={<CostTag free>{t("in_price")}</CostTag>}
                 on={draft.extra_text}
                 onChange={(v) => set("extra_text", v)}
               />
               <ToggleCell
                 title={t("x_notes")}
                 subtitle={t("x_notes_x")}
+                tag={
+                  notesFree && me.data?.package ? (
+                    <CostTag free>{t("in_price")}</CostTag>
+                  ) : (
+                    <CostTag on={draft.extra_notes}>+{money(c.prices.extra_notes)} {t("sum")}</CostTag>
+                  )
+                }
                 on={draft.extra_notes}
                 onChange={(v) => set("extra_notes", v)}
               />
               <ToggleCell
                 title={t("x_humor")}
                 subtitle={t("x_humor_x")}
+                tag={<CostTag free>{t("in_price")}</CostTag>}
                 on={draft.need_humor}
                 onChange={(v) => set("need_humor", v)}
               />
             </Group>
           </Section>
-          {shown && <PriceCard q={shown} old={full} />}
+          {shown && <PriceCard q={shown} old={full} lines={lines} slides={draft.slides} />}
         </>
       )}
 
@@ -390,7 +402,7 @@ export function NewOrder() {
             </div>
           </Section>
 
-          {shown ? <PriceCard q={shown} old={full} /> : <Skeleton height={28} width={140} />}
+          {shown ? <PriceCard q={shown} old={full} lines={lines} slides={draft.slides} /> : <Skeleton height={28} width={140} />}
         </>
       )}
 
@@ -426,28 +438,46 @@ export function NewOrder() {
   );
 }
 
-function PriceCard({ q, old }: { q: Quote; old?: number | null }) {
+function PriceCard({ q, old, lines, slides }: { q: Quote; old?: number | null; lines: PriceLine[] | null; slides: SlideTier | null }) {
   const t = useT();
+  const label = (l: PriceLine) =>
+    l.key === "base"
+      ? slides
+        ? t(slidesKey(slides))
+        : t("price_base")
+      : l.key === "package"
+        ? t("price_package", { cost: q.package_cost, left: q.package_left_after ?? 0 })
+        : l.key === "urgent"
+          ? t("dl_urgent")
+          : t("x_notes");
+  // строки показываем, только если они сходятся с итогом сервера — иначе одна сумма
+  const sum = lines?.reduce((a, l) => a + l.amount, 0);
+  const showLines = !!lines && sum === q.price && lines.length > 1;
   return (
     <Section title={t("price_t")} footer={t("price_free_now")}>
-      <div className="card">
-        {q.paid_from === "package" ? (
-          <>
-            <div className="headline">{t("price_package", { cost: q.package_cost, left: q.package_left_after ?? 0 })}</div>
-            {q.price > 0 && (
-              <div className="subhead secondary mt-8">
-                {t("price_extra")}: {money(q.price)} {t("sum")}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="row spread" style={{ flexWrap: "wrap", gap: 8 }}>
-            <span className="title2 tabular">
-              <PriceTag now={money(q.price)} old={q.first_order_discount && old && old > q.price ? money(old) : null} sum={t("sum")} />
-            </span>
-            {q.first_order_discount && <span className="badge gold">{t("price_first")}</span>}
+      <div className="card price-card">
+        {showLines &&
+          lines!.map((l) => (
+            <div key={l.key} className={`price-line${l.key === "urgent" || l.key === "notes" ? " extra" : ""}`}>
+              <span>{label(l)}</span>
+              <span className="tabular">
+                {l.key === "base" || l.key === "package" ? "" : "+"}
+                {money(l.amount)} {t("sum")}
+              </span>
+            </div>
+          ))}
+        {!showLines && q.paid_from === "package" && (
+          <div className="price-line">
+            <span>{t("price_package", { cost: q.package_cost, left: q.package_left_after ?? 0 })}</span>
           </div>
         )}
+        <div className={`row spread price-total${showLines ? " sep" : ""}`} style={{ flexWrap: "wrap", gap: 8 }}>
+          <span className="subhead secondary">{t(q.paid_from === "package" ? "price_extra" : "price_total")}</span>
+          <span className="title2 tabular">
+            <PriceTag now={money(q.price)} old={q.first_order_discount && old && old > q.price ? money(old) : null} sum={t("sum")} />
+          </span>
+        </div>
+        {q.first_order_discount && <span className="badge gold mt-8">{t("price_first")}</span>}
       </div>
     </Section>
   );

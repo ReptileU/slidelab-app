@@ -114,6 +114,7 @@ def prices(lang: Lang | None, rule: PriceRule) -> str:
         urgent=rule.urgent_pct,
         urgent_s10=money((rule.s10 * rule.urgent_pct + 50) // 100),
         urgent_s20=money((rule.s20 * rule.urgent_pct + 50) // 100),
+        notes=money(rule.extra_notes),
     )
 
 

@@ -207,8 +207,8 @@ async def test_package_order_with_text_is_fully_covered(
 ) -> None:
     user = await make_user()
     await packages.activate(user.id, PlanCode.MONTH)
-    order = await orders.create(user.id, draft(extra_text=True, extra_notes=True))
-    assert (order.paid_from, order.price, order.is_paid) == (PaidFrom.PACKAGE, 0, True)  # текст и речь — в цене
+    order = await orders.create(user.id, draft(extra_text=True))
+    assert (order.paid_from, order.price, order.is_paid) == (PaidFrom.PACKAGE, 0, True)  # текст — в цене
 
 
 async def test_package_order_urgent_is_not_paid_yet(

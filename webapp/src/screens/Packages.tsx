@@ -83,7 +83,7 @@ export function Packages() {
           {c?.plans.map((p) => {
             const single = c.prices.s20 * p.count;
             const save = Math.round((1 - p.price / single) * 100);
-            const perks = [p.priority && t("pkg_priority")].filter(Boolean); // речь для выступления теперь у всех в цене
+            const perks = [p.notes_free && t("pkg_notes"), p.priority && t("pkg_priority")].filter(Boolean);
             return (
               <div key={p.code} className={`pack pack-${p.code}`}>
                 <img className="pack-bg" src={`./packs/${PACK_ART[p.code] ?? "p0"}.webp`} alt="" draggable={false} />

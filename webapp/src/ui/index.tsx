@@ -101,8 +101,38 @@ export function Switch({ on }: { on: boolean }) {
   return <span className={`switch${on ? " on" : ""}`} role="switch" aria-checked={on} />;
 }
 
-export function ToggleCell({ title, subtitle, on, onChange }: { title: ReactNode; subtitle?: ReactNode; on: boolean; onChange: (v: boolean) => void }) {
-  return <Cell title={title} subtitle={subtitle} accessory={<Switch on={on} />} onClick={() => onChange(!on)} />;
+export function ToggleCell({
+  title,
+  subtitle,
+  on,
+  onChange,
+  tag,
+}: {
+  title: ReactNode;
+  subtitle?: ReactNode;
+  on: boolean;
+  onChange: (v: boolean) => void;
+  /** цена или «в цене» — заметной плашкой рядом с выключателем */
+  tag?: ReactNode;
+}) {
+  return (
+    <Cell
+      title={title}
+      subtitle={subtitle}
+      accessory={
+        <span className="toggle-acc">
+          {tag}
+          <Switch on={on} />
+        </span>
+      }
+      onClick={() => onChange(!on)}
+    />
+  );
+}
+
+/** Плашка цены у опции: «+5 000 сум» — платная, «В цене» — бесплатная. */
+export function CostTag({ children, free = false, on = false }: { children: ReactNode; free?: boolean; on?: boolean }) {
+  return <span className={`cost-tag${free ? " free" : ""}${on ? " on" : ""}`}>{children}</span>;
 }
 
 export function Segmented<T extends string>({

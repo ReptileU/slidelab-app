@@ -1318,3 +1318,15 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
   .now-wrap,:root[data-theme="dark"] .now-wrap,:root[data-theme="light"] .now-wrap{box-shadow:inset 0 0 0 .5px var(--separator)}
   .tabbar,:root:not(.has-now) .tabbar,:root[data-theme="light"]:not(.has-now) .tabbar{box-shadow:none}
 }
+
+/* ---------- цены у опций и разбивка стоимости ---------- */
+.toggle-acc{display:inline-flex;align-items:center;gap:10px;flex:0 0 auto}
+.cost-tag{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;
+  font-variant-numeric:tabular-nums;color:var(--label);background:color-mix(in srgb,var(--label) 9%,transparent);
+  box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--label) 22%,transparent);transition:background .2s,color .2s}
+.cost-tag.on{background:var(--label);color:var(--bg);box-shadow:none}
+.cost-tag.free{font-weight:600;color:var(--secondary);background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 16%,transparent)}
+.price-card{display:flex;flex-direction:column;gap:2px}
+.price-line{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:5px 0;color:var(--secondary)}
+.price-line span:last-child{color:var(--label);font-weight:600;white-space:nowrap}
+.price-total.sep{margin-top:8px;padding-top:12px;border-top:.5px solid var(--separator)}

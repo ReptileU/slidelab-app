@@ -54,17 +54,41 @@ export function estimate(
   d: { slides: SlideTier; deadline: Deadline | null; extra_text: boolean; extra_notes: boolean },
   firstOrderPrice: number | null,
   pkg: Package | null,
-  _notesFree: boolean, // речь для выступления теперь у всех в цене
+  notesFree: boolean,
 ): Quote {
   const round = (x: number) => Math.floor((x * prices.urgent_pct + 50) / 100);
   const cost = d.slides === "s30" ? 2 : 1;
   if (pkg && pkg.left >= cost) {
-    // текст и речь входят в цену — доплачивается только срочность
-    const x = d.deadline === "urgent" ? round(prices[d.slides]) : 0;
+    // текст входит в цену — доплачиваются только срочность и речь (у VIP речь бесплатно)
+    let x = d.deadline === "urgent" ? round(prices[d.slides]) : 0;
+    if (d.extra_notes && !notesFree) x += prices.extra_notes;
     return { price: x, paid_from: "package", package_cost: cost, package_left_after: pkg.left - cost, first_order_discount: false };
   }
   const first = d.slides === "s10" && !!firstOrderPrice;
   let p = first ? firstOrderPrice! : prices[d.slides];
   if (d.deadline === "urgent") p += round(p);
+  if (d.extra_notes) p += prices.extra_notes;
   return { price: p, paid_from: "cash", package_cost: 0, package_left_after: null, first_order_discount: first };
+}
+
+/** Из чего складывается цена — строки для карточки «Стоимость». Сумма строк равна estimate().price. */
+export interface PriceLine {
+  key: "base" | "package" | "urgent" | "notes";
+  amount: number;
+}
+export function breakdown(
+  prices: Prices,
+  d: { slides: SlideTier; deadline: Deadline | null; extra_text: boolean; extra_notes: boolean },
+  firstOrderPrice: number | null,
+  pkg: Package | null,
+  notesFree: boolean,
+): PriceLine[] {
+  const round = (x: number) => Math.floor((x * prices.urgent_pct + 50) / 100);
+  const cost = d.slides === "s30" ? 2 : 1;
+  const fromPkg = !!pkg && pkg.left >= cost;
+  const base = fromPkg ? 0 : d.slides === "s10" && firstOrderPrice ? firstOrderPrice : prices[d.slides];
+  const lines: PriceLine[] = [{ key: fromPkg ? "package" : "base", amount: base }];
+  if (d.deadline === "urgent") lines.push({ key: "urgent", amount: round(fromPkg ? prices[d.slides] : base) });
+  if (d.extra_notes && !(fromPkg && notesFree)) lines.push({ key: "notes", amount: prices.extra_notes });
+  return lines;
 }
