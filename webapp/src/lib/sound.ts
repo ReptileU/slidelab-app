@@ -144,50 +144,54 @@ export function playReveal(big: boolean): void {
   }
 }
 
-/** Рвётся бумага: шумовые «рывки» по волокнам, фильтр уходит вверх, в конце — короткий щелчок отрыва. */
+/** Купон отрывается по линии отрыва: мягкий шорох бумаги без высоких частот и тихий низкий «тук» в конце. */
 export function playTear(): void {
   const c = context();
   if (!c) return;
   try {
     if (c.state === "suspended") void c.resume();
     const now = c.currentTime + 0.01;
-    const dur = 0.42;
+    const dur = 0.38;
     const len = Math.floor(c.sampleRate * dur);
     const buf = c.createBuffer(1, len, c.sampleRate);
     const data = buf.getChannelData(0);
-    // волокна: шум, рваный по амплитуде мелкими «зубцами»
-    let grain = 0;
+    // шорох: шум с лёгкими «волокнами» (перепады мягкие), плавно нарастает и затихает
+    let grain = 0.8;
+    let smooth = 0;
     for (let i = 0; i < len; i++) {
-      if (i % Math.floor(c.sampleRate * 0.006) === 0) grain = 0.25 + Math.random() * 0.75;
+      if (i % Math.floor(c.sampleRate * 0.012) === 0) grain = 0.65 + Math.random() * 0.35;
       const p = i / len;
-      const env = Math.min(1, p * 12) * Math.pow(1 - p, 1.4);
-      data[i] = (Math.random() * 2 - 1) * grain * env;
+      const env = Math.sin(Math.PI * Math.min(1, p * 1.15)) ** 1.5;
+      smooth = smooth * 0.55 + (Math.random() * 2 - 1) * 0.45; // сглаживаем — меньше «песка» в верхах
+      data[i] = smooth * grain * env;
     }
     const src = c.createBufferSource();
     src.buffer = buf;
     const bp = c.createBiquadFilter();
     bp.type = "bandpass";
-    bp.Q.value = 0.9;
-    bp.frequency.setValueAtTime(1400, now);
-    bp.frequency.exponentialRampToValueAtTime(4200, now + dur);
+    bp.Q.value = 0.7;
+    bp.frequency.setValueAtTime(700, now);
+    bp.frequency.linearRampToValueAtTime(1500, now + dur);
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 2600; // срезаем резкие верха
     const g = c.createGain();
-    g.gain.value = 0.9;
-    src.connect(bp).connect(g).connect(c.destination);
+    g.gain.value = 0.32;
+    src.connect(bp).connect(lp).connect(g).connect(c.destination);
     src.start(now);
-    // щелчок в момент, когда корешок отходит
-    const clen = Math.floor(c.sampleRate * 0.03);
-    const cb = c.createBuffer(1, clen, c.sampleRate);
-    const cd = cb.getChannelData(0);
-    for (let i = 0; i < clen; i++) cd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / clen, 4);
-    const click = c.createBufferSource();
-    click.buffer = cb;
-    const hp = c.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 2500;
-    const cg = c.createGain();
-    cg.gain.value = 0.5;
-    click.connect(hp).connect(cg).connect(c.destination);
-    click.start(now + dur - 0.02);
+    // мягкий низкий «тук», когда корешок отходит
+    const at = now + dur - 0.03;
+    const osc = c.createOscillator();
+    const og = c.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(240, at);
+    osc.frequency.exponentialRampToValueAtTime(150, at + 0.12);
+    og.gain.setValueAtTime(0, at);
+    og.gain.linearRampToValueAtTime(0.12, at + 0.01);
+    og.gain.exponentialRampToValueAtTime(0.0008, at + 0.18);
+    osc.connect(og).connect(c.destination);
+    osc.start(at);
+    osc.stop(at + 0.2);
   } catch {
     /* без звука — не страшно */
   }
