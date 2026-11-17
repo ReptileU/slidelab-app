@@ -96,6 +96,7 @@ class Payment(CreatedAtMixin, Base):
     user_package_id: Mapped[int | None] = mapped_column(ForeignKey("user_packages.id"))
     # покупка пакета с зачётом сданного заказа
     credit_order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id"))
+    as_gift: Mapped[bool] = mapped_column(default=False, server_default="0")  # пакет покупают в подарок
     provider: Mapped[PaymentProvider] = mapped_column(str_enum(PaymentProvider))
     amount: Mapped[int]
     currency: Mapped[str] = mapped_column(String(3))  # UZS или XTR (звёзды)
@@ -138,7 +139,7 @@ class Coupon(CreatedAtMixin, Base):
 
 
 class Gift(CreatedAtMixin, Base):
-    """Подарок по ссылке t.me/<бот>?start=gift_<code>: купон или презентации из пакета."""
+    """Подарок по ссылке t.me/<бот>?start=gift_<code>: купон, пакет из кошелька целиком или купленный в подарок."""
 
     __tablename__ = "gifts"
 
@@ -149,7 +150,8 @@ class Gift(CreatedAtMixin, Base):
     coupon_id: Mapped[int | None] = mapped_column(ForeignKey("coupons.id", use_alter=True))
     plan_code: Mapped[PlanCode | None] = mapped_column(str_enum(PlanCode))  # пакет: какой тариф получит друг
     count: Mapped[int] = mapped_column(default=1)
-    expires_at: Mapped[datetime | None]  # пакет: срок как у пакета дарителя
+    package_id: Mapped[int | None] = mapped_column(ForeignKey("user_packages.id"))  # пакет дарителя (отдан целиком)
+    expires_at: Mapped[datetime | None]  # срок пакета дарителя; None — куплен в подарок, срок пойдёт с получения
     status: Mapped[GiftStatus] = mapped_column(str_enum(GiftStatus), default=GiftStatus.PENDING)
     to_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     done_at: Mapped[datetime | None]  # когда забрали или отменили

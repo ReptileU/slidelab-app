@@ -68,9 +68,9 @@ export const api = {
   },
   sendFiles: (id: number) => post(`/orders/${id}/send-files`),
 
-  packageInvoice: (plan: BuyPlan, provider: "stars" | "card") =>
-    post<Invoice>(`/packages/${plan}/invoice`, { provider, app: true }),
-  packageReceipt: (plan: BuyPlan, image: string) => post(`/packages/${plan}/receipt`, { image }),
+  packageInvoice: (plan: BuyPlan, provider: "stars" | "card", gift = false) =>
+    post<Invoice>(`/packages/${plan}/invoice`, { provider, app: true, gift }),
+  packageReceipt: (plan: BuyPlan, image: string, gift = false) => post(`/packages/${plan}/receipt`, { image, gift }),
   lucky: () => request<LuckyInfo>("/packages/lucky"),
   luckyOpen: () => post<LuckyPrize>("/packages/lucky/open"),
   ask: (text: string) => post("/support/messages", { text }),
@@ -80,7 +80,7 @@ export const api = {
   withdrawReview: (id: number) => request(`/reviews/${id}`, { method: "DELETE" }),
 
   gifts: () => request<Gift[]>("/gifts"),
-  makeGift: (body: { kind: "coupon"; coupon_id: number } | { kind: "pack"; count: number }) => post<Gift>("/gifts", body),
+  makeGift: (body: { kind: "coupon"; coupon_id: number } | { kind: "pack" }) => post<Gift>("/gifts", body),
   revokeGift: (id: number) => request(`/gifts/${id}`, { method: "DELETE" }),
   setWalletCover: (image: string) => post<Me>("/me/wallet-cover", { image }),
   resetWalletCover: () => request<Me>("/me/wallet-cover", { method: "DELETE" }),

@@ -42,7 +42,7 @@ async def make_gift(body: GiftIn, viewer: ViewerDep, session: SessionDep, settin
             raise HTTPException(status_code=422, detail="Какой купон подарить?")
         gift = await service.gift_coupon(viewer.user.id, body.coupon_id)
     else:
-        gift = await service.gift_pack(viewer.user.id, body.count)
+        gift = await service.gift_pack(viewer.user.id)
     await session.commit()
     return await _out(service, gift, settings.bot_username)
 

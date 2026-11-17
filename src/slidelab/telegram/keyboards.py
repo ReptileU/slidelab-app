@@ -1,5 +1,7 @@
 """Клавиатуры. Главное действие — первой кнопкой и на всю ширину, остальное — тише."""
 
+from urllib.parse import urlencode
+
 from aiogram.filters.callback_data import CallbackData
 from aiogram.types import (
     InlineKeyboardButton,
@@ -128,6 +130,12 @@ def open_wallet(lang: Lang, url: str) -> InlineKeyboardMarkup:
     """Под сообщением о подарке: открыть кошелёк в профиле."""
     sep = "&" if "?" in url else "?"
     return _rows(InlineKeyboardButton(text=t(lang, "btn_wallet"), web_app=WebAppInfo(url=f"{url}{sep}go=profile")))
+
+
+def share_gift(lang: Lang, url: str) -> InlineKeyboardMarkup:
+    """Под сообщением о купленном подарке: переслать ссылку другу."""
+    share = "https://t.me/share/url?" + urlencode({"url": url, "text": t(lang, "gift_share_text")})
+    return _rows(InlineKeyboardButton(text=t(lang, "btn_send_gift"), url=share))
 
 
 def languages() -> InlineKeyboardMarkup:

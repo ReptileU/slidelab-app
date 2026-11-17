@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from slidelab.core import repositories as repo
 from slidelab.core.enums import CouponOrigin, Deadline, Lang, OrderSource, OrderStatus, PaidFrom, Stage
 from slidelab.core.errors import DueTooSoonError, ForbiddenError, InvalidTransitionError, PaymentRequiredError
-from slidelab.core.models import Coupon, Order, OrderEvent, Revision
+from slidelab.core.models import Coupon, Order, OrderEvent, Revision, User
 from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.schemas.order import OrderDraft
 from slidelab.core.services import pricing
@@ -38,6 +38,8 @@ PRICE_EDITABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT})
 PAYABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT})
 # Клиент сам отменяет заказ, пока презентацию не сдали
 CLIENT_CANCELLABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT, S.WORK})
+# Отмена уже начатой презентации с возвратом оплаты — не чаще раза в столько дней (работа Claude уже потрачена)
+WORK_REFUND_DAYS = 30
 
 
 class OrderService:
@@ -173,11 +175,25 @@ class OrderService:
         await self.session.flush()
         return order
 
+    def refund_on_cancel(self, order: Order, user: User) -> bool:
+        """Вернётся ли оплата, если клиент отменит сейчас.
+
+        До начала работы — всегда. Презентацию уже делают — раз в WORK_REFUND_DAYS дней, и не за заказ,
+        оплаченный купоном: иначе «заказал купоном → отменил → купон вернулся» по кругу ест работу.
+        """
+        if order.status is not S.WORK:
+            return True
+        if order.coupon_id is not None:
+            return False
+        last = user.work_refund_at
+        return last is None or self.clock() - as_utc(last) >= timedelta(days=WORK_REFUND_DAYS)
+
     async def cancel_by_client(self, order_id: int, user_id: int) -> Order:
         """Клиент отменил заказ сам.
 
         Не оплачен — просто удаляем из списка. Оплачен из пакета — презентация возвращается в пакет.
-        Оплачен деньгами — деньги не теряются: следующая презентация уже оплачена, платить только за доплаты.
+        Оплачен деньгами — купон: следующая презентация уже оплачена, платить только за доплаты.
+        После начала работы оплата возвращается не всегда — см. refund_on_cancel.
         """
         order = await repo.get_order(self.session, order_id, for_update=True)
         self._own(order, user_id)
@@ -185,8 +201,21 @@ class OrderService:
             return order
         if order.status not in CLIENT_CANCELLABLE:
             raise InvalidTransitionError("Презентация уже готова — отменить нельзя, напишите нам")
-        keep = order.is_paid and order.paid_from is PaidFrom.CASH and order.price > 0 and order.coupon_id is None
-        await self._apply(order, S.CANCELLED, user_id, comment="отменил клиент")
+        user = await self.session.get(User, user_id)
+        assert user is not None
+        refund = self.refund_on_cancel(order, user)
+        paid = order.is_paid or order.coupon_id is not None
+        if order.status is S.WORK and refund and paid:
+            user.work_refund_at = self.clock()
+        keep = (
+            refund
+            and order.is_paid
+            and order.paid_from is PaidFrom.CASH
+            and order.price > 0
+            and order.coupon_id is None
+        )
+        comment = "отменил клиент" + ("" if refund or not paid else " — без возврата: работа уже шла")
+        await self._apply(order, S.CANCELLED, user_id, comment=comment, refund=refund)
         if keep:
             self.give_coupon(order)
         elif not order.is_paid and order.coupon_id is None:
@@ -287,7 +316,9 @@ class OrderService:
         await self.session.flush()
         return revision
 
-    async def _apply(self, order: Order, to: OrderStatus, actor_id: int | None, comment: str | None) -> None:
+    async def _apply(
+        self, order: Order, to: OrderStatus, actor_id: int | None, comment: str | None, *, refund: bool = True
+    ) -> None:
         current = order.status
         if to not in TRANSITIONS[current]:
             raise InvalidTransitionError(f"Заказ #{order.id}: нельзя перейти из {current} в {to}")
@@ -298,9 +329,9 @@ class OrderService:
                 raise PaymentRequiredError(f"Заказ #{order.id} не оплачен")
             self.set_stage(order, Stage.DECK_TODO)
         elif to is S.CANCELLED:
-            if order.package_cost and not await self.packages.refund(order):
+            if refund and order.package_cost and not await self.packages.refund(order):
                 self.give_coupon(order)  # срок пакета вышел — презентация не пропадает, а становится купоном
-            if order.coupon_id is not None:  # был оплачен купоном — купон возвращается клиенту
+            if refund and order.coupon_id is not None:  # был оплачен купоном — купон возвращается клиенту
                 coupon = await self.session.get(Coupon, order.coupon_id, with_for_update=True)
                 if coupon is not None:
                     coupon.used_order_id = None

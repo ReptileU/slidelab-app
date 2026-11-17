@@ -1,6 +1,7 @@
+import { Gift } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
@@ -22,7 +23,9 @@ export function Packages() {
   const qc = useQueryClient();
   const me = useMe();
   const catalog = useCatalog();
-  const [buying, setBuying] = useState<{ code: BuyPlan; price: number } | null>(null);
+  const nav = useNavigate();
+  // gift — пакет покупают в подарок: после оплаты ссылка для друга (в боте и в кошельке)
+  const [buying, setBuying] = useState<{ code: BuyPlan; price: number; gift?: boolean } | null>(null);
   const [reveal, setReveal] = useState<LuckyPrize | null>(null);
   const [waitBox, setWaitBox] = useState(false); // звёзды оплачены — ждём, пока сервер начислит бонус-пакет
   const lucky = useQuery({ queryKey: ["lucky"], queryFn: api.lucky, retry: false, refetchInterval: waitBox ? 1500 : false });
@@ -107,6 +110,9 @@ export function Packages() {
                       {money(p.price)} {t("sum")}
                     </span>
                   </button>
+                  <button className="pack-gift" onClick={() => setBuying({ ...p, gift: true })}>
+                    <Gift size={16} /> {t("pkg_gift_buy")}
+                  </button>
                 </div>
               </div>
             );
@@ -127,13 +133,22 @@ export function Packages() {
 
       <PaySheet
         open={!!buying}
-        title={buying ? planName(buying.code) : ""}
+        title={buying ? (buying.gift ? "🎁 " : "") + planName(buying.code) : ""}
         amount={buying?.price ?? 0}
         onClose={() => setBuying(null)}
-        createInvoice={(provider) => api.packageInvoice(buying!.code, provider)}
-        sendReceipt={(image) => api.packageReceipt(buying!.code, image)}
+        createInvoice={(provider) => api.packageInvoice(buying!.code, provider, !!buying?.gift)}
+        sendReceipt={(image) => api.packageReceipt(buying!.code, image, !!buying?.gift)}
         onReceipt={() => setToast(t("pay_shot_sent"))}
         onPaid={() => {
+          if (buying?.gift) {
+            // ссылка для друга — в кошельке («Подарки в пути») и сообщением в боте
+            setToast(t("pkg_gift_paid"));
+            setTimeout(() => {
+              void qc.invalidateQueries({ queryKey: ["gifts"] });
+              nav("/profile");
+            }, 1600);
+            return;
+          }
           if (buying?.code === "lucky") setWaitBox(true);
           else setToast(t("pay_pkg_ok"));
           setTimeout(() => qc.invalidateQueries({ queryKey: ["me"] }), 1500);

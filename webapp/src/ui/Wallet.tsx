@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Gift as GiftIcon, ImagePlus, Minus, Plus } from "lucide-react";
+import { Gift as GiftIcon, ImagePlus } from "lucide-react";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -76,8 +76,7 @@ export function Wallet() {
   const sel = open !== null ? items[open] : null;
 
   // Подарки: купон целиком или несколько презентаций из пакета — ссылкой другу
-  const [step, setStep] = useState<"view" | "count" | "share">("view");
-  const [count, setCount] = useState(1);
+  const [step, setStep] = useState<"view" | "share">("view");
   const [made, setMade] = useState<Gift | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const sent = useQuery({ queryKey: ["gifts"], queryFn: api.gifts, staleTime: 30_000 });
@@ -86,12 +85,11 @@ export function Wallet() {
     setTimeout(() => {
       setStep("view");
       setMade(null);
-      setCount(1);
     }, 300);
   };
   const give = useMutation({
     mutationFn: () =>
-      sel?.kind === "coupon" ? api.makeGift({ kind: "coupon", coupon_id: sel.id }) : api.makeGift({ kind: "pack", count }),
+      sel?.kind === "coupon" ? api.makeGift({ kind: "coupon", coupon_id: sel.id }) : api.makeGift({ kind: "pack" }),
     onSuccess: (g) => {
       haptic.success();
       setMade(g);
@@ -216,37 +214,15 @@ export function Wallet() {
                   disabled={give.isPending}
                   onClick={async () => {
                     haptic.tap();
-                    if (sel.kind === "pack") setStep("count");
-                    else if (await confirm(t("gift_coupon_q"))) give.mutate();
+                    // пакет дарится только целиком — поштучно дешёвые пакеты раздавали бы и перепродавали
+                    const q = sel.kind === "pack" ? t("gift_pack_q", { n: left }) : t("gift_coupon_q");
+                    if (await confirm(q)) give.mutate();
                   }}
                 >
                   <GiftIcon size={18} /> {t("gift_btn")}
                 </Button>
               </div>
             )}
-          </>
-        )}
-
-        {step === "count" && (
-          <>
-            <p className="subhead secondary center" style={{ margin: "0 8px 18px" }}>
-              {t("gift_count_s", { left })}
-            </p>
-            <div className="gift-count">
-              <button aria-label="−" disabled={count <= 1} onClick={() => (haptic.select(), setCount((c) => Math.max(1, c - 1)))}>
-                <Minus />
-              </button>
-              <b className="tabular">{count}</b>
-              <button aria-label="+" disabled={count >= left} onClick={() => (haptic.select(), setCount((c) => Math.min(left, c + 1)))}>
-                <Plus />
-              </button>
-            </div>
-            <p className="footnote secondary center" style={{ margin: "12px 8px 18px" }}>
-              {t("gift_count_after", { left: left - count })}
-            </p>
-            <Button disabled={give.isPending} onClick={() => give.mutate()}>
-              <GiftIcon size={18} /> {t("gift_pack_btn", { n: count })}
-            </Button>
           </>
         )}
 

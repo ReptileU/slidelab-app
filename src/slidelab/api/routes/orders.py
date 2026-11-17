@@ -63,6 +63,9 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
     ):
         kinds[order_id].add(kind)
     style_keys = {sid: key for sid, key in await session.execute(select(ShowcaseStyle.id, ShowcaseStyle.key))}
+    # вернётся ли оплата при отмене: после начала работы — не всегда
+    service = OrderService(session)
+    owners = {u.id: u for u in await session.scalars(select(User).where(User.id.in_({o.user_id for o in orders})))}
     # отменённые заказы, чей купон ещё у клиента и не потрачен — «Оплата сохранена»
     kept = set(
         await session.scalars(
@@ -86,6 +89,7 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
             skip_cover=o.skip_cover,
             is_paid=o.is_paid,
             voucher_open=o.id in kept,
+            cancel_refund=service.refund_on_cancel(o, owners[o.user_id]) if o.user_id in owners else True,
             by_voucher=o.coupon_id is not None,
             pres_lang=o.pres_lang,
             design=o.design,

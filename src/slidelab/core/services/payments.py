@@ -15,8 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from slidelab.core import repositories as repo
 from slidelab.core.enums import LedgerReason, OrderStatus, PaymentProvider, PaymentStatus, PlanCode
 from slidelab.core.errors import InvalidTransitionError
-from slidelab.core.models import Order, PackageBox, Payment, UserPackage
+from slidelab.core.models import Gift, Order, PackageBox, Payment, UserPackage
 from slidelab.core.models.base import utcnow
+from slidelab.core.services.gifts import GiftService
 from slidelab.core.services.lucky import LuckyService, Prize
 from slidelab.core.services.orders import PAYABLE, OrderService
 from slidelab.core.services.packages import Credit
@@ -36,6 +37,7 @@ class PaidResult:
     credit: Credit | None = None
     attention: str | None = None  # деньги пришли, но что-то не так — владелец должен разобраться
     prize: Prize | None = None  # бонус-пакет: что выпало
+    gift: Gift | None = None  # пакет куплен в подарок — ссылка для друга
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,8 +96,18 @@ class PaymentService:
         return await self._create(order.user_id, provider, amount, currency, order_id=order.id)
 
     async def for_plan(
-        self, user_id: int, plan_code: PlanCode, provider: PaymentProvider, credit_order_id: int | None = None
+        self,
+        user_id: int,
+        plan_code: PlanCode,
+        provider: PaymentProvider,
+        credit_order_id: int | None = None,
+        *,
+        as_gift: bool = False,
     ) -> Payment:
+        if as_gift:
+            if plan_code is PlanCode.LUCKY:
+                raise InvalidTransitionError("Бонус-пакет в подарок не покупается")
+            credit_order_id = None  # подарок — по полной цене, без зачёта своих заказов
         if plan_code is PlanCode.LUCKY:
             await self.lucky.ensure_can_buy(user_id)
             credit_order_id = None  # в бонус-пакет заказы не засчитываются
@@ -108,6 +120,7 @@ class PaymentService:
             currency,
             plan_code=plan_code,
             credit_order_id=q.credit.order_id if q.credit else None,
+            as_gift=as_gift,
         )
 
     async def check_pending(self, payment_id: int, amount: int, currency: str) -> Payment:
@@ -143,6 +156,7 @@ class PaymentService:
         credit = None
         attention = None
         prize = None
+        gift = None
         if payment.plan_code is PlanCode.LUCKY:
             # Розыгрыш — в момент оплаты: презентации начисляются сразу, даже если клиент не откроет «коробку»
             prize = self.lucky.roll()
@@ -157,6 +171,8 @@ class PaymentService:
                     created_at=self.orders.clock(),
                 )
             )
+        elif payment.plan_code is not None and payment.as_gift:
+            gift = await GiftService(self.session, self.orders.clock).bought(payment.user_id, payment.plan_code)
         elif payment.plan_code is not None:
             if payment.credit_order_id is not None:
                 credit = await self.packages.credit_for(payment.credit_order_id, payment.plan_code, at_payment=True)
@@ -187,6 +203,7 @@ class PaymentService:
             credit=credit,
             attention=attention,
             prize=prize,
+            gift=gift,
         )
 
     async def confirm_manual(self, order_id: int, manager_id: int) -> PaidResult:
@@ -242,7 +259,9 @@ class PaymentService:
         if paid.order_id is not None:
             stmt = stmt.where(Payment.order_id == paid.order_id)
         elif paid.plan_code is not None:
-            stmt = stmt.where(Payment.plan_code == paid.plan_code, Payment.order_id.is_(None))
+            stmt = stmt.where(
+                Payment.plan_code == paid.plan_code, Payment.order_id.is_(None), Payment.as_gift == paid.as_gift
+            )
         else:
             return
         for other in (await self.session.scalars(stmt)).all():
@@ -263,6 +282,7 @@ class PaymentService:
         order_id: int | None = None,
         plan_code: PlanCode | None = None,
         credit_order_id: int | None = None,
+        as_gift: bool = False,
     ) -> Payment:
         # Тот же неоплаченный счёт уже есть — отдаём его: каждое «Оплатить» не плодит новые платежи,
         # а владелец не подтвердит одну оплату дважды
@@ -279,6 +299,7 @@ class PaymentService:
                 Payment.credit_order_id == credit_order_id
                 if credit_order_id is not None
                 else Payment.credit_order_id.is_(None),
+                Payment.as_gift == as_gift,
             )
             .order_by(Payment.id.desc())
             .limit(1)
@@ -290,6 +311,7 @@ class PaymentService:
             order_id=order_id,
             plan_code=plan_code,
             credit_order_id=credit_order_id,
+            as_gift=as_gift,
             provider=provider,
             amount=amount,
             currency=currency,

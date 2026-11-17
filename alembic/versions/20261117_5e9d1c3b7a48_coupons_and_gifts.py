@@ -1,4 +1,4 @@
-"""Купоны отдельной таблицей и подарки (купон или презентации из пакета по ссылке)
+"""Купоны отдельной таблицей; подарки (купон или пакет целиком, в т.ч. купленный в подарок); лимит возвратов
 
 Revision ID: 5e9d1c3b7a48
 Revises: 2c7e4b9a1f36
@@ -26,6 +26,7 @@ def upgrade() -> None:
         sa.Column("coupon_id", sa.Integer(), nullable=True),
         sa.Column("plan_code", sa.String(32), nullable=True),
         sa.Column("count", sa.Integer(), nullable=False, server_default="1"),
+        sa.Column("package_id", sa.Integer(), sa.ForeignKey("user_packages.id"), nullable=True),
         sa.Column("expires_at", sa.DateTime(), nullable=True),
         sa.Column("status", sa.String(32), nullable=False, server_default="pending"),
         sa.Column("to_user_id", sa.Integer(), sa.ForeignKey("users.id"), nullable=True),
@@ -46,6 +47,10 @@ def upgrade() -> None:
     )
     with op.batch_alter_table("orders", schema=None) as batch_op:
         batch_op.add_column(sa.Column("coupon_id", sa.Integer(), nullable=True))
+    with op.batch_alter_table("payments", schema=None) as batch_op:
+        batch_op.add_column(sa.Column("as_gift", sa.Boolean(), server_default="0", nullable=False))
+    with op.batch_alter_table("users", schema=None) as batch_op:
+        batch_op.add_column(sa.Column("work_refund_at", sa.DateTime(), nullable=True))
 
     # Перенос: отменённые оплаченные заказы → купоны; заказы, оплаченные ими, → ссылка на купон
     conn = op.get_bind()
@@ -75,6 +80,10 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    with op.batch_alter_table("users", schema=None) as batch_op:
+        batch_op.drop_column("work_refund_at")
+    with op.batch_alter_table("payments", schema=None) as batch_op:
+        batch_op.drop_column("as_gift")
     with op.batch_alter_table("orders", schema=None) as batch_op:
         batch_op.add_column(sa.Column("voucher_open", sa.Boolean(), server_default="0", nullable=False))
         batch_op.add_column(sa.Column("voucher_from_id", sa.Integer(), nullable=True))

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -20,3 +22,5 @@ class User(CreatedAtMixin, Base):
     forum_topic_id: Mapped[int | None]
     # Кошелёк в профиле: обложка из фото клиента (имя файла в data/wallet), None — классическая кожа
     wallet_cover: Mapped[str | None] = mapped_column(String(64))
+    # Когда последний раз вернули оплату за отмену уже начатой презентации — такой возврат раз в 30 дней
+    work_refund_at: Mapped[datetime | None]

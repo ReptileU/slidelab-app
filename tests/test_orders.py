@@ -461,3 +461,37 @@ async def test_cancel_after_package_expired_gives_coupon(
     assert len(await repo.open_coupons(orders.session, user.id)) == 1  # вернуть в пакет некуда — купон
     q = await orders.quote(user.id, draft().quote_request())
     assert (q.voucher, q.price) == (True, 0)
+
+
+async def test_refund_after_work_started_once_per_30_days(
+    orders: OrderService, clock: FakeClock, make_user: Callable[..., Any]
+) -> None:
+    user = await make_user()
+    first = await orders.create(user.id, draft(skip_cover=True))
+    await orders.mark_paid(first, actor_id=None)  # в работе
+    await orders.cancel_by_client(first.id, user.id)
+    (coupon,) = await repo.open_coupons(orders.session, user.id)  # первый раз — оплата сохранилась
+
+    # Купоном заказал, работа началась, отменил — купон сгорает: иначе круг «заказал-отменил» бесконечен
+    second = await orders.create(user.id, draft(skip_cover=True))
+    assert second.coupon_id == coupon.id and second.status is S.WORK
+    assert not orders.refund_on_cancel(second, user)
+    await orders.cancel_by_client(second.id, user.id)
+    assert await repo.open_coupons(orders.session, user.id) == []
+
+    # Оплатил деньгами, но возврат после начала работы уже был в этом месяце — без возврата
+    third = await orders.create(user.id, draft(skip_cover=True))
+    await orders.mark_paid(third, actor_id=None)
+    assert not orders.refund_on_cancel(third, user)
+    clock.advance(days=31)
+    assert orders.refund_on_cancel(third, user)  # через месяц — снова можно
+
+
+async def test_cancel_before_work_always_refunds(orders: OrderService, make_user: Callable[..., Any]) -> None:
+    user = await make_user()
+    user.work_refund_at = orders.clock()  # недавно уже был возврат за начатую работу
+    order = await orders.create(user.id, draft())
+    await orders.mark_paid(order, actor_id=None)  # оплатил заранее, обложка ещё делается
+    assert order.status is S.NEW and orders.refund_on_cancel(order, user)
+    await orders.cancel_by_client(order.id, user.id)
+    assert len(await repo.open_coupons(orders.session, user.id)) == 1

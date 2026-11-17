@@ -12,6 +12,7 @@ from sqlalchemy import select
 from slidelab.core.enums import Lang, PaidFrom, PaymentProvider, PlanCode
 from slidelab.core.i18n import money, t
 from slidelab.core.models import Order, PackagePlan, ShowcaseStyle, User
+from slidelab.core.services.gifts import link
 from slidelab.core.services.payments import PaidResult, PaymentService
 from slidelab.core.services.pipeline import Pipeline, fmt_of, formats_of
 from slidelab.telegram import keyboards as kb
@@ -124,6 +125,18 @@ class Flows:
         if result.attention:
             await self.n.staff(
                 f"⚠️ {html.escape(result.attention)}\nПлатёж {p.id} · {amount}\n"
+                f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
+                user=user,
+            )
+        if result.gift is not None:
+            # Пакет куплен в подарок: ссылка для друга и кнопка «Отправить»
+            g = result.gift
+            plan_name = t(user.lang, "plan_" + (g.plan_code.value if g.plan_code else "month"))
+            url = link(self.settings.bot_username, g)
+            await self.n.client(user, "gift_bought", kb.share_gift(user.lang or Lang.RU, url), plan=plan_name, link=url)
+            await self.n.staff(
+                f"🎁 Пакет «{t(None, 'plan_' + (g.plan_code.value if g.plan_code else 'month'))}» "
+                f"куплен в подарок · {amount}\n"
                 f"{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>",
                 user=user,
             )
@@ -293,9 +306,13 @@ class Flows:
             lines="\n".join(lines),
         )
 
-    async def plan_payment(self, user: User, code: PlanCode, credit_order_id: int = 0) -> bool:
-        """Показать оплату пакета (с зачётом заказа, если он ещё действует)."""
+    async def plan_payment(
+        self, user: User, code: PlanCode, credit_order_id: int = 0, *, as_gift: bool = False
+    ) -> bool:
+        """Показать оплату пакета (с зачётом заказа, если он ещё действует; подарок — без зачёта)."""
         payments = PaymentService(self.session)
+        if as_gift:
+            credit_order_id = 0
         q = await payments.plan_quote(code, credit_order_id or None, user.id)
         if credit_order_id and q.credit is None:
             return False
@@ -304,10 +321,11 @@ class Flows:
         # Счёт на перевод заводим сразу: как в прежнем боте, владелец может включить пакет одной кнопкой,
         # не дожидаясь чека (тот же счёт подхватит и чек клиента)
         payment = await payments.for_plan(
-            user.id, code, PaymentProvider.MANUAL_CARD, q.credit.order_id if q.credit else None
+            user.id, code, PaymentProvider.MANUAL_CARD, q.credit.order_id if q.credit else None, as_gift=as_gift
         )
         await self.n.staff(
-            f"📦 Заявка на пакет «{t(None, 'plan_' + code.value)}» — {money(q.amount)} сум"
+            ("🎁 В подарок · " if as_gift else "")
+            + f"📦 Заявка на пакет «{t(None, 'plan_' + code.value)}» — {money(q.amount)} сум"
             + (f" (засчитан #{q.credit.order_id})" if q.credit else "")
             + f"\n{html.escape(views.client_name(user))} · ID: <code>{user.tg_id}</code>\n"
             "<i>Реквизиты клиенту отправлены. Звёзды подтвердятся сами. Перевод пришёл — включите пакет:</i>",

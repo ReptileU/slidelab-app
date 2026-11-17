@@ -131,6 +131,10 @@ function OrderView({ order }: { order: Order }) {
       }
       refresh(o);
       // оплата вернулась: в пакет — карта (разбитая собирается), иначе — купон
+      if (order.cancel_refund === false) {
+        setToast(t("cancel_ok_norefund"));
+        return;
+      }
       const pkg = o.voucher_open ? null : (me?.package ?? null);
       if (o.voucher_open || pkg) setBack({ pkg, coupon: !!o.voucher_open });
       else setToast(t("cancel_ok_pack"));
@@ -151,6 +155,11 @@ function OrderView({ order }: { order: Order }) {
     if (await confirm(t(order.voucher_open ? "hide_q_coupon" : "hide_q"))) hide.mutate();
   };
   const askCancel = async () => {
+    if (order.cancel_refund === false) {
+      // презентацию уже делают, а возврат за начатую работу недавно был (или оплачено купоном)
+      if (await confirm(t(order.by_voucher ? "cancel_q_burn_coupon" : "cancel_q_norefund"))) cancel.mutate();
+      return;
+    }
     const q = unpaid ? "cancel_q_unpaid" : fromPack && packAlive ? "cancel_q_pack" : fromPack ? "cancel_q_paid" : paidCash || order.by_voucher ? "cancel_q_paid" : "cancel_q_unpaid";
     if (await confirm(t(q))) cancel.mutate();
   };

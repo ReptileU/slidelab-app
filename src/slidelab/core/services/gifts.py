@@ -1,8 +1,8 @@
-"""Подарки: купон или несколько презентаций из пакета — по ссылке t.me/<бот>?start=gift_<code>.
+"""Подарки по ссылке t.me/<бот>?start=gift_<code>: купон, пакет из кошелька целиком или пакет, купленный в подарок.
 
-Подаренное сразу уходит от дарителя (купон блокируется, презентации списываются из пакета), а получатель
-забирает его по ссылке. Пока не забрали — даритель может отменить, и всё вернётся.
-Презентации не пропадают: если срок пакета вышел, получатель (или даритель при отмене) получает купоны.
+Дробить пакет нельзя — только целиком (иначе дешёвые пакеты раздавали бы поштучно).
+Подаренное сразу уходит от дарителя, получатель забирает его по ссылке. Пока не забрали — даритель может
+отменить, и всё вернётся. Презентации не пропадают: если срок пакета вышел, приходят купоны.
 """
 
 import secrets
@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
-from slidelab.core.enums import CouponOrigin, GiftKind, GiftStatus, LedgerReason, SlideTier
+from slidelab.core.enums import CouponOrigin, GiftKind, GiftStatus, LedgerReason, PlanCode, SlideTier
 from slidelab.core.errors import DomainError, ForbiddenError, NotFoundError
 from slidelab.core.models import Coupon, Gift
 from slidelab.core.models.base import as_utc, utcnow
@@ -70,18 +70,31 @@ class GiftService:
         await self.session.flush()
         return gift
 
-    async def gift_pack(self, user_id: int, count: int) -> Gift:
+    async def gift_pack(self, user_id: int) -> Gift:
+        """Пакет из кошелька — целиком: остаток уходит другу с тем же тарифом и сроком."""
         await self._check_limit(user_id)
-        if count < 1:
-            raise GiftError("Сколько презентаций подарить?")
         package = await repo.get_active_package(self.session, user_id, self.clock(), for_update=True)
-        if package is None or package.left < count:
-            raise GiftError("В пакете не хватает презентаций")
+        if package is None or package.left < 1:
+            raise GiftError("В пакете не осталось презентаций")
+        count = package.left
         gift = self._new(
-            user_id, GiftKind.PACK, plan_code=package.plan_code, count=count, expires_at=package.expires_at
+            user_id,
+            GiftKind.PACK,
+            plan_code=package.plan_code,
+            count=count,
+            expires_at=package.expires_at,
+            package_id=package.id,
         )
-        package.left -= count
+        package.left = 0
         self.packages._ledger(package, -count, LedgerReason.GIFT)
+        package.expires_at = self.clock()  # карта уходит из кошелька целиком
+        await self.session.flush()
+        return gift
+
+    async def bought(self, user_id: int, plan_code: PlanCode) -> Gift:
+        """Пакет купили в подарок: срок пойдёт с момента, когда друг заберёт."""
+        plan = await repo.get_plan(self.session, plan_code)
+        gift = self._new(user_id, GiftKind.PACK, plan_code=plan_code, count=plan.count)
         await self.session.flush()
         return gift
 
@@ -130,19 +143,13 @@ class GiftService:
                 coupon.from_user_id, coupon.user_id = coupon.user_id, to_user
             return 0
         assert gift.plan_code is not None
-        if gift.expires_at is not None and as_utc(gift.expires_at) > self.clock():
-            if to_user == gift.from_user_id:
-                # отмена: назад в действующий пакет дарителя
-                package = await repo.get_active_package(self.session, to_user, self.clock(), for_update=True)
-                if package is not None:
-                    package.left += gift.count
-                    self.packages._ledger(package, gift.count, reason)
-                    return 0
-            else:
-                await self.packages.activate(
-                    to_user, gift.plan_code, reason, count=gift.count, expires_at=gift.expires_at
-                )
-                return 0
+        if gift.expires_at is None:  # куплен в подарок — свежий пакет (дарителю при отмене — тоже)
+            await self.packages.activate(to_user, gift.plan_code, reason, count=gift.count)
+            return 0
+        if as_utc(gift.expires_at) > self.clock():
+            # тот же тариф и срок; складывается с пакетом, который уже есть (у дарителя при отмене — тоже)
+            await self.packages.activate(to_user, gift.plan_code, reason, count=gift.count, expires_at=gift.expires_at)
+            return 0
         # срок пакета вышел — презентации не пропадают: купоны
         for _ in range(gift.count):
             self.session.add(

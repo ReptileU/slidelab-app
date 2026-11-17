@@ -138,7 +138,8 @@ export interface Order {
   status: OrderStatus;
   skip_cover?: boolean;
   is_paid?: boolean;
-  voucher_open?: boolean; // отменён после оплаты — оплата ждёт следующего заказа
+  voucher_open?: boolean;
+  cancel_refund?: boolean; // отменить сейчас — оплата вернётся (после начала работы — не всегда) // отменён после оплаты — оплата ждёт следующего заказа
   by_voucher?: boolean; // оплачен отменённым заказом
   price: number;
   paid_from: PaidFrom;

@@ -134,6 +134,7 @@ class OrderOut(BaseModel):
     price: int
     is_paid: bool = False
     voucher_open: bool = False  # отменён, оплата ждёт следующего заказа
+    cancel_refund: bool = True  # если отменить сейчас — оплата вернётся (после начала работы — не всегда)
     by_voucher: bool = False  # оплачен отменённым заказом
     paid_from: PaidFrom
     package_cost: int
@@ -149,6 +150,7 @@ class InvoiceIn(BaseModel):
     provider: Literal["stars", "card"]
     # Перевод прямо в приложении: реквизиты вернутся в ответе, а не придут в чат
     app: bool = False
+    gift: bool = False  # пакет покупают в подарок другу
 
 
 class PayCardOut(BaseModel):
@@ -164,8 +166,7 @@ class CouponOut(BaseModel):
 
 class GiftIn(BaseModel):
     kind: GiftKind
-    coupon_id: int | None = None  # купон
-    count: int = Field(default=1, ge=1, le=20)  # презентаций из пакета
+    coupon_id: int | None = None  # купон; пакет дарится только целиком
 
 
 class GiftOut(BaseModel):
@@ -188,6 +189,7 @@ class ReceiptIn(BaseModel):
     """Скриншот оплаты из приложения — data:image/...;base64,..."""
 
     image: str = Field(max_length=4_000_000)
+    gift: bool = False  # чек за пакет в подарок
 
 
 class InvoiceOut(BaseModel):
