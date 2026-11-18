@@ -11,6 +11,7 @@
 
 import asyncio
 import contextlib
+import hashlib
 import hmac
 import logging
 import os
@@ -63,7 +64,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     settings = with_service_url(settings or get_settings())
     app = create_api(settings)
-    secret = settings.webhook_secret.get_secret_value() if settings.webhook_secret else ""
+    # Telegram принимает в секрете только A–Z, a–z, 0–9, _ и - ; сгенерированный Render может содержать «+/=»
+    raw = settings.webhook_secret.get_secret_value() if settings.webhook_secret else ""
+    secret = hashlib.sha256(raw.encode()).hexdigest() if raw else ""
     pending: set[asyncio.Task[object]] = set()
 
     @asynccontextmanager
@@ -85,14 +88,23 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             sessionmaker,
             [Root("orders", settings.work_dir), Root("data", settings.data_dir), Root("content", settings.content_dir)],
         )
-        await mirror.restore()
+        try:
+            await mirror.restore()
+        except Exception:
+            log.exception("Файлы из базы не восстановлены — работаем с пустой папкой")
         await dp.emit_startup(bot=bot)
-        if settings.webhook_url:
-            await bot.set_webhook(
-                settings.webhook_url.rstrip("/") + WEBHOOK_PATH,
-                secret_token=secret or None,
-                allowed_updates=dp.resolve_used_update_types(),
-            )
+        try:
+            me = await bot.get_me()
+            log.info("Бот: @%s", me.username)
+            if settings.webhook_url:
+                await bot.set_webhook(
+                    settings.webhook_url.rstrip("/") + WEBHOOK_PATH,
+                    secret_token=secret or None,
+                    allowed_updates=dp.resolve_used_update_types(),
+                )
+        except Exception:
+            # сервис всё равно поднимается: health отвечает, а причина видна в логах (часто — неверный BOT_TOKEN)
+            log.exception("Telegram не принял бота или webhook — проверьте BOT_TOKEN")
         with contextlib.suppress(Exception):
             await set_profile(bot, settings)
         jobs = start_background(bot, dp, settings)

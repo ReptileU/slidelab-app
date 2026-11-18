@@ -552,6 +552,7 @@ async def test_package_reminder_before_expiry_not_for_fresh(h: Harness) -> None:
 
 async def test_cloud_webhook_feeds_the_bot(h: Harness) -> None:
     import asyncio
+    import hashlib
 
     from httpx import ASGITransport, AsyncClient
     from pydantic import SecretStr
@@ -576,7 +577,11 @@ async def test_cloud_webhook_feeds_the_bot(h: Harness) -> None:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         bad = await c.post("/telegram/webhook", json=body, headers={"X-Telegram-Bot-Api-Secret-Token": "nope"})
         assert bad.status_code == 401
-        ok = await c.post("/telegram/webhook", json=body, headers={"X-Telegram-Bot-Api-Secret-Token": "s3cret"})
+        ok = await c.post(
+            "/telegram/webhook",
+            json=body,
+            headers={"X-Telegram-Bot-Api-Secret-Token": hashlib.sha256(b"s3cret").hexdigest()},
+        )
         assert ok.status_code == 200
         for _ in range(50):  # обработка идёт в фоне
             if h.tg.of("SendMessage"):
