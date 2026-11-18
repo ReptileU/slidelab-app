@@ -368,3 +368,59 @@ async def test_gift_card_to_forward_and_prepared_share(env: dict[str, Any]) -> N
     await c.post(f"/api/gifts/{gift['id']}/share", headers=auth())
     assert len(env["tg"].of("SendPhoto")) == 1  # открытка уже есть — второй раз в чат не шлём
     assert (await c.post(f"/api/gifts/{gift['id']}/share", headers=auth(888))).status_code == 404
+
+
+async def test_pipeline_api_for_claude_session(tmp_path: Path) -> None:
+    from httpx import ASGITransport, AsyncClient
+    from pydantic import SecretStr
+
+    settings = Settings(  # type: ignore[call-arg]
+        _env_file=None, bot_token=TOKEN, work_dir=tmp_path, data_dir=tmp_path / "data", pipeline_key=SecretStr("k1")
+    )
+    (tmp_path / "7" / "files").mkdir(parents=True)
+    (tmp_path / "7" / "status.json").write_text('{"stage": "cover_todo", "paid": false}', encoding="utf-8")
+    (tmp_path / "7" / "brief.json").write_text('{"topic": "Экономика"}', encoding="utf-8")
+    (tmp_path / "7" / "files" / "лекция.pdf").write_bytes(b"%PDF")
+    app = create_app(settings)
+    key = {"X-Pipeline-Key": "k1"}
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        assert (await c.get("/pipeline/orders")).status_code == 401
+        assert (await c.get("/pipeline/orders", headers={"X-Pipeline-Key": "x"})).status_code == 401
+        (order,) = (await c.get("/pipeline/orders", headers=key)).json()
+        assert order["id"] == 7 and order["status"]["stage"] == "cover_todo" and order["review"] == []
+        files = {f["path"] for f in (await c.get("/pipeline/orders/7", headers=key)).json()}
+        assert files == {"status.json", "brief.json", "files/лекция.pdf"}
+        brief = await c.get("/pipeline/orders/7/file", params={"path": "brief.json"}, headers=key)
+        assert brief.json() == {"topic": "Экономика"}
+        put = lambda p, body: c.put("/pipeline/orders/7/file", params={"path": p}, content=body, headers=key)  # noqa: E731
+        assert (await put("review/claim.json", b'{"started": "now"}')).status_code == 200
+        assert (await put("review/review.json", b"not json")).status_code == 422
+        assert (await put("brief.json", b"{}")).status_code == 403  # задание не трогаем
+        assert (await put("review/../brief.json", b"{}")).status_code in (400, 403)
+        (order,) = (await c.get("/pipeline/orders", headers=key)).json()
+        assert order["claim"] == {"started": "now"} and order["review"] == ["claim.json"]
+    no_key = create_app(Settings(_env_file=None, bot_token=TOKEN, work_dir=tmp_path))  # type: ignore[call-arg]
+    async with AsyncClient(transport=ASGITransport(app=no_key), base_url="http://test") as c:
+        assert (await c.get("/pipeline/orders", headers=key)).status_code in (404, 405)  # без ключа — выключено
+
+
+def test_cloud_database_url_is_normalized() -> None:
+    from slidelab.config import normalize_db_url
+
+    neon = "postgresql://u:p@ep-x.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    assert normalize_db_url(neon) == "postgresql+asyncpg://u:p@ep-x.eu-central-1.aws.neon.tech/neondb?ssl=require"
+    assert normalize_db_url("postgres://u:p@h/db") == "postgresql+asyncpg://u:p@h/db"
+    assert normalize_db_url("sqlite+aiosqlite:///data/slidelab.db") == "sqlite+aiosqlite:///data/slidelab.db"
+
+
+def test_render_service_url_becomes_webhook_and_webapp() -> None:
+    from slidelab.cloud import with_service_url
+
+    base = Settings(_env_file=None, bot_token=TOKEN)  # type: ignore[call-arg]
+    s = with_service_url(base, {"RENDER_EXTERNAL_URL": "https://slidelab.onrender.com"})
+    assert (s.webhook_url, s.webapp_url, s.legacy_webapp) == (
+        "https://slidelab.onrender.com",
+        "https://slidelab.onrender.com/",
+        False,
+    )
+    assert with_service_url(base, {}) is base  # не в облаке — ничего не меняем

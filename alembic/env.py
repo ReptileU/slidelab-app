@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from slidelab.config import Settings
+from slidelab.config import Settings, normalize_db_url
 from slidelab.core.models import Base
 
 target_metadata = Base.metadata
@@ -18,7 +18,7 @@ class _DbSettings(BaseSettings):
     database_url: str = Settings.model_fields["database_url"].default
 
 
-DATABASE_URL = _DbSettings().database_url
+DATABASE_URL = normalize_db_url(_DbSettings().database_url)
 
 
 def run_migrations_offline() -> None:

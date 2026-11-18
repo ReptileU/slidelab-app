@@ -22,7 +22,7 @@ from pydantic import BaseModel, Field
 from starlette.responses import Response
 from starlette.types import Scope
 
-from slidelab.api.routes import catalog, gifts, me, orders, packages, support
+from slidelab.api.routes import catalog, gifts, me, orders, packages, pipeline, support
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
 from slidelab.core.errors import DomainError, ForbiddenError, NotFoundError
@@ -101,6 +101,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     for module in (me, catalog, orders, packages, support, gifts):
         app.include_router(module.router, prefix="/api")
+    if settings.pipeline_key:  # облако: сессия Claude работает с заказами через HTTP, а не через папку
+        app.include_router(pipeline.router)
 
     @app.get("/api/health")
     async def health() -> dict[str, str]:

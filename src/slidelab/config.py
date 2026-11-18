@@ -9,6 +9,27 @@ from pydantic import AliasChoices, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
+def normalize_db_url(url: str) -> str:
+    """Адрес от облачной базы (Neon, Render: postgres://… ?sslmode=require) → вид для asyncpg."""
+    if url.startswith("postgres://"):
+        url = "postgresql://" + url[len("postgres://") :]
+    if url.startswith("postgresql://"):
+        url = "postgresql+asyncpg://" + url[len("postgresql://") :]
+    if url.startswith("postgresql+asyncpg://") and "?" in url:
+        base, _, query = url.partition("?")
+        params = []
+        for part in query.split("&"):
+            name, _, value = part.partition("=")
+            if name == "sslmode":
+                params.append(f"ssl={value}")
+            elif name in ("channel_binding", "options"):
+                continue  # asyncpg их не знает
+            elif part:
+                params.append(part)
+        url = base + ("?" + "&".join(params) if params else "")
+    return url
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
@@ -22,6 +43,8 @@ class Settings(BaseSettings):
     manager_ids: Annotated[list[int], NoDecode] = Field(default_factory=list)
     webhook_secret: SecretStr | None = None
     webhook_url: str | None = None  # пусто — long polling
+    # Облако: ключ, по которому сессия Claude берёт заказы и сдаёт работу через /pipeline (пусто — выключено)
+    pipeline_key: SecretStr | None = None
     bot_port: int = 8080
 
     # --- Mini App ---
@@ -80,6 +103,11 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [x.strip() for x in value.split(",") if x.strip()]
         return value
+
+    @field_validator("database_url", mode="after")
+    @classmethod
+    def _db_url(cls, value: str) -> str:
+        return normalize_db_url(value)
 
     @field_validator(
         "admin_id",

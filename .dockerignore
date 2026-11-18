@@ -1,0 +1,13 @@
+.env
+settings.txt
+data/
+orders/
+bot/
+.venv/
+**/node_modules/
+webapp/dist/
+**/__pycache__/
+.git/
+tests/
+*.bat
+*.ps1

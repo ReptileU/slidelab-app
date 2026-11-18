@@ -545,3 +545,42 @@ async def test_package_reminder_before_expiry_not_for_fresh(h: Harness) -> None:
     async with h.sm() as s:
         assert await tasks.check_packages(Notifier(h.bot, s, SETTINGS), s, day) == 1
     assert "скоро закончится" in h.texts(CLIENT)[-1]
+
+
+# --- облако: апдейты Telegram приходят на webhook того же приложения, что и API --------------
+
+
+async def test_cloud_webhook_feeds_the_bot(h: Harness) -> None:
+    import asyncio
+
+    from httpx import ASGITransport, AsyncClient
+    from pydantic import SecretStr
+
+    from slidelab.cloud import create_app
+
+    settings = SETTINGS.model_copy(update={"webhook_secret": SecretStr("s3cret")})
+    app = create_app(settings)
+    app.state.bot, app.state.dispatcher, app.state.sessionmaker = h.bot, DP, h.sm  # без lifespan — как в тестах API
+    update = Update(
+        update_id=next(ids),
+        message=Message(
+            message_id=next(ids),
+            date=datetime.now(UTC),
+            chat=Chat(id=CLIENT, type="private"),
+            from_user=User(id=CLIENT, is_bot=False, first_name="Азиз", language_code="ru"),
+            text="/start",
+            entities=[MessageEntity(type="bot_command", offset=0, length=6)],
+        ),
+    )
+    body = update.model_dump(mode="json", exclude_none=True)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        bad = await c.post("/telegram/webhook", json=body, headers={"X-Telegram-Bot-Api-Secret-Token": "nope"})
+        assert bad.status_code == 401
+        ok = await c.post("/telegram/webhook", json=body, headers={"X-Telegram-Bot-Api-Secret-Token": "s3cret"})
+        assert ok.status_code == 200
+        for _ in range(50):  # обработка идёт в фоне
+            if h.tg.of("SendMessage"):
+                break
+            await asyncio.sleep(0.02)
+        assert h.tg.of("SendMessage")  # бот ответил на /start
+        assert (await c.get("/api/health")).json() == {"status": "ok"}

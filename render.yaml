@@ -1,0 +1,31 @@
+# Render Blueprint: бот + API + Mini App на бесплатном тарифе. Секреты вводятся в панели Render (sync: false).
+services:
+  - type: web
+    name: slidelab
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: cloud
+    healthCheckPath: /api/health
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: DATABASE_URL # строка подключения из Neon
+        sync: false
+      - key: WEBHOOK_SECRET
+        generateValue: true
+      - key: PIPELINE_KEY # ключ для сессии Claude «делать заказы» (тот же — в её задании)
+        sync: false
+      - key: ADMIN_ID
+        sync: false
+      - key: BOT_USERNAME
+        sync: false
+      # адрес сервиса (webhook и Mini App) Render подставляет сам — RENDER_EXTERNAL_URL
+      - key: PAY_UZUM
+        sync: false
+      - key: PAY_PAYME
+        sync: false
+      - key: PAY_ZOOMRAD
+        sync: false
+      - key: PAY_NAME
+        sync: false

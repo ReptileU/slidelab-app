@@ -55,7 +55,7 @@ def upgrade() -> None:
     # Перенос: отменённые оплаченные заказы → купоны; заказы, оплаченные ими, → ссылка на купон
     conn = op.get_bind()
     for oid, uid, slides in conn.execute(
-        sa.text("SELECT id, user_id, slides FROM orders WHERE voucher_open = 1")
+        sa.text("SELECT id, user_id, slides FROM orders WHERE voucher_open = :t"), {"t": True}
     ).fetchall():
         conn.execute(
             sa.text("INSERT INTO coupons (user_id, slides, origin, order_id) VALUES (:u, :s, 'cancel', :o)"),
