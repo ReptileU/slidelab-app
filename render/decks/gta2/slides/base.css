@@ -1,0 +1,25 @@
+@font-face{font-family:"Unbounded";font-weight:700;src:url("../../fonts/Unbounded-Bold.ttf")}
+@font-face{font-family:"Unbounded";font-weight:900;src:url("../../fonts/Unbounded-Black.ttf")}
+@font-face{font-family:"Montserrat";font-weight:500;src:url("../../fonts/Montserrat-Medium.ttf")}
+@font-face{font-family:"Montserrat";font-weight:700;src:url("../../fonts/Montserrat-Bold.ttf")}
+@font-face{font-family:"Montserrat";font-weight:800;src:url("../../fonts/Montserrat-ExtraBold.ttf")}
+@font-face{font-family:"Press Start 2P";font-weight:400;src:url("../../fonts/PressStart2P-Regular.ttf")}
+:root{--bg:#0D0913;--ink:#F4EEFF;--mute:#9C90B8;--pink:#FF3EA5;--cyan:#29E3D6;--sun:#FF9A3D;--card:#1C1329}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:"Montserrat";font-weight:500;position:relative}
+.a{position:absolute}
+.k{font-family:"Montserrat";font-weight:800;font-size:24px;letter-spacing:.22em;text-transform:uppercase;color:var(--pink)}
+.h{font-family:"Unbounded";font-weight:700;line-height:1.12}
+.p{font-size:30px;line-height:1.42}
+.num{font-family:"Unbounded";font-weight:900;line-height:1}
+.px{font-family:"Press Start 2P";line-height:1.3}
+.src{font-size:18px;color:var(--mute);line-height:1.3}
+.pg{right:64px;bottom:44px;font-size:18px;font-weight:700;color:var(--mute)}
+.pix{image-rendering:pixelated}
+.crt{background:#1a1a1a;border-radius:28px;padding:34px;box-shadow:0 0 0 6px #2a2a2a,0 30px 80px rgba(0,0,0,.6),0 0 120px rgba(41,227,214,.18)}
+.crt .scr{width:100%;height:100%;border-radius:18px;overflow:hidden;position:relative;background:#000}
+.crt .scr img{width:100%;height:100%;object-fit:cover}
+.scan:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 2px,transparent 2px 5px);pointer-events:none}
+.pin{width:22px;height:22px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 6px rgba(41,227,214,.25)}
+.lead{height:3px;background:var(--cyan);transform-origin:left center}
