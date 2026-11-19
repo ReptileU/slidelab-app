@@ -607,12 +607,145 @@ def L_sources(ctx: Ctx, s, d):
     page_no(ctx, s)
 
 
+def _overlay_img(ctx: Ctx, spec: dict, w_in: float, h_in: float, mode: str, strength: float) -> Path:
+    """Фото, обрезанное под рамку, с затемнением там, где лежит текст (mode: left/right/top/bottom/uniform/none)."""
+    t = ctx.theme
+    px_w, px_h = int(w_in * 160), int(h_in * 160)
+    img = Image.open(ctx.assets / spec["file"]).convert("RGB")
+    fx, fy = spec.get("focus", (0.5, 0.5))
+    tr = px_w / px_h
+    if img.width / img.height > tr:
+        nw = int(img.height * tr)
+        left = int((img.width - nw) * fx)
+        img = img.crop((left, 0, left + nw, img.height))
+    else:
+        nh = int(img.width / tr)
+        top = int((img.height - nh) * fy)
+        img = img.crop((0, top, img.width, top + nh))
+    img = img.resize((px_w, px_h), Image.LANCZOS)
+    if mode != "none":
+        dark = Image.new("RGB", img.size, t.dark)
+        if mode == "uniform":
+            mask = Image.new("L", img.size, int(255 * strength))
+        else:
+            g = Image.linear_gradient("L")  # сверху 0 → снизу 255
+            g = {"top": g.transpose(Image.FLIP_TOP_BOTTOM), "bottom": g,
+                 "left": g.rotate(-90, expand=True), "right": g.rotate(90, expand=True)}[mode]
+            g = g.resize(img.size)
+            mask = g.point(lambda v: int(255 * strength * (v / 255) ** 1.6))
+        img = Image.composite(dark, img, mask)
+    out = ctx.assets / f"_s{ctx.n:02d}_photo.jpg"
+    img.save(out, quality=90)
+    return out
+
+
+def L_photo(ctx: Ctx, s, d):
+    """Картинка + данные: фото на весь слайд (или в рамке), поверх — подписи к предметам, столбики на горизонте,
+    стрелки. Все подписи — текст PowerPoint, их можно править."""
+    t = ctx.theme
+    background(ctx, s, t.dark)
+    spec = d["image"]
+    bx, by, bw, bh = d.get("image_box", [0, 0, W, H])
+    path = _overlay_img(ctx, spec, bw, bh, d.get("overlay", "left"), d.get("overlay_strength", 0.75))
+    s.shapes.add_picture(str(path), Inches(bx), Inches(by), Inches(bw), Inches(bh))
+    ink = d.get("ink", t.on_dark)
+    hi = d.get("hi", t.accent2)
+    tx, ty, tw = d.get("title_box", [M, 0.7, 6.4])
+    if d.get("kicker"):
+        kicker(ctx, s, tx, ty, tw, d["kicker"], color=hi)
+    add_text(ctx, s, tx, ty + 0.42, tw, d.get("title_h", 1.9), d["title"], size=d.get("title_size", 36), min_size=24,
+             family=t.title_font, weight=t.title_weight, color=ink, spacing=1.0, role="title")
+    if d.get("text"):
+        txy = d.get("text_box", [tx, ty + 0.42 + d.get("title_h", 1.9) + 0.1, tw, 1.6])
+        add_text(ctx, s, *txy, d["text"], size=d.get("text_size", 18), min_size=14, color=ink, role="body")
+    X = lambda f: bx + f * bw  # координаты аннотаций — доли картинки
+    Y = lambda f: by + f * bh
+    # подписи к предметам: точка на предмете → линия → цифра и пояснение
+    for a in d.get("pins", []):
+        px, py = X(a["x"]), Y(a["y"])
+        lx, ly = X(a.get("tx", a["x"])), Y(a.get("ty", a["y"]))
+        lw = a.get("w", 2.6)
+        right = a.get("align", "left") == "right"
+        if a.get("dot", True):
+            if (lx, ly) != (px, py):
+                line(s, px, py, lx, ly, a.get("color", ink), 1.25)
+            rect(s, px - 0.07, py - 0.07, 0.14, 0.14, a.get("color", hi), MSO_SHAPE.OVAL)
+        x0 = lx - lw if right else lx
+        al = PP_ALIGN.RIGHT if right else PP_ALIGN.LEFT
+        y0 = ly - 0.62 if a.get("above", True) else ly + 0.08
+        if a.get("value"):
+            add_text(ctx, s, x0 + (0 if right else 0.1) - (0.1 if right else 0), y0, lw, 0.6, a["value"],
+                     size=a.get("size", 28), min_size=16, family=t.num_font, weight=t.num_weight,
+                     color=a.get("color", hi), align=al, role="number", anchor=MSO_ANCHOR.BOTTOM)
+        if a.get("label"):
+            add_text(ctx, s, x0 + (0 if right else 0.1) - (0.1 if right else 0), y0 + 0.66, lw, a.get("lh", 0.7),
+                     a["label"], size=a.get("lsize", 14), min_size=11, weight=700, color=ink, align=al, role="label")
+    # столбики, которые стоят на линии горизонта/земли картинки
+    b = d.get("bars")
+    if b:
+        items = b["items"]
+        x0, x1, base, top = X(b["x0"]), X(b["x1"]), Y(b["base"]), Y(b["top"])
+        n = len(items)
+        slot = (x1 - x0) / n
+        bw_ = slot * b.get("width", 0.55)
+        vmax = max(it["value"] for it in items)
+        for i, it in enumerate(items):
+            hgt = (base - top) * it["value"] / vmax
+            cx = x0 + i * slot + (slot - bw_) / 2
+            col = t.accent if it.get("hot") else b.get("color", "#FFFFFF")
+            r_ = rect(s, cx, base - hgt, bw_, hgt, col)
+            _set_alpha(r_, 0 if it.get("hot") else b.get("alpha", 0.25))
+            add_text(ctx, s, cx - 0.3, base - hgt - 0.55, bw_ + 0.6, 0.5, it["fmt"], size=b.get("vsize", 22),
+                     min_size=14, family=t.num_font, weight=t.num_weight,
+                     color=b.get("hot_label", "#FFFFFF") if it.get("hot") else ink, align=PP_ALIGN.CENTER, role="number",
+                     anchor=MSO_ANCHOR.BOTTOM)
+            add_text(ctx, s, cx - 0.3, base + 0.08, bw_ + 0.6, 0.4, it["label"], size=14, weight=700, color=ink,
+                     align=PP_ALIGN.CENTER, role="label")
+        if b.get("caption"):
+            add_text(ctx, s, x0, base + 0.5, x1 - x0, 0.4, b["caption"], size=12, color=ink, role="meta",
+                     align=PP_ALIGN.CENTER)
+    for ar in d.get("arrows", []):
+        line(s, X(ar["x1"]), Y(ar["y1"]), X(ar["x2"]), Y(ar["y2"]), ar.get("color", hi), ar.get("width", 3), arrow=True)
+        if ar.get("label"):
+            add_text(ctx, s, X(ar["lx"]), Y(ar["ly"]), ar.get("w", 3.0), 0.9, ar["label"], size=ar.get("size", 16),
+                     min_size=12, weight=700, color=ar.get("tcolor", ink), role="label",
+                     align=PP_ALIGN.RIGHT if ar.get("align") == "right" else PP_ALIGN.LEFT)
+    plate = d.get("plate") or {}
+    if plate:
+        txt = "\n".join(f"{k}: {v}" for k, v in plate.items())
+        px0, py0 = d.get("plate_xy", [W - M - 3.6, H - 1.75])
+        rect(s, px0, py0, 0.05, 1.0, hi)
+        add_text(ctx, s, px0 + 0.2, py0, 3.4, 1.0, txt, size=13, min_size=10, color=ink, role="meta",
+                 anchor=MSO_ANCHOR.MIDDLE)
+    cred = spec.get("credit")
+    if cred:
+        add_text(ctx, s, bx + 0.2, by + bh - 0.38, bw - 0.4, 0.3, cred, size=9, min_size=8, color=ink,
+                 align=PP_ALIGN.RIGHT, role="meta")
+    if d.get("source"):
+        source(ctx, s, d["source"], dark=True, w=d.get("source_w"))
+    if d.get("page", True):
+        page_no(ctx, s, dark=True)
+
+
+def _set_alpha(shape, transparency: float):
+    """Полупрозрачная заливка, которую понимают и PowerPoint, и LibreOffice."""
+    if not transparency:
+        return
+    sf = shape.fill._xPr.find(qn("a:solidFill"))
+    clr = sf[0]
+    for old in clr.findall(qn("a:alpha")):
+        clr.remove(old)
+    a = clr.makeelement(qn("a:alpha"), {"val": str(int((1 - transparency) * 100000))})
+    clr.append(a)
+
+
 LAYOUTS = {
     "cover": L_cover, "hook": L_hook, "bignum": L_bignum, "chart": L_chart, "flow": L_flow, "story": L_story,
     "three": L_three, "timeline": L_timeline, "split": L_split, "end": L_end, "sources": L_sources,
+    "photo": L_photo,
 }
 WORD_LIMIT = {"cover": 40, "hook": 45, "bignum": 70, "chart": 80, "flow": 110, "story": 110, "three": 110,
-              "timeline": 120, "split": 110, "end": 50, "sources": 999}
+              "timeline": 120, "split": 110, "end": 50, "sources": 999, "photo": 90}
 
 
 def build(deck_path: Path, out_pptx: Path) -> list[Issue]:
@@ -632,7 +765,7 @@ def build(deck_path: Path, out_pptx: Path) -> list[Issue]:
             s.notes_slide.notes_text_frame.text = sd["notes"]
         if ctx.words > WORD_LIMIT[sd["layout"]]:
             ctx.issues.append(Issue(i, "warn", f"Много текста: {ctx.words} слов (норма {WORD_LIMIT[sd['layout']]})"))
-        if prev == sd["layout"] == deck["slides"][i - 3]["layout"] if i >= 3 else False:
+        if sd["layout"] != "photo" and (prev == sd["layout"] == deck["slides"][i - 3]["layout"] if i >= 3 else False):
             ctx.issues.append(Issue(i, "warn", "Три одинаковых макета подряд"))
         prev = sd["layout"]
     prs.core_properties.title = deck.get("title", "")
