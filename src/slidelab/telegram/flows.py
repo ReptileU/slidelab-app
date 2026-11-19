@@ -175,6 +175,8 @@ class Flows:
             )
             if p.plan_code is not None:
                 await self.n.send_gift(user, p.plan_code)
+        if result.points:
+            await self.points_earned(user, result.points)
         if result.order is not None and not (result.attention and not result.started):
             order = result.order
             self.pipeline.sync_status(order)
@@ -185,6 +187,19 @@ class Flows:
             else:
                 await self.n.client(user, "paid_early", id=order.id)
                 await self.n.refresh_card(order, f"💰 оплачено {amount} — начнём после одобрения обложки")
+
+    async def points_earned(self, user: User, n: int) -> None:
+        """«+50 баллов» после оплаты деньгами — и сколько осталось до пакета за баллы."""
+        from slidelab.core.services import points as pts
+
+        total = user.points or 0
+        cheapest = min(b.price for b in pts.BOXES.values())
+        lang = user.lang
+        nxt = t(lang, "points_ready") if total >= cheapest else t(lang, "points_next", left=cheapest - total)
+        settings = self.settings
+        ready = total >= cheapest and not settings.legacy_webapp
+        markup = kb.open_lucky(user.lang or Lang.RU, settings.webapp_url) if ready else None
+        await self.n.client(user, "points_earned", markup, n=n, total=total, next=nxt)
 
     # --- подарок: открытка ----------------------------------------------------------
 

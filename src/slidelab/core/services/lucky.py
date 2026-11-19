@@ -66,7 +66,9 @@ class LuckyService:
 
     async def bought_recently(self, user_id: int) -> int:
         since = self.clock() - WINDOW
-        stmt = select(func.count(PackageBox.id)).where(PackageBox.user_id == user_id, PackageBox.created_at > since)
+        stmt = select(func.count(PackageBox.id)).where(
+            PackageBox.user_id == user_id, PackageBox.created_at > since, PackageBox.for_points.is_(False)
+        )
         return int(await self.session.scalar(stmt) or 0)
 
     async def ensure_can_buy(self, user_id: int) -> None:

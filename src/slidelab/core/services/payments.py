@@ -21,15 +21,18 @@ from slidelab.core.enums import (
     PaymentProvider,
     PaymentStatus,
     PlanCode,
+    PointsReason,
     SlideTier,
 )
 from slidelab.core.errors import InvalidTransitionError
-from slidelab.core.models import Coupon, Gift, Order, PackageBox, Payment, UserPackage
+from slidelab.core.models import Coupon, Gift, Order, PackageBox, Payment, User, UserPackage
 from slidelab.core.models.base import utcnow
+from slidelab.core.services import pricing
 from slidelab.core.services.gifts import GiftService
 from slidelab.core.services.lucky import LuckyService, Prize
 from slidelab.core.services.orders import PAYABLE, OrderService
 from slidelab.core.services.packages import Credit
+from slidelab.core.services.points import PointsService
 from slidelab.core.services.pricing import to_stars
 
 STARS = "XTR"
@@ -47,6 +50,7 @@ class PaidResult:
     attention: str | None = None  # деньги пришли, но что-то не так — владелец должен разобраться
     prize: Prize | None = None  # бонус-пакет: что выпало
     gift: Gift | None = None  # пакет куплен в подарок — ссылка для друга
+    points: int = 0  # сколько баллов начислено за эту оплату
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,6 +216,7 @@ class PaymentService:
                 attention = f"Заказ #{order.id} уже был оплачен — это второй платёж, верните его клиенту."
             else:
                 started = await self.orders.mark_paid(order, actor_id=None)
+        points = await self._award_points(payment, order, credit, bool(attention))
         await self.session.flush()
         return PaidResult(
             payment=payment,
@@ -222,7 +227,29 @@ class PaymentService:
             attention=attention,
             prize=prize,
             gift=gift,
+            points=points,
         )
+
+    async def _award_points(self, payment: Payment, order: Order | None, credit: Credit | None, odd: bool) -> int:
+        """Баллы — только за деньги. За доплату по купону (база уже оплачена раньше) баллов нет."""
+        if odd:  # деньги за отменённый / уже оплаченный заказ — вернутся клиенту, баллов нет
+            return 0
+        user = await self.session.get(User, payment.user_id)
+        if user is None:
+            return 0
+        service = PointsService(self.session, self.orders.clock)
+        if payment.plan_code is PlanCode.LUCKY:
+            return await service.earn(user, 1, PointsReason.LUCKY, payment_id=payment.id)
+        if payment.plan_code is not None:
+            plan = await repo.get_plan(self.session, payment.plan_code)
+            count = plan.count - (credit.units if credit else 0)
+            reason = PointsReason.GIFT if payment.as_gift else PointsReason.PLAN
+            return await service.earn(user, count, reason, payment_id=payment.id)
+        if order is not None and order.coupon_id is None:
+            return await service.earn(
+                user, pricing.package_cost(order.slides), PointsReason.ORDER, order_id=order.id, payment_id=payment.id
+            )
+        return 0
 
     async def confirm_manual(self, order_id: int, manager_id: int) -> PaidResult:
         """Менеджер увидел перевод на карту по заказу (с чеком или без)."""

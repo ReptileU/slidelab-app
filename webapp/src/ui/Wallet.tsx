@@ -12,9 +12,10 @@ import { slidesKey } from "../lib/order";
 import type { Gift, SlideTier } from "../lib/types";
 import { Button, Cell, Group, Sheet, Toast } from ".";
 import { Coupon } from "./Coupon";
+import { DiscountCard } from "./Discount";
 import { PackCard } from "./PackCard";
 
-type Item = { kind: "pack" } | { kind: "coupon"; id: number; slides: SlideTier; gift?: boolean };
+type Item = { kind: "pack" } | { kind: "discount"; pct: number } | { kind: "coupon"; id: number; slides: SlideTier; gift?: boolean };
 
 const PEEK = 46; // сколько видно от каждой карты, торчащей из кошелька
 
@@ -64,7 +65,8 @@ export function Wallet() {
   });
 
   const coupons: Item[] = (me?.coupons ?? []).map((c) => ({ kind: "coupon", id: c.id, slides: c.slides, gift: c.gift }));
-  const items: Item[] = [...coupons, ...(me?.package ? [{ kind: "pack" } as Item] : [])];
+  const disc: Item[] = me?.discount_pct ? [{ kind: "discount", pct: me.discount_pct }] : [];
+  const items: Item[] = [...disc, ...coupons, ...(me?.package ? [{ kind: "pack" } as Item] : [])];
   const n = items.length;
   const photo = me?.wallet_cover ? cover.data : null;
 
@@ -73,6 +75,8 @@ export function Wallet() {
       <PackCard pkg={me.package} holder={holder} hint={false} still={still} />
     ) : it.kind === "coupon" ? (
       <Coupon slides={it.slides} gift={it.gift} />
+    ) : it.kind === "discount" ? (
+      <DiscountCard pct={it.pct} holder={holder} />
     ) : null;
   const sel = open !== null ? items[open] : null;
 
@@ -215,23 +219,31 @@ export function Wallet() {
       <Sheet
         open={sel !== null}
         onClose={closeItem}
-        title={step === "share" ? t("gift_ready_t") : sel?.kind === "coupon" ? t("wallet_coupon_t") : t("pkg_my")}
+        title={
+          step === "share"
+            ? t("gift_ready_t")
+            : sel?.kind === "coupon"
+              ? t("wallet_coupon_t")
+              : sel?.kind === "discount"
+                ? t("disc_card")
+                : t("pkg_my")
+        }
       >
         {step === "view" && sel && (
           <>
             <div className="wallet-sheet-card">{render(sel, false)}</div>
             <p className="footnote secondary center" style={{ margin: "14px 8px 16px" }}>
-              {sel.kind === "coupon" ? t("voucher_kept_s") : t("wallet_pack_s")}
+              {sel.kind === "coupon" ? t("voucher_kept_s") : sel.kind === "discount" ? t("disc_s", { n: sel.pct }) : t("wallet_pack_s")}
             </p>
             <Button
               onClick={() => {
                 closeItem();
-                nav(sel.kind === "coupon" ? "/order" : "/packages");
+                nav(sel.kind === "pack" ? "/packages" : "/order");
               }}
             >
-              {sel.kind === "coupon" ? t("cta_order") : t("pkg_all")}
+              {sel.kind === "pack" ? t("pkg_all") : t("cta_order")}
             </Button>
-            {(sel.kind === "coupon" || left > 0) && (
+            {(sel.kind === "coupon" || (sel.kind === "pack" && left > 0)) && (
               <div className="mt-12">
                 <Button
                   kind="tinted"

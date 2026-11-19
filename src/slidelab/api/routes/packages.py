@@ -2,14 +2,27 @@ from fastapi import APIRouter, HTTPException
 
 from slidelab.api import payments_flow
 from slidelab.api.deps import FlowsDep, SessionDep, ViewerDep
-from slidelab.api.schemas import InvoiceIn, InvoiceOut, LuckyOddsOut, LuckyOut, LuckyPrizeOut, OkOut, ReceiptIn
+from slidelab.api.schemas import (
+    InvoiceIn,
+    InvoiceOut,
+    LuckyOddsOut,
+    LuckyOut,
+    LuckyPrizeOut,
+    OkOut,
+    PointsBoxOut,
+    PointsOut,
+    PointsPrizeOut,
+    PointsResultOut,
+    ReceiptIn,
+)
 from slidelab.core import repositories as repo
 from slidelab.core.enums import PaymentProvider, PlanCode
 from slidelab.core.errors import NotFoundError
 from slidelab.core.i18n import t
-from slidelab.core.services import lucky
+from slidelab.core.services import lucky, points
 from slidelab.core.services.lucky import LuckyService
 from slidelab.core.services.payments import PaymentService
+from slidelab.core.services.points import PointsService
 
 router = APIRouter(prefix="/packages", tags=["packages"])
 
@@ -39,6 +52,37 @@ async def lucky_open(viewer: ViewerDep, session: SessionDep) -> LuckyPrizeOut:
         raise NotFoundError("Нет неоткрытого бонус-пакета")
     await session.commit()
     return LuckyPrizeOut(prize=box.prize, count=box.count)
+
+
+@router.get("/points")
+async def points_info(viewer: ViewerDep, session: SessionDep) -> PointsOut:
+    """Баллы клиента и три пакета за баллы — с теми же шансами, по которым идёт розыгрыш."""
+    service = PointsService(session)
+    balance = await service.balance(viewer.user)
+    await session.commit()  # если баллы сгорели — списание сохраняется
+    return PointsOut(
+        points=balance,
+        expire_at=viewer.user.points_expire_at,
+        per_presentation=points.PER_PRESENTATION,
+        expire_days=points.EXPIRE_DAYS,
+        discount_pct=viewer.user.discount_pct,
+        boxes=[
+            PointsBoxOut(
+                key=b.key,
+                price=b.price,
+                prizes=[PointsPrizeOut(prize=p.code, value=p.value, percent=p.percent) for p in b.prizes],
+            )
+            for b in points.BOXES.values()
+        ],
+    )
+
+
+@router.post("/points/{key}")
+async def points_box(key: str, viewer: ViewerDep, session: SessionDep) -> PointsResultOut:
+    """Пакет за баллы: списать баллы и сразу разыграть приз (презентации и скидка начисляются сразу)."""
+    box = await PointsService(session).open_box(viewer.user, key)
+    await session.commit()
+    return PointsResultOut(prize=box.prize, value=box.count, points=viewer.user.points)
 
 
 @router.post("/{plan}/invoice")

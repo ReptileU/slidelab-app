@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleHelp, FileText, Globe, Megaphone, MessageCircle, Palette, Star, SunMoon } from "lucide-react";
+import { CircleHelp, Coins, FileText, Globe, Megaphone, MessageCircle, Palette, Star, SunMoon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -54,6 +54,18 @@ export function Profile() {
       {/* Кошелёк: карта пакета и купоны; без пакета — кнопка к пакетам */}
       <Section title={t("wallet_t")} action={{ label: t("pkg_all"), onClick: () => nav("/packages") }}>
         <Wallet />
+        <div className="mt-12">
+          <Group>
+            <Cell
+              icon={<Coins />}
+              title={t("pts_balance")}
+              subtitle={t("pts_rule_short")}
+              value={<b className="tabular">{user?.points ?? 0}</b>}
+              chevron
+              onClick={() => nav("/packages?points=1")}
+            />
+          </Group>
+        </div>
         {pkg && pkg.left <= 1 && (
           <div style={{ marginTop: 18 }}>
             <Button kind="tinted" onClick={() => nav("/packages")}>

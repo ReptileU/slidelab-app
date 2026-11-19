@@ -13,6 +13,7 @@ from slidelab.core import repositories as repo
 from slidelab.core.errors import DomainError
 from slidelab.core.models import Order
 from slidelab.core.models.base import utcnow
+from slidelab.core.services.points import PointsService
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -46,6 +47,9 @@ async def get_me(viewer: ViewerDep, session: SessionDep) -> MeOut:
         voucher_list=[v.slides for v in vouchers],
         coupons=[CouponOut(id=v.id, slides=v.slides, gift=v.from_user_id is not None) for v in vouchers],
         wallet_cover=user.wallet_cover,
+        points=await PointsService(session).balance(user),
+        points_expire_at=user.points_expire_at,
+        discount_pct=user.discount_pct,
     )
 
 

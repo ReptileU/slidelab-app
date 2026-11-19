@@ -7,12 +7,13 @@ import { api, ApiError } from "../lib/api";
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money, type Key } from "../lib/i18n";
 import { alert, haptic } from "../lib/tg";
-import type { BuyPlan, LuckyPrize } from "../lib/types";
+import type { BuyPlan, LuckyPrize, PointsBoxKey } from "../lib/types";
 import { presWord } from "../lib/words";
 import { Section, Skeleton, Toast } from "../ui";
 import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
 import { PackCard } from "../ui/PackCard";
 import { PaySheet } from "../ui/PaySheet";
+import { PointsShop } from "../ui/PointsShop";
 
 /** Картинка-фон пакета: чем дороже пакет, тем статуснее (серебро → платина → золото). */
 const PACK_ART: Record<string, string> = { week: "p0", month: "p1b", vip: "p2" };
@@ -27,6 +28,10 @@ export function Packages() {
   // gift — пакет покупают в подарок: после оплаты ссылка для друга (в боте и в кошельке)
   const [buying, setBuying] = useState<{ code: BuyPlan; price: number; gift?: boolean } | null>(null);
   const [reveal, setReveal] = useState<LuckyPrize | null>(null);
+  // пакет за баллы: что выпало, надпись на пакете и остаток баллов
+  const [ptsReveal, setPtsReveal] = useState<{ prize: LuckyPrize; name: string; left: number } | null>(null);
+  const [ptsBusy, setPtsBusy] = useState<PointsBoxKey | null>(null);
+  const points = useQuery({ queryKey: ["points"], queryFn: api.points, retry: false });
   const [waitBox, setWaitBox] = useState(false); // звёзды оплачены — ждём, пока сервер начислит бонус-пакет
   const lucky = useQuery({ queryKey: ["lucky"], queryFn: api.lucky, retry: false, refetchInterval: waitBox ? 1500 : false });
 
@@ -42,12 +47,38 @@ export function Packages() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toLucky, !!lucky.data, !!catalog.data]);
 
+  // Из профиля (?points=1) — к баллам
+  const pointsRef = useRef<HTMLDivElement>(null);
+  const toPoints = params.get("points") === "1";
+  useEffect(() => {
+    if (toPoints && points.data && catalog.data) {
+      const id = setTimeout(() => pointsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+      return () => clearTimeout(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toPoints, !!points.data, !!catalog.data]);
+
   async function openBox() {
     try {
       haptic.tap();
       setReveal(await api.luckyOpen());
     } catch (e) {
       await alert(e instanceof ApiError ? e.message : t("error"));
+    }
+  }
+
+  async function openPoints(key: PointsBoxKey) {
+    if (ptsBusy) return;
+    setPtsBusy(key);
+    try {
+      haptic.tap();
+      const r = await api.pointsOpen(key);
+      setPtsReveal({ prize: { prize: r.prize, count: r.value }, name: t(`pts_${key}` as Key), left: r.points });
+      void qc.invalidateQueries({ queryKey: ["points"] });
+    } catch (e) {
+      await alert(e instanceof ApiError ? e.message : t("error"));
+    } finally {
+      setPtsBusy(null);
     }
   }
 
@@ -131,6 +162,13 @@ export function Packages() {
         </Section>
       )}
 
+      {points.data && (
+        <Section title={t("pts_title")}>
+          <div ref={pointsRef} />
+          <PointsShop info={points.data} onOpen={(k) => void openPoints(k)} busy={ptsBusy} />
+        </Section>
+      )}
+
       <PaySheet
         open={!!buying}
         title={buying ? (buying.gift ? "🎁 " : "") + planName(buying.code) : ""}
@@ -151,7 +189,10 @@ export function Packages() {
           }
           if (buying?.code === "lucky") setWaitBox(true);
           else setToast(t("pay_pkg_ok"));
-          setTimeout(() => qc.invalidateQueries({ queryKey: ["me"] }), 1500);
+          setTimeout(() => {
+            void qc.invalidateQueries({ queryKey: ["me"] });
+            void qc.invalidateQueries({ queryKey: ["points"] });
+          }, 1500);
         }}
       />
       {reveal && (
@@ -160,6 +201,17 @@ export function Packages() {
           onDone={() => {
             setReveal(null);
             void qc.invalidateQueries({ queryKey: ["lucky"] });
+            void qc.invalidateQueries({ queryKey: ["me"] });
+          }}
+        />
+      )}
+      {ptsReveal && (
+        <LuckyReveal
+          prize={ptsReveal.prize}
+          name={ptsReveal.name}
+          points={ptsReveal.left}
+          onDone={() => {
+            setPtsReveal(null);
             void qc.invalidateQueries({ queryKey: ["me"] });
           }}
         />
