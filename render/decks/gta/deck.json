@@ -1,0 +1,372 @@
+{
+ "title": "GTA 6",
+ "theme": {
+  "bg": "#140B22",
+  "ink": "#F3ECFF",
+  "muted": "#9C90B8",
+  "accent": "#FF3EA5",
+  "accent2": "#29E3D6",
+  "paper": "#24183A",
+  "dark": "#0B0614",
+  "on_dark": "#F3ECFF",
+  "title_font": "Unbounded",
+  "title_weight": 700
+ },
+ "slides": [
+  {
+   "layout": "photo",
+   "image": {
+    "file": "road.jpg",
+    "credit": "Иллюстрация создана ИИ (Higgsfield)"
+   },
+   "overlay": "top",
+   "overlay_strength": 0.7,
+   "kicker": "Игры · Бизнес · 19 ноября 2026",
+   "title_box": [
+    0.8,
+    0.5,
+    9.5
+   ],
+   "title_h": 1.9,
+   "title_size": 40,
+   "title": "GTA 6: как одна игра стала крупнейшим запуском в истории развлечений",
+   "page": false
+  },
+  {
+   "layout": "bignum",
+   "kicker": "Ещё до выхода",
+   "title": "Игра ещё не вышла — а предзаказов продано больше, чем весь прокат «Барби»",
+   "number": "$1,65 млрд",
+   "unit": "предзаказы GTA 6 к 18.11.2026",
+   "text": "Люди заплатили заранее, не увидев игру. «Барби» за весь мировой прокат собрала около $1,45 млрд.",
+   "compare": {
+    "a_label": "GTA 6",
+    "a_value": 1650,
+    "b_label": "«Барби»\n$1,45 млрд",
+    "b_value": 1450,
+    "note": "Площадь квадратов — в масштабе"
+   },
+   "source": "Оценка Sensor Tracker, LA Magazine, 18.11.2026"
+  },
+  {
+   "layout": "split",
+   "kicker": "Для тех, кто не играл",
+   "title": "GTA — игра-город, где можно делать что угодно",
+   "text": "Grand Theft Auto — серия игр студии Rockstar с 1997 года. Это «открытый мир»: огромный город, где можно ездить, работать, нарушать закон и отвечать за это. Города — пародии на настоящие американские.",
+   "facts": [
+    {
+     "value": "1997",
+     "label": "вышла первая GTA"
+    },
+    {
+     "value": "230 млн+",
+     "label": "копий GTA V продано"
+    }
+   ],
+   "image": {
+    "file": "carlyle.jpg",
+    "credit": "Майами-Бич. Фото: Radomianin, PD",
+    "focus": [
+     0.5,
+     0.6
+    ]
+   },
+   "source": "Take-Two, отчёт за квартал до 30.06.2026 (Game Developer)",
+   "icons": [
+    {
+     "file": "logo_rockstar.png",
+     "x": 6.75,
+     "y": 0.25,
+     "h": 0.6,
+     "align": "right"
+    }
+   ]
+  },
+  {
+   "layout": "photo",
+   "image": {
+    "file": "road.jpg",
+    "credit": "Иллюстрация создана ИИ (Higgsfield)"
+   },
+   "overlay": "top",
+   "overlay_strength": 0.75,
+   "kicker": "13 лет ожидания",
+   "title_box": [
+    0.8,
+    0.45,
+    11.5
+   ],
+   "title_h": 1.0,
+   "title_size": 30,
+   "title": "Те, кому в 2013-м было 10 лет, дождались GTA 6 студентами",
+   "pins": [
+    {
+     "x": 0.5,
+     "y": 0.95,
+     "tx": 0.36,
+     "ty": 0.95,
+     "align": "right",
+     "value": "1997",
+     "label": "первая GTA",
+     "w": 2.4,
+     "size": 24
+    },
+    {
+     "x": 0.5,
+     "y": 0.83,
+     "tx": 0.64,
+     "ty": 0.83,
+     "value": "2013",
+     "label": "GTA V",
+     "w": 2.4,
+     "size": 24
+    },
+    {
+     "x": 0.5,
+     "y": 0.73,
+     "tx": 0.38,
+     "ty": 0.72,
+     "align": "right",
+     "value": "12.2023",
+     "label": "первый трейлер",
+     "w": 2.6,
+     "size": 22
+    },
+    {
+     "x": 0.5,
+     "y": 0.655,
+     "tx": 0.62,
+     "ty": 0.6,
+     "value": "19.11.2026",
+     "label": "выход",
+     "w": 3.2,
+     "size": 22,
+     "color": "#FF3EA5"
+    }
+   ]
+  },
+  {
+   "layout": "chart",
+   "kicker": "Рекорд YouTube",
+   "title": "Первый трейлер посмотрели 90 млн раз за сутки — на 52% больше рекорда MrBeast",
+   "kind": "bar",
+   "categories": [
+    "Трейлер GTA 6",
+    "Прежний рекорд MrBeast"
+   ],
+   "series": [
+    [
+     "Просмотры за 24 часа, млн",
+     [
+      90.4,
+      59.4
+     ]
+    ]
+   ],
+   "fmt": "0.0",
+   "highlight": [
+    0
+   ],
+   "callout": "+52%",
+   "text": "Рекорд Гиннесса: самое просматриваемое раскрытие игры на YouTube за первые сутки.",
+   "source": "Push Square, декабрь 2023",
+   "icons": [
+    {
+     "file": "logo_youtube.png",
+     "x": 12.53,
+     "y": 0.62,
+     "h": 0.32,
+     "align": "right",
+     "pill": true
+    }
+   ]
+  },
+  {
+   "layout": "timeline",
+   "kicker": "Переносы",
+   "title": "Игру дважды переносили — ради качества, а не из-за проблем",
+   "events": [
+    {
+     "year": "осень 2025",
+     "label": "Первый план",
+     "text": "Rockstar обещает выпустить игру осенью 2025 года."
+    },
+    {
+     "year": "26.05.2026",
+     "label": "Перенос 1",
+     "text": "Дату сдвигают на весну 2026-го."
+    },
+    {
+     "year": "19.11.2026",
+     "label": "Выход",
+     "text": "«Дополнительные месяцы нужны, чтобы довести игру до привычного уровня качества».",
+     "hot": true
+    }
+   ],
+   "source": "Video Games Chronicle, 06.11.2025"
+  },
+  {
+   "layout": "photo",
+   "image": {
+    "file": "miami_wide.jpg",
+    "credit": "Фото: greyloch, CC BY-SA 2.0 / Wikimedia Commons",
+    "focus": [
+     0.5,
+     0.5
+    ]
+   },
+   "overlay": "left",
+   "overlay_strength": 0.93,
+   "kicker": "Где происходит действие",
+   "title_box": [
+    0.8,
+    0.7,
+    4.6
+   ],
+   "title_h": 1.6,
+   "title_size": 30,
+   "title": "Вайс-Сити — это почти настоящий Майами",
+   "text": "Вымышленный штат Леонида списан с Флориды. Герои — пара Джейсон и Лусия, которые вместе идут на преступления, как Бонни и Клайд.",
+   "text_box": [
+    0.8,
+    2.85,
+    4.2,
+    2.6
+   ],
+   "pins": [
+    {
+     "x": 0.62,
+     "y": 0.42,
+     "tx": 0.7,
+     "ty": 0.8,
+     "value": "",
+     "label": "настоящий Майами ночью — прототип Вайс-Сити",
+     "w": 3.2,
+     "lsize": 14
+    }
+   ],
+   "source": "LA Magazine, 18.11.2026",
+   "source_w": 6,
+   "text_size": 16
+  },
+  {
+   "layout": "three",
+   "kicker": "Цена и формат",
+   "title": "Почти 1 млн сумов — и даже без диска",
+   "image": {
+    "file": "dualsense.jpg",
+    "credit": ""
+   },
+   "items": [
+    {
+     "value": "$79,99",
+     "label": "обычное издание",
+     "text": "Почти 1 млн сумов. GTA V в 2013 году стоила $59,99."
+    },
+    {
+     "value": "$99,99",
+     "label": "расширенное",
+     "text": "Машины, оружие и одежда в подарок."
+    },
+    {
+     "value": "212 ГБ",
+     "label": "скачивание",
+     "text": "Как ~50 фильмов в HD. В коробке — только код, диска нет."
+    }
+   ],
+   "source": "MP1st; LA Magazine, 18.11.2026",
+   "icons": [
+    {
+     "file": "logo_ps5.png",
+     "x": 8.3,
+     "y": 6.55,
+     "h": 0.32,
+     "white": true
+    },
+    {
+     "file": "logo_xbox.png",
+     "x": 10.4,
+     "y": 6.45,
+     "h": 0.48,
+     "white": true
+    }
+   ]
+  },
+  {
+   "layout": "chart",
+   "kicker": "Игры против кино",
+   "title": "Одни предзаказы GTA 6 — уже больше половины рекорда «Мстителей»",
+   "kind": "hbar",
+   "categories": [
+    "GTA 6 — только предзаказы",
+    "«Аватар» — весь прокат",
+    "«Мстители: Финал» — весь прокат"
+   ],
+   "series": [
+    [
+     "Млрд долларов",
+     [
+      1.65,
+      2.92,
+      2.94
+     ]
+    ]
+   ],
+   "fmt": "0.00",
+   "highlight": [
+    0
+   ],
+   "callout": "56%",
+   "text": "Фильму на это понадобились месяцы проката. Игре — дни до выхода.",
+   "source": "LA Magazine, 18.11.2026"
+  },
+  {
+   "layout": "three",
+   "kicker": "Бизнес",
+   "title": "Для Take-Two это главный год в истории",
+   "items": [
+    {
+     "value": "230 млн",
+     "label": "копий GTA V",
+     "text": "продано с 2013 года — игра кормит компанию 13 лет."
+    },
+    {
+     "value": "$1,65 млрд",
+     "label": "предзаказы GTA 6",
+     "text": "оценка Sensor Tracker до выхода игры."
+    },
+    {
+     "value": "$8 млрд",
+     "label": "прогноз продаж",
+     "text": "Take-Two на 2027 финансовый год — почти вдвое больше прежних лет."
+    }
+   ],
+   "source": "Game Developer, 07.08.2026; LA Magazine"
+  },
+  {
+   "layout": "end",
+   "title": "Игры стали больше кино — и по деньгам, и по вниманию",
+   "question": "Почему миллионы людей платят заранее почти 1 млн сумов за игру, которую ещё не видели?",
+   "image": {
+    "file": "road.jpg"
+   }
+  },
+  {
+   "layout": "sources",
+   "texts": [
+    "LA Magazine, 18.11.2026 — GTA VI breaks records ahead of its Thursday release",
+    "Game Developer, 07.08.2026 — GTA V surpasses 230 million sales",
+    "Push Square, 12.2023 — GTA 6 trailer pulls 90 million views in 24 hours",
+    "Video Games Chronicle, 06.11.2025 — GTA 6 delayed to November 19, 2026",
+    "MP1st — GTA 6 pre-load, pre-order bonuses, edition prices"
+   ],
+   "images": [
+    "Ночная дорога (обложка, хронология, финал): иллюстрация ИИ (Higgsfield)",
+    "The Carlyle, Майами-Бич: Radomianin, общественное достояние",
+    "Майами ночью: greyloch, CC BY-SA 2.0",
+    "DualSense: Sergey Galyonkin, CC BY-SA 2.0",
+    "Фото — Wikimedia Commons. Официальные арты Rockstar не использованы"
+   ]
+  }
+ ]
+}

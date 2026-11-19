@@ -352,8 +352,8 @@ def L_bignum(ctx: Ctx, s, d):
         num_w = W - 2 * M - (math.sqrt(cmp["a_value"]) * k0 + 0.25 + max(math.sqrt(cmp["b_value"]) * k0, 1.6)) - 0.4
     add_text(ctx, s, M, 2.7, num_w, 2.0, d["number"], size=110, min_size=60, family=t.num_font, weight=t.num_weight,
              color=t.accent, spacing=0.9, role="number", anchor=MSO_ANCHOR.MIDDLE)
-    add_text(ctx, s, M, 4.75, 6.0, 0.5, d.get("unit", ""), size=20, weight=700, role="lead")
-    add_text(ctx, s, M, 5.3, 6.0, 1.3, d.get("text", ""), size=18, min_size=15, role="body")
+    add_text(ctx, s, M, 4.75, num_w, 0.5, d.get("unit", ""), size=20, min_size=14, weight=700, role="lead")
+    add_text(ctx, s, M, 5.3, num_w, 1.3, d.get("text", ""), size=18, min_size=14, role="body")
     # сравнение — квадраты в масштабе
     cmp = d.get("compare")
     if cmp:
@@ -739,6 +739,33 @@ def _set_alpha(shape, transparency: float):
     clr.append(a)
 
 
+def add_icons(ctx: Ctx, slide, icons: list[dict]):
+    """Логотипы и флаги: маленькие картинки поверх слайда (x, y, h в дюймах).
+    white=true перекрашивает чёрный логотип в белый для тёмного фона; pill=true ставит под ним светлую плашку."""
+    for ic in icons:
+        src = ctx.assets / ic["file"]
+        if not src.exists():
+            ctx.issues.append(Issue(ctx.n, "warn", f"Нет логотипа: {ic['file']}"))
+            continue
+        im = Image.open(src).convert("RGBA")
+        if ic.get("white"):
+            alpha = im.getchannel("A")
+            im = Image.new("RGBA", im.size, (255, 255, 255, 255))
+            im.putalpha(alpha)
+        h = ic.get("h", 0.5)
+        w = h * im.width / im.height
+        x, y = ic["x"], ic["y"]
+        if ic.get("align") == "right":
+            x -= w
+        if ic.get("pill"):
+            pad = h * 0.3
+            rect(slide, x - pad, y - pad * 0.7, w + 2 * pad, h + 1.4 * pad, ic.get("pill_color", "#FFFFFF"),
+                 MSO_SHAPE.ROUNDED_RECTANGLE, radius=0.3)
+        out = ctx.assets / f"_icon_{ctx.n:02d}_{src.stem}{'_w' if ic.get('white') else ''}.png"
+        im.save(out)
+        slide.shapes.add_picture(str(out), Inches(x), Inches(y), Inches(w), Inches(h))
+
+
 LAYOUTS = {
     "cover": L_cover, "hook": L_hook, "bignum": L_bignum, "chart": L_chart, "flow": L_flow, "story": L_story,
     "three": L_three, "timeline": L_timeline, "split": L_split, "end": L_end, "sources": L_sources,
@@ -761,6 +788,8 @@ def build(deck_path: Path, out_pptx: Path) -> list[Issue]:
         ctx.words = 0
         s = prs.slides.add_slide(blank)
         LAYOUTS[sd["layout"]](ctx, s, sd)
+        if sd.get("icons"):
+            add_icons(ctx, s, sd["icons"])
         if sd.get("notes"):
             s.notes_slide.notes_text_frame.text = sd["notes"]
         if ctx.words > WORD_LIMIT[sd["layout"]]:
