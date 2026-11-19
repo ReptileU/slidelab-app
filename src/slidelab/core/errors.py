@@ -24,6 +24,13 @@ class ParallelLimitError(DomainError):
     code = "parallel_limit"
 
 
+class CoverLimitError(DomainError):
+    """Слишком много бесплатных обложек ждут ответа клиента — новую бесплатную не начинаем."""
+
+    code = "cover_limit"
+    client_key = "cover_limit"  # клиенту — этот текст, а не общее «что-то пошло не так»
+
+
 class PaymentRequiredError(DomainError):
     code = "payment_required"
 

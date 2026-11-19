@@ -373,6 +373,7 @@ const ru = {
   nothing_found: "Ничего не нашли — спросите менеджера.",
 
   error: "Что-то пошло не так. Попробуйте ещё раз.",
+  cover_limit: "У вас уже 3 бесплатные обложки ждут ответа. Утвердите или удалите одну в «Заказах» — или оформите этот заказ с оплатой сразу. Оплатить сразу?",
   outside_tg: "SlideLab открывается в Telegram",
   open_tg: "Открыть в Telegram",
   wrong_button_t: "Откройте через кнопку SlideLab",
@@ -757,6 +758,7 @@ const uz: Dict = {
   nothing_found: "Hech narsa topilmadi — menejerdan so‘rang.",
 
   error: "Nimadir xato ketdi. Qaytadan urinib ko‘ring.",
+  cover_limit: "Sizda 3 ta bepul muqova javob kutmoqda. «Buyurtmalar»da birini tasdiqlang yoki o‘chiring — yoki bu buyurtmani darhol to‘lov bilan bering. Darhol to‘laysizmi?",
   outside_tg: "SlideLab Telegramda ochiladi",
   open_tg: "Telegramda ochish",
   wrong_button_t: "SlideLab tugmasi orqali oching",
@@ -1138,6 +1140,7 @@ const en: Dict = {
   nothing_found: "Nothing found — ask the manager.",
 
   error: "Something went wrong. Please try again.",
+  cover_limit: "You already have 3 free covers waiting for a reply. Approve or delete one in «Orders» — or place this order with payment now. Pay now?",
   outside_tg: "SlideLab opens in Telegram",
   open_tg: "Open in Telegram",
   wrong_button_t: "Open via the SlideLab button",

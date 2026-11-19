@@ -10,6 +10,7 @@ TEXTS: dict[str, str] = {
     ),
     "first_offer": "\n\n🔥 <b>Birinchi taqdimot — {first} so‘m</b>, <s>{s10} so‘m</s> o‘rniga",
     "welcome_back": "⟦logo⟧<b>SlideLab</b>\nNima yordam kerak?",
+    "cover_limit": "Sizda allaqachon 3 ta bepul muqova javob kutmoqda. «Buyurtmalarim»da birini tasdiqlang yoki o‘chiring — yoki darhol to‘lov bilan buyurtma bering, unda cheklov yo‘q.",
     "error": "Nimadir xato ketdi. Qaytadan urinib ko‘ring — yoki @{admin} ga yozing.",
     "use_buttons": "Yuqoridagi tugmalardan birini tanlang.",
     "send_text": "Iltimos, matn bilan yozing.",

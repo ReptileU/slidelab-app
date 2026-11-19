@@ -21,7 +21,7 @@ import {
   tierPrice,
   toLocalInput,
 } from "../lib/order";
-import { alert, haptic } from "../lib/tg";
+import { alert, confirm, haptic } from "../lib/tg";
 import { unlockAudio } from "../lib/sound";
 import type {
   Deadline,
@@ -300,6 +300,11 @@ export function NewOrder() {
         setStep(missing1.length ? 1 : missing2.length ? 2 : 3);
         setShowNeed(true);
         void alert(t("error"));
+        return;
+      }
+      // Лимит бесплатных обложек — предлагаем тот же заказ с оплатой сразу (ему лимит не нужен)
+      if (e instanceof ApiError && e.code === "cover_limit") {
+        void confirm(t("cover_limit")).then((ok) => ok && submit.mutate(true));
         return;
       }
       void alert(e instanceof ApiError ? e.message : t("error"));

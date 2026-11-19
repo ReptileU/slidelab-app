@@ -495,3 +495,21 @@ async def test_cancel_before_work_always_refunds(orders: OrderService, make_user
     assert order.status is S.NEW and orders.refund_on_cancel(order, user)
     await orders.cancel_by_client(order.id, user.id)
     assert len(await repo.open_coupons(orders.session, user.id)) == 1
+
+
+async def test_free_covers_are_limited_but_pay_now_is_not(
+    orders: OrderService, make_user: Callable[..., Any]
+) -> None:
+    from slidelab.core.errors import CoverLimitError
+    from slidelab.core.services.orders import FREE_COVERS_MAX
+
+    user = await make_user()
+    made = [await orders.create(user.id, draft()) for _ in range(FREE_COVERS_MAX)]
+    with pytest.raises(CoverLimitError):
+        await orders.create(user.id, draft())
+    # «Оплатить сразу» — без лимита
+    full = await orders.create(user.id, draft(skip_cover=True))
+    assert full.skip_cover
+    # отменил одну обложку — место освободилось
+    await orders.cancel_by_client(made[0].id, user.id)
+    await orders.create(user.id, draft())

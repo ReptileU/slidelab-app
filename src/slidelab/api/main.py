@@ -4,6 +4,9 @@ uv run uvicorn --factory slidelab.api.main:create_app --reload
 """
 
 import logging
+import re
+import time
+from collections import deque
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -20,7 +23,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from starlette.responses import Response
-from starlette.types import Scope
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from slidelab.api.routes import catalog, gifts, me, orders, packages, pipeline, support
 from slidelab.config import Settings, get_settings
@@ -37,6 +40,50 @@ class ClientError(BaseModel):
     tg_version: str | None = Field(default=None, max_length=20)
     platform: str | None = Field(default=None, max_length=40)
     url: str | None = Field(default=None, max_length=300)
+
+
+class RateLimit:
+    """Защита от скриптов: не больше RATE_MAX запросов к /api за RATE_WINDOW секунд с одного аккаунта (или адреса).
+    Человек, даже очень быстро нажимающий, до лимита не доходит. Счётчик — в памяти процесса
+    (сервер один)."""
+
+    RATE_MAX = 120
+    RATE_WINDOW = 60.0
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+        self.hits: dict[str, deque[float]] = {}
+
+    def _who(self, scope: Scope) -> str:
+        # Адрес + аккаунт: подпись здесь ещё не проверена, поэтому чужой id в заголовке не «съест» лимит владельца
+        client = scope.get("client")
+        ip = client[0] if client else "?"
+        auth = dict(scope.get("headers") or []).get(b"authorization", b"")
+        m = re.search(rb"%22id%22%3A(?:%20|\+)?(\d+)|\"id\": ?(\d+)", auth) if auth else None
+        return f"{ip}|{(m.group(1) or m.group(2)).decode() if m else ''}"
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        path = scope.get("path", "") if scope["type"] == "http" else ""
+        if not path.startswith("/api/") or path == "/api/health":
+            await self.app(scope, receive, send)
+            return
+        now = time.monotonic()
+        q = self.hits.setdefault(self._who(scope), deque())
+        while q and now - q[0] > self.RATE_WINDOW:
+            q.popleft()
+        if len(q) >= self.RATE_MAX:
+            response = JSONResponse(
+                {"code": "rate_limit", "detail": "Слишком много запросов. Подождите минуту."},
+                status_code=429,
+                headers={"Retry-After": "60"},
+            )
+            await response(scope, receive, send)
+            return
+        q.append(now)
+        if len(self.hits) > 50_000:  # не копим память: старые записи выбрасываем
+            for key in [k for k, v in self.hits.items() if not v or now - v[-1] > self.RATE_WINDOW]:
+                del self.hits[key]
+        await self.app(scope, receive, send)
 
 
 WEBAPP_DIST = Path(__file__).resolve().parents[3] / "webapp" / "dist"
@@ -79,7 +126,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await app.state.storage.close()
         await engine.dispose()
 
-    app = FastAPI(title="SlideLab API", lifespan=lifespan)
+    # Список адресов API (/docs, /openapi.json) наружу не показываем
+    app = FastAPI(title="SlideLab API", lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
+    app.add_middleware(RateLimit)
     app.state.settings = settings
     app.add_middleware(GZipMiddleware, minimum_size=1024)
     if settings.api_cors_origins:

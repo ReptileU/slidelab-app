@@ -424,3 +424,15 @@ def test_render_service_url_becomes_webhook_and_webapp() -> None:
         False,
     )
     assert with_service_url(base, {}) is base  # не в облаке — ничего не меняем
+
+
+async def test_docs_hidden_and_rate_limited(env: dict[str, Any]) -> None:
+    from slidelab.api.main import RateLimit
+
+    c: AsyncClient = env["client"]
+    assert "swagger" not in (await c.get("/docs")).text.lower()
+    assert "paths" not in (await c.get("/openapi.json")).text
+    statuses = [(await c.get("/api/me", headers=auth())).status_code for _ in range(RateLimit.RATE_MAX + 1)]
+    assert statuses[0] == 200 and statuses[-1] == 429
+    assert (await c.get("/api/me", headers=auth(778))).status_code == 200  # другой аккаунт — свой лимит
+    assert (await c.get("/api/health")).status_code == 200  # пинг не ограничен

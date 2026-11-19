@@ -10,6 +10,7 @@ TEXTS: dict[str, str] = {
     ),
     "first_offer": "\n\n🔥 <b>First presentation — {first} UZS</b> instead of <s>{s10} UZS</s>",
     "welcome_back": "⟦logo⟧<b>SlideLab</b>\nHow can I help?",
+    "cover_limit": "You already have 3 free covers waiting for your reply. Approve or delete one in «My orders» — or order with payment right away, then there is no limit.",
     "error": "Something went wrong. Try again — or message @{admin}.",
     "use_buttons": "Please choose an option with the buttons above.",
     "send_text": "Please type it as text.",

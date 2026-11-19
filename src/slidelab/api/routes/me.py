@@ -59,6 +59,7 @@ async def set_lang(body: LangIn, viewer: ViewerDep, session: SessionDep) -> MeOu
 # --- кошелёк: обложка из фото клиента ------------------------------------------------------
 
 WALLET_W, WALLET_H = 1200, 760  # пропорции передней стенки кошелька
+MAX_PIXELS = 40_000_000  # ~40 Мп: любое фото с телефона проходит, «бомба» — нет
 
 
 def _wallet_dir(data_dir: Path) -> Path:
@@ -70,12 +71,19 @@ def _wallet_dir(data_dir: Path) -> Path:
 def make_wallet_cover(blob: bytes) -> bytes:
     """Фото → обложка кошелька: поворот по EXIF, кадр по центру под пропорции кошелька, JPEG."""
     try:
-        img = ImageOps.exif_transpose(Image.open(BytesIO(blob))).convert("RGB")
+        img = Image.open(BytesIO(blob))
+        # «бомба»: крошечный файл с огромным разрешением съел бы всю память сервера — проверяем до распаковки
+        if img.width * img.height > MAX_PIXELS:
+            raise DomainError("Фото слишком большое — выберите другое")
+        img.draft("RGB", (WALLET_W * 2, WALLET_H * 2))  # JPEG сразу читаем уменьшенным
+        rgb = ImageOps.exif_transpose(img).convert("RGB")
+    except DomainError:
+        raise
     except Exception:
         raise DomainError("Не получилось открыть фото — попробуйте другое") from None
-    img = ImageOps.fit(img, (WALLET_W, WALLET_H), Image.Resampling.LANCZOS, centering=(0.5, 0.45))
+    rgb = ImageOps.fit(rgb, (WALLET_W, WALLET_H), Image.Resampling.LANCZOS, centering=(0.5, 0.45))
     out = BytesIO()
-    img.save(out, "JPEG", quality=86, optimize=True, progressive=True)
+    rgb.save(out, "JPEG", quality=86, optimize=True, progressive=True)
     return out.getvalue()
 
 

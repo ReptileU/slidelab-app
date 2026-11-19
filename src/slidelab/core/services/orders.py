@@ -7,11 +7,18 @@
 from collections.abc import Callable
 from datetime import datetime, timedelta
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core import repositories as repo
 from slidelab.core.enums import CouponOrigin, Deadline, Lang, OrderSource, OrderStatus, PaidFrom, Stage
-from slidelab.core.errors import DueTooSoonError, ForbiddenError, InvalidTransitionError, PaymentRequiredError
+from slidelab.core.errors import (
+    CoverLimitError,
+    DueTooSoonError,
+    ForbiddenError,
+    InvalidTransitionError,
+    PaymentRequiredError,
+)
 from slidelab.core.models import Coupon, Order, OrderEvent, Revision, User
 from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.schemas.order import OrderDraft
@@ -40,6 +47,8 @@ PAYABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT})
 CLIENT_CANCELLABLE = frozenset({S.NEW, S.COVER, S.AWAITING_PAYMENT, S.WORK})
 # Отмена уже начатой презентации с возвратом оплаты — не чаще раза в столько дней (работа Claude уже потрачена)
 WORK_REFUND_DAYS = 30
+# Бесплатных обложек без ответа клиента одновременно — защита от спама; «Оплатить сразу» и пакеты не ограничены
+FREE_COVERS_MAX = 3
 
 
 class OrderService:
@@ -83,6 +92,8 @@ class OrderService:
 
         due_at = self._due(draft)
         q = await self.quote(user_id, draft.quote_request())
+        if not draft.skip_cover and q.price > 0:
+            await self._check_free_covers(user_id)
         style_id = await repo.get_style_id(self.session, draft.style_key) if draft.style_key else None
         order = Order(
             user_id=user_id,
@@ -130,6 +141,19 @@ class OrderService:
         self._event(order, None, S.NEW, actor_id=user_id)
         await self.session.flush()
         return order
+
+    async def _check_free_covers(self, user_id: int) -> None:
+        """Защита от спама: бесплатных обложек без ответа — не больше FREE_COVERS_MAX. Оплаченным — без ограничений."""
+        waiting = await self.session.scalar(
+            select(func.count(Order.id)).where(
+                Order.user_id == user_id,
+                Order.is_paid.is_(False),
+                Order.skip_cover.is_(False),
+                Order.status.in_([S.NEW, S.COVER, S.AWAITING_PAYMENT]),
+            )
+        )
+        if (waiting or 0) >= FREE_COVERS_MAX:
+            raise CoverLimitError(f"У клиента уже {waiting} бесплатных обложек без ответа")
 
     async def transition(
         self, order_id: int, to: OrderStatus, actor_id: int | None, comment: str | None = None

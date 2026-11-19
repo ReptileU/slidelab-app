@@ -17,7 +17,8 @@ router = Router(name="errors")
 @router.error(ExceptionTypeFilter(DomainError))
 async def on_domain_error(event: ErrorEvent, lang: Lang | None = None, is_manager: bool = False) -> None:
     # Менеджеру — причина как есть, клиенту — общий текст (детали в логах)
-    text = str(event.exception) if is_manager else t(lang, "error")
+    key = getattr(event.exception, "client_key", None)
+    text = t(lang, key) if key else str(event.exception) if is_manager else t(lang, "error")
     await _answer(event, text)
 
 
