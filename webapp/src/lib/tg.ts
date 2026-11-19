@@ -87,6 +87,12 @@ export const redirected: boolean = (() => {
 })();
 /** Свои кнопки Telegram работают: открыто напрямую из Telegram, без перехода. */
 export const nativeButtons = !!tg && !redirected;
+/**
+ * Telegram на компьютере растягивает свою MainButton полосой во всё окно — её почти не видно.
+ * Там рисуем главную кнопку на странице, по ширине формы; «Назад» остаётся нативной.
+ */
+export const desktop = !!tg && ["tdesktop", "macos", "web", "weba", "webk", "unigram"].includes(tg.platform);
+export const nativeMain = nativeButtons && !desktop;
 if (tg && redirected) {
   try {
     document.documentElement.classList.add("sl-via");

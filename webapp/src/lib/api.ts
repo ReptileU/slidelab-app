@@ -24,7 +24,18 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (initData) headers.set("Authorization", `tma ${initData}`);
   if (init.body) headers.set("Content-Type", "application/json");
-  const res = await fetch(`./api${path}`, { ...init, headers });
+  // Сервер не ответил за минуту (облако просыпалось, оборвалась связь) — не крутимся вечно, а даём повторить.
+  // Повтор заказа безопасен: тот же Idempotency-Key, второго заказа не будет.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 60_000);
+  let res: Response;
+  try {
+    res = await fetch(`./api${path}`, { ...init, headers, signal: init.signal ?? ctrl.signal });
+  } catch {
+    throw new ApiError(0, "network", "Нет ответа от сервера. Проверьте интернет и нажмите ещё раз.");
+  } finally {
+    clearTimeout(timer);
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     // 422 от FastAPI — список ошибок полей; клиенту понятнее общий текст, чем техническое описание

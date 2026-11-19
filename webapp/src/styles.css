@@ -1569,3 +1569,12 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .lr-card { width: min(84vw, 360px); margin: 18px auto 14px; animation: lrCard 0.8s var(--spring) both; }
 @keyframes lrCard { from { transform: scale(0.4) rotate(-12deg); opacity: 0; } }
 .lr-card .coupon { width: 100%; }
+
+/* главная кнопка на странице (браузер и Telegram на компьютере) — крутилка при отправке */
+.btn-spinner{width:18px;height:18px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;display:inline-block;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* на компьютере кнопка — по ширине формы, а не во всё окно */
+@media (min-width: 700px){
+  .bottom-bar{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none}
+  .bottom-bar .btn{pointer-events:auto;max-width:630px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+}

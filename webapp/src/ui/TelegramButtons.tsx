@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
-import { haptic, nativeButtons, tg } from "../lib/tg";
+import { haptic, nativeButtons, nativeMain, tg } from "../lib/tg";
 
 /** Главная кнопка экрана. В Telegram — нативная MainButton, в браузере — кнопка внизу. */
 export function MainButton({
@@ -25,7 +25,7 @@ export function MainButton({
   blocked.current = disabled || loading;
 
   useEffect(() => {
-    if (!tg || !nativeButtons) return;
+    if (!tg || !nativeMain) return;
     const mb = tg.MainButton;
     const click = () => {
       if (blocked.current) {
@@ -43,7 +43,7 @@ export function MainButton({
   }, []);
 
   useEffect(() => {
-    if (!tg || !nativeButtons) return;
+    if (!tg || !nativeMain) return;
     const css = getComputedStyle(document.documentElement);
     tg.MainButton.setParams({
       text,
@@ -56,16 +56,19 @@ export function MainButton({
     else tg.MainButton.hideProgress();
   }, [text, disabled, muted, loading]);
 
-  if (nativeButtons) return null;
+  if (nativeMain) return null;
   return createPortal(
     <div className="bottom-bar">
       <button
         className="btn btn-filled"
         style={muted ? { opacity: 0.55 } : undefined}
         disabled={disabled || loading}
-        onClick={onClick}
+        onClick={() => {
+          haptic.tap();
+          onClick();
+        }}
       >
-        {loading ? "…" : text}
+        {loading ? <span className="btn-spinner" aria-label="…" /> : text}
       </button>
     </div>,
     document.body,
