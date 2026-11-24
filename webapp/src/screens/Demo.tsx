@@ -31,14 +31,13 @@ const POINTS_DEMO: PointsInfo = {
   boxes: [
     { key: "small", price: 100, prizes: [
       { prize: "discount", value: 20, percent: 45 }, { prize: "discount", value: 30, percent: 25 },
-      { prize: "one", value: 1, percent: 15 }, { prize: "points", value: 60, percent: 10 }, { prize: "coupons", value: 2, percent: 5 } ] },
+      { prize: "one", value: 1, percent: 15 }, { prize: "points", value: 60, percent: 10 }, { prize: "two", value: 2, percent: 5 } ] },
     { key: "medium", price: 250, prizes: [
-      { prize: "discount", value: 30, percent: 30 }, { prize: "discount", value: 50, percent: 25 },
-      { prize: "coupons", value: 2, percent: 35 }, { prize: "coupons", value: 3, percent: 10 } ] },
+      { prize: "discount", value: 30, percent: 20 }, { prize: "discount", value: 50, percent: 20 },
+      { prize: "one", value: 1, percent: 30 }, { prize: "two", value: 2, percent: 25 }, { prize: "four", value: 4, percent: 5 } ] },
     { key: "large", price: 500, prizes: [
-      { prize: "discount", value: 50, percent: 35 }, { prize: "coupons", value: 3, percent: 20 },
-      { prize: "four", value: 4, percent: 25 }, { prize: "coupons", value: 5, percent: 14 }, { prize: "coupons", value: 6, percent: 4.5 },
-      { prize: "vip", value: 10, percent: 1.5 } ] },
+      { prize: "discount", value: 50, percent: 25 }, { prize: "one", value: 1, percent: 7 },
+      { prize: "two", value: 2, percent: 25 }, { prize: "four", value: 4, percent: 40 }, { prize: "vip", value: 10, percent: 3 } ] },
   ],
 };
 /** Те же шансы, что на сервере (services/lucky.py) — здесь только для показа карточки. */
@@ -194,7 +193,7 @@ export function Demo() {
       </Section>
       <Section title="Призы за баллы">
         <div className="stack gap-12">
-          {(["coupons", "discount", "points"] as BoxPrize[]).map((p) => (
+          {(["four", "discount", "points"] as BoxPrize[]).map((p) => (
             <Button
               key={p}
               kind="tinted"
@@ -204,7 +203,7 @@ export function Demo() {
                 setBox({ prize: p, count: PRIZES[p] });
               }}
             >
-              {p === "coupons" ? "3 купона" : p === "discount" ? "Скидка 30%" : "+60 баллов"}
+              {p === "four" ? "Пакет на 4" : p === "discount" ? "Скидка 30%" : "+60 баллов"}
             </Button>
           ))}
         </div>

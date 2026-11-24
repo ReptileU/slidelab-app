@@ -55,7 +55,7 @@ function PrizeArt({ prize, value }: { prize: BoxPrize; value: number }) {
       <span className="pa-coupon">
         <span className="pa-coupon-t" />
         {value > 1 && <span className="pa-coupon-t b" />}
-        <b>×{value}</b>
+        {value > 1 && <b>×{value}</b>}
       </span>
     );
   if (prize === "points") return <span className="pa-coin">+{value}</span>;

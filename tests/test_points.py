@@ -41,10 +41,10 @@ async def pay_order(payments: PaymentService, user_id: int, **kwargs: Any) -> An
     return await payments.mark_paid(payment.id)
 
 
-def test_no_duplicate_prizes() -> None:
-    """В кейсах нет пакета «Неделя»: для клиента это то же самое, что 2 купона."""
-    for box in points.BOXES.values():
-        assert all(p.code is not BoxPrize.TWO for p in box.prizes)
+def test_no_coupon_stacks() -> None:
+    """Несколько купонов сразу не выпадает: либо один купон, либо карта пакета."""
+    for box in [*points.BOXES.values(), points.WELCOME]:
+        assert all(p.code is not BoxPrize.COUPONS for p in box.prizes)
 
 
 def test_boxes_are_fair() -> None:
@@ -114,12 +114,12 @@ async def test_open_box_needs_points(session: AsyncSession, clock: FakeClock, ma
 
 
 async def test_box_coupons(session: AsyncSession, clock: FakeClock, make_user: Callable[..., Any]) -> None:
-    user = await make_user(points=500)
-    box = await PointsService(session, clock, Pick(BoxPrize.COUPONS, 5)).open_box(user, "large")
+    user = await make_user(points=250)
+    box = await PointsService(session, clock, Pick(BoxPrize.ONE, 1)).open_box(user, "medium")
     assert user.points == 0
-    assert box.for_points and box.opened_at is not None and box.count == 5
+    assert box.for_points and box.opened_at is not None and box.count == 1
     coupons = await repo.open_coupons(session, user.id)
-    assert len(coupons) == 5 and box.coupon_id == coupons[0].id
+    assert len(coupons) == 1 and box.coupon_id == coupons[0].id
 
 
 async def test_box_package_and_points(session: AsyncSession, clock: FakeClock, make_user: Callable[..., Any]) -> None:
