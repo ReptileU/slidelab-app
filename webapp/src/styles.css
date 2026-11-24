@@ -141,7 +141,7 @@ img {
 .row { display: flex; align-items: center; gap: 12px; }
 .spread { justify-content: space-between; }
 .grow { flex: 1; min-width: 0; }
-.mt-8 { margin-top: 8px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
+.mt-8 { margin-top: 8px; } .mt-12 { margin-top: 12px; } .mt-16 { margin-top: 16px; } .mt-24 { margin-top: 24px; }
 .center { text-align: center; }
 .ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -2067,3 +2067,13 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
   .wc{max-width:none}
   .lucky{max-width:none}
 }
+/* печать конверта не садится на плашки «−41% · 14 дней» */
+.env-front{padding-top:66px}
+/* кошелёк не прилипает к списку под ним (тень снизу визуально «съедала» отступ) */
+.wallet{margin-bottom:12px}
+/* перенесённое «презентаций» не наезжает на крупную цифру */
+.env .pack-count{row-gap:10px}
+.env .pack-unit{line-height:1.2}
+/* на карте скидки крупное −N% не касается подписи */
+.dtag-for{margin-top:12px}
+.dtag-pct{font-size:clamp(54px,16vw,78px);line-height:.92}
