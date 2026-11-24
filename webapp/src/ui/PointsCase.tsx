@@ -7,8 +7,9 @@ import { useLang, useT } from "../lib/app";
 import type { Key } from "../lib/i18n";
 import { playTick, unlockAudio } from "../lib/sound";
 import { alert, haptic } from "../lib/tg";
-import type { BoxPrize, PointsBox, PointsBoxKey, PointsResult } from "../lib/types";
+import type { BoxPrize, PlanCode, PointsBox, PointsBoxKey, PointsResult } from "../lib/types";
 import { LuckyReveal, type Rarity } from "./LuckyPack";
+import { PackCard } from "./PackCard";
 import { couponWord, pointsWord, presWord } from "../lib/words";
 
 export const TIER: Record<PointsBoxKey, Key> = {
@@ -58,6 +59,21 @@ function PrizeArt({ prize, value }: { prize: BoxPrize; value: number }) {
       </span>
     );
   if (prize === "points") return <span className="pa-coin">+{value}</span>;
+  // пакет — та же карта, что потом окажется в кошельке, только маленькая
+  const plan = PACK_PLAN[prize];
+  if (plan)
+    return (
+      <span className="pa-card" aria-hidden>
+        <span className="pa-card-in">
+          <PackCard
+            pkg={{ plan, left: value, total: value, expires_at: new Date(Date.now() + 30 * 864e5).toISOString() }}
+            holder="SLIDELAB"
+            hint={false}
+            still
+          />
+        </span>
+      </span>
+    );
   return (
     <span className={`pa-pack ${prize}`}>
       <b>{value}</b>
@@ -65,6 +81,8 @@ function PrizeArt({ prize, value }: { prize: BoxPrize; value: number }) {
     </span>
   );
 }
+
+const PACK_PLAN: Partial<Record<BoxPrize, PlanCode>> = { two: "week", four: "month", vip: "vip" };
 
 export function PrizeTile({ p, label }: { p: Prize; label?: string }) {
   return (

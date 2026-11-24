@@ -41,6 +41,12 @@ async def pay_order(payments: PaymentService, user_id: int, **kwargs: Any) -> An
     return await payments.mark_paid(payment.id)
 
 
+def test_no_duplicate_prizes() -> None:
+    """В кейсах нет пакета «Неделя»: для клиента это то же самое, что 2 купона."""
+    for box in points.BOXES.values():
+        assert all(p.code is not BoxPrize.TWO for p in box.prizes)
+
+
 def test_boxes_are_fair() -> None:
     for box in points.BOXES.values():
         assert sum(p.weight for p in box.prizes) == 1000
@@ -119,16 +125,16 @@ async def test_box_coupons(session: AsyncSession, clock: FakeClock, make_user: C
 async def test_box_package_and_points(session: AsyncSession, clock: FakeClock, make_user: Callable[..., Any]) -> None:
     from slidelab.core.services.packages import PackageService
 
-    user = await make_user(points=350)
-    await PointsService(session, clock, Pick(BoxPrize.TWO, 2)).open_box(user, "medium")
+    user = await make_user(points=600)
+    await PointsService(session, clock, Pick(BoxPrize.FOUR, 4)).open_box(user, "large")
     balance = await PackageService(session, clock).balance(user.id)
-    assert balance is not None and balance.left == 2
+    assert balance is not None and balance.left == 4
     await PointsService(session, clock, Pick(BoxPrize.POINTS, 60)).open_box(user, "small")
     user.points += 500
     await PointsService(session, clock, Pick(BoxPrize.VIP, 10)).open_box(user, "large")
     vip = await PackageService(session, clock).balance(user.id)
     assert vip is not None and vip.plan is PlanCode.VIP
-    assert user.points == 350 - 250 - 100 + 60
+    assert user.points == 600 - 500 - 100 + 60
 
 
 async def test_points_boxes_do_not_count_toward_lucky_limit(
