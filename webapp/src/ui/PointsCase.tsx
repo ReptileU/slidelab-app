@@ -11,7 +11,12 @@ import type { BoxPrize, PointsBox, PointsBoxKey, PointsResult } from "../lib/typ
 import { LuckyReveal, type Rarity } from "./LuckyPack";
 import { couponWord, pointsWord, presWord } from "../lib/words";
 
-export const TIER: Record<PointsBoxKey, Key> = { small: "pts_small", medium: "pts_medium", large: "pts_large" };
+export const TIER: Record<PointsBoxKey, Key> = {
+  small: "pts_small",
+  medium: "pts_medium",
+  large: "pts_large",
+  welcome: "pts_welcome",
+};
 
 type Prize = PointsBox["prizes"][number];
 
@@ -86,7 +91,7 @@ export function CaseArt({ tier, size = 96, shake = false }: { tier: PointsBoxKey
   );
 }
 
-const CASE_IMG: Record<PointsBoxKey, string> = { small: "bronze", medium: "silver", large: "gold" };
+const CASE_IMG: Record<PointsBoxKey, string> = { small: "bronze", medium: "silver", large: "gold", welcome: "gold" };
 
 const CELL = 112; // ширина ячейки ленты + зазор, px
 const WIN_AT = 42; // на какой ячейке остановится лента
@@ -214,7 +219,7 @@ export function CaseSheet({
         <button className="case-x" onClick={() => !spinning && onClose(!!result)} aria-label={t("close")}>
           <X size={20} />
         </button>
-        <span className="case-balance tabular">
+        <span className="case-balance tabular" style={box.price === 0 ? { visibility: "hidden" } : undefined}>
           <Coins size={16} /> {result && reveal ? result.points : result ? points - box.price : points}
         </span>
       </div>
@@ -251,6 +256,8 @@ export function CaseSheet({
           <span className="btn-spinner" />
         ) : result ? (
           spinning ? t("case_rolling") : name(result.prize, result.value)
+        ) : can && box.price === 0 ? (
+          t("case_open_free")
         ) : can ? (
           <>
             {t("case_open")} · <Coins size={16} /> {box.price}
@@ -280,9 +287,10 @@ export function CaseSheet({
         <LuckyReveal
           opened
           rarity={winRarity}
+          couponSlides={box.key === "welcome" ? "s10" : "s20"}
           prize={{ prize: result.prize, count: result.value }}
           name={t(TIER[box.key])}
-          points={result.points}
+          points={box.price ? result.points : undefined}
           onDone={() => onClose(true)}
         />
       )}

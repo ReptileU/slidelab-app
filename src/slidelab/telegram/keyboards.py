@@ -137,6 +137,14 @@ def claim_gift(lang: Lang, url: str) -> InlineKeyboardMarkup:
     return _rows(InlineKeyboardButton(text=t(lang, "btn_claim_gift"), url=url))
 
 
+def open_welcome(lang: Lang, url: str) -> InlineKeyboardMarkup:
+    """Новичку по ссылке друга: открыть приветственный кейс в приложении."""
+    sep = "&" if "?" in url else "?"
+    return _rows(
+        InlineKeyboardButton(text=t(lang, "btn_open_welcome"), web_app=WebAppInfo(url=f"{url}{sep}go=welcome"))
+    )
+
+
 def claim_invite(lang: Lang, url: str) -> InlineKeyboardMarkup:
     """Кнопка на карточке-приглашении — работает и у друга после пересылки."""
     return _rows(InlineKeyboardButton(text=t(lang, "btn_claim_invite"), url=url))

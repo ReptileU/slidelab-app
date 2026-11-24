@@ -385,5 +385,6 @@ async def test_referrals_link(env: dict[str, Any]) -> None:
     c: AsyncClient = env["client"]
     data = (await c.get("/api/me/referrals", headers=auth())).json()
     assert "?start=ref_" in data["link"]
-    assert data["paid"] == 0 and data["friends"] == [] and data["invited"] is False
+    assert data["paid"] == 0 and data["friends"] == [] and data["invited"] is False and data["welcome"] is None
+    assert (await c.post("/api/me/referrals/welcome", headers=auth())).status_code >= 400
     assert [(m["friends"], m["prize"]) for m in data["milestones"]] == [(3, "coupon"), (10, "points")]

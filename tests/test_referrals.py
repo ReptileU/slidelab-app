@@ -106,3 +106,38 @@ async def test_milestone_bonus(
     assert len(await repo.open_coupons(session, inviter.id)) == 1
     summary = await ReferralService(session, clock).summary(inviter)
     assert summary.paid == 3 and summary.earned == inviter.points and len(summary.friends) == 3
+
+
+async def test_welcome_case_once(session: AsyncSession, clock: FakeClock, make_user: Callable[..., Any]) -> None:
+    """Приветственный кейс: только у пришедшего по ссылке, один раз; бесплатная презентация — купон до 15 слайдов."""
+    import random
+
+    from slidelab.core.enums import BoxPrize
+    from slidelab.core.services.referrals import NoWelcomeError
+
+    service = ReferralService(session, clock)
+    stranger = await make_user(created_at=clock.now)
+    assert not await service.welcome_available(stranger)
+    with pytest.raises(NoWelcomeError):
+        await service.open_welcome(stranger)
+
+    inviter = await make_user()
+    friend = await invite(session, clock, make_user, inviter)
+    assert await service.welcome_available(friend)
+
+    class FreeOne(random.Random):
+        def choices(self, population: Any, weights: Any = None, *, cum_weights: Any = None, k: int = 1) -> list[Any]:
+            return [next(p for p in population if p.code is BoxPrize.ONE)]
+
+    box = await service.open_welcome(friend, FreeOne())
+    assert box.prize is BoxPrize.ONE
+    coupons = await repo.open_coupons(session, friend.id)
+    assert len(coupons) == 1 and coupons[0].slides is SlideTier.S10
+    assert not await service.welcome_available(friend)
+    with pytest.raises(NoWelcomeError):
+        await service.open_welcome(friend)
+
+
+def test_welcome_odds() -> None:
+    assert sum(p.weight for p in points.WELCOME.prizes) == 1000
+    assert points.WELCOME.price == 0 and "welcome" not in points.BOXES

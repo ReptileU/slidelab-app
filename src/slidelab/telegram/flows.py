@@ -213,10 +213,15 @@ class Flows:
         inviter = await service.inviter_of(friend)
         if inviter is None:
             return
+        markup = (
+            None
+            if self.settings.legacy_webapp or not self.settings.webapp_url
+            else kb.open_welcome(friend.lang or Lang.RU, self.settings.webapp_url)
+        )
         await self.n.client(
             friend,
             "ref_welcome",
-            None,
+            markup,
             name=html.escape(views.client_name(inviter)),
             n=PER_PRESENTATION + FRIEND_BONUS,
         )

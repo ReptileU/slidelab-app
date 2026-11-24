@@ -100,6 +100,7 @@ class Referral(CreatedAtMixin, Base):
     friend_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)  # у человека один пригласивший
     paid_at: Mapped[datetime | None]
     points: Mapped[int] = mapped_column(default=0, server_default="0")  # сколько получил пригласивший
+    welcome_opened_at: Mapped[datetime | None]  # друг открыл приветственный кейс (один раз)
 
 
 class PackageLedger(CreatedAtMixin, Base):

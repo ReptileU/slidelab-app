@@ -50,7 +50,20 @@ class PointsBox:
 # пакет, который выпадает в кейсе
 PRIZE_PLAN = {BoxPrize.TWO: PlanCode.WEEK, BoxPrize.FOUR: PlanCode.MONTH, BoxPrize.VIP: PlanCode.VIP}
 
-DISCOUNT_MAX = 70  # потолок сложенных карт скидки, %
+DISCOUNT_MAX = 70
+
+# Приветственный кейс — бесплатно, один раз, тому, кто пришёл по ссылке друга (services/referrals.py).
+# Бесплатная презентация — купон до 15 слайдов (S10); остальное — карты скидки (на первый заказ 11+ слайдов
+# или на следующий: со скидкой на первую презентацию 10 слайдов карта не складывается и ждёт).
+WELCOME = PointsBox(
+    "welcome",
+    0,
+    (
+        PointsPrize(BoxPrize.ONE, 1, 150),
+        PointsPrize(BoxPrize.DISCOUNT, 30, 400),
+        PointsPrize(BoxPrize.DISCOUNT, 20, 450),
+    ),
+)  # потолок сложенных карт скидки, %
 
 BOXES: dict[str, PointsBox] = {
     "small": PointsBox(
@@ -154,8 +167,6 @@ class PointsService:
 
     async def open_box(self, user: User, key: str) -> PackageBox:
         """Купить пакет за баллы и сразу разыграть приз (коробка сразу открыта — показываем анимацию)."""
-        from slidelab.core.services.packages import PackageService  # без цикла импортов
-
         box = BOXES.get(key)
         if box is None:
             raise DomainError(f"Нет пакета «{key}»")
@@ -164,7 +175,12 @@ class PointsService:
             raise NotEnoughPointsError(f"Нужно {box.price} баллов, у клиента {user.points}")
         user.points -= box.price
         self.session.add(PointsLedger(user_id=user.id, delta=-box.price, reason=PointsReason.BOX))
-        prize = self.roll(box)
+        return await self.give(user, self.roll(box))
+
+    async def give(self, user: User, prize: PointsPrize, slides: SlideTier = SlideTier.S20) -> PackageBox:
+        """Начислить выпавший приз; запись PackageBox — для истории и показа."""
+        from slidelab.core.services.packages import PackageService  # без цикла импортов
+
         record = PackageBox(
             user_id=user.id,
             prize=prize.code,
@@ -174,9 +190,7 @@ class PointsService:
             for_points=True,
         )
         if prize.code in (BoxPrize.ONE, BoxPrize.COUPONS):
-            coupons = [
-                Coupon(user_id=user.id, slides=SlideTier.S20, origin=CouponOrigin.BONUS) for _ in range(prize.value)
-            ]
+            coupons = [Coupon(user_id=user.id, slides=slides, origin=CouponOrigin.BONUS) for _ in range(prize.value)]
             self.session.add_all(coupons)
             await self.session.flush()
             record.coupon_id = coupons[0].id
