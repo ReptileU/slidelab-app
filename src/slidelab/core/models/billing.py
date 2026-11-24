@@ -13,6 +13,7 @@ from slidelab.core.enums import (
     PaymentProvider,
     PaymentStatus,
     PlanCode,
+    PointsReason,
     SlideTier,
 )
 from slidelab.core.models.base import Base, CreatedAtMixin, str_enum
@@ -71,8 +72,22 @@ class PackageBox(CreatedAtMixin, Base):
     user_package_id: Mapped[int | None] = mapped_column(ForeignKey("user_packages.id"))  # выпал пакет
     coupon_id: Mapped[int | None] = mapped_column(ForeignKey("coupons.id", use_alter=True))  # выпал купон
     prize: Mapped[BoxPrize] = mapped_column(str_enum(BoxPrize))
-    count: Mapped[int]  # сколько презентаций начислено
+    count: Mapped[int]  # сколько презентаций начислено (для скидки — процент, для баллов — сколько баллов)
     opened_at: Mapped[datetime | None]
+    for_points: Mapped[bool] = mapped_column(default=False, server_default="0")  # пакет за баллы, а не за деньги
+
+
+class PointsLedger(CreatedAtMixin, Base):
+    """Каждое движение баллов отдельной строкой — баланс всегда можно проверить."""
+
+    __tablename__ = "points_ledger"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    delta: Mapped[int]
+    reason: Mapped[PointsReason] = mapped_column(str_enum(PointsReason))
+    order_id: Mapped[int | None] = mapped_column(ForeignKey("orders.id"))
+    payment_id: Mapped[int | None] = mapped_column(ForeignKey("payments.id"))
 
 
 class PackageLedger(CreatedAtMixin, Base):

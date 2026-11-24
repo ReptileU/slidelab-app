@@ -24,3 +24,8 @@ class User(CreatedAtMixin, Base):
     wallet_cover: Mapped[str | None] = mapped_column(String(64))
     # Когда последний раз вернули оплату за отмену уже начатой презентации — такой возврат раз в 30 дней
     work_refund_at: Mapped[datetime | None]
+    # Баллы за покупки (тратятся на пакет за баллы); сгорают, если до points_expire_at не было новой покупки
+    points: Mapped[int] = mapped_column(default=0, server_default="0")
+    points_expire_at: Mapped[datetime | None]
+    # Скидка в процентах на следующий оплачиваемый заказ (выпала в пакете за баллы)
+    discount_pct: Mapped[int | None]

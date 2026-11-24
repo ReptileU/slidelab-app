@@ -51,6 +51,7 @@ class Quote:
     package_left_after: int | None
     first_order_discount: bool
     voucher: bool = False  # база оплачена отменённым заказом
+    discount_pct: int = 0  # скидка из пакета за баллы, уже вычтена из price
 
 
 def package_cost(slides: SlideTier) -> int:
@@ -81,6 +82,7 @@ def quote(
     first_order: bool = False,
     package: PackageBalance | None = None,
     voucher: SlideTier | None = None,
+    discount_pct: int = 0,
 ) -> Quote:
     validate(req)
     base = rules.base[req.slides]
@@ -121,10 +123,15 @@ def quote(
         price += percent_of(price, rules.urgent_pct)
     if req.extra_notes:
         price += rules.extra_notes
+    # Скидка из пакета за баллы — на весь заказ за деньги; со скидкой первого заказа не складывается
+    off = 0 if discount else discount_pct
+    if off:
+        price -= percent_of(price, off)
     return Quote(
         price=price,
         paid_from=PaidFrom.CASH,
         package_cost=0,
         package_left_after=None,
         first_order_discount=discount,
+        discount_pct=off,
     )

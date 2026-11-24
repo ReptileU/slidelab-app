@@ -860,7 +860,7 @@ function PriceCard({
             <PriceTag
               now={money(q.price)}
               old={
-                (q.first_order_discount || q.voucher) && old && old > q.price
+                (q.first_order_discount || q.voucher || q.discount_pct) && old && old > q.price
                   ? money(old)
                   : null
               }
@@ -870,6 +870,11 @@ function PriceCard({
         </div>
         {q.first_order_discount && (
           <span className="badge gold mt-8">{t("price_first")}</span>
+        )}
+        {!!q.discount_pct && (
+          <span className="disc-badge mt-8">
+            <b>−{q.discount_pct}%</b> {t("disc_applied")}
+          </span>
         )}
       </div>
     </Section>

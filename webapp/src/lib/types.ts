@@ -7,7 +7,7 @@ export type Design = "ours" | "own";
 export type PlanCode = "week" | "month" | "vip";
 /** Что можно купить на вкладке «Пакеты»: обычный пакет или бонус-пакет. */
 export type BuyPlan = PlanCode | "lucky";
-export type BoxPrize = "one" | "two" | "four" | "vip";
+export type BoxPrize = "one" | "two" | "four" | "vip" | "coupons" | "discount" | "points";
 
 export interface LuckyPrize {
   prize: BoxPrize;
@@ -22,6 +22,26 @@ export interface LuckyInfo {
   window_days: number;
   can_buy: boolean;
   pending: LuckyPrize | null;
+}
+/** Пакеты за баллы: баллы даются за покупки деньгами (services/points.py). */
+export type PointsBoxKey = "small" | "medium" | "large";
+export interface PointsBox {
+  key: PointsBoxKey;
+  price: number;
+  prizes: { prize: BoxPrize; value: number; percent: number }[];
+}
+export interface PointsInfo {
+  points: number;
+  expire_at: string | null;
+  per_presentation: number;
+  expire_days: number;
+  discount_pct: number | null;
+  boxes: PointsBox[];
+}
+export interface PointsResult {
+  prize: BoxPrize;
+  value: number;
+  points: number;
 }
 export type PaidFrom = "cash" | "package";
 export type OrderStatus = "new" | "cover" | "awaiting_payment" | "work" | "done" | "revision" | "cancelled";
@@ -47,6 +67,9 @@ export interface Me {
   voucher_list?: SlideTier[]; // объём каждого купона
   coupons?: { id: number; slides: SlideTier; gift?: boolean }[];
   wallet_cover?: string | null; // своя обложка кошелька (версия), null — классическая
+  points?: number; // баллы за покупки
+  points_expire_at?: string | null;
+  discount_pct?: number | null; // карта скидки из пакета за баллы — на следующий заказ
 }
 
 export interface Prices {
@@ -103,6 +126,7 @@ export interface Quote {
   package_left_after: number | null;
   first_order_discount: boolean;
   voucher?: boolean; // база оплачена отменённым заказом
+  discount_pct?: number; // применена карта скидки
 }
 
 export interface OrderDraft {

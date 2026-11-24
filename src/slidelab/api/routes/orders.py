@@ -123,6 +123,7 @@ async def quote(body: QuoteIn, viewer: ViewerDep, session: SessionDep) -> QuoteO
         package_left_after=q.package_left_after,
         first_order_discount=q.first_order_discount,
         voucher=q.voucher,
+        discount_pct=q.discount_pct,
     )
 
 

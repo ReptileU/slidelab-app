@@ -89,6 +89,7 @@ class Order(CreatedAtMixin, Base):
     credit_used: Mapped[bool] = mapped_column(default=False)
     # Оплачен купоном (база заказа); отменят и его — купон вернётся клиенту
     coupon_id: Mapped[int | None] = mapped_column(ForeignKey("coupons.id", use_alter=True))
+    discount_pct: Mapped[int | None]  # скидка из пакета за баллы, учтённая в price
     manager_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
     # карточка заказа в теме клиента у менеджеров — редактируется при смене статуса
     managers_message_id: Mapped[int | None]

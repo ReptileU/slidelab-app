@@ -4,9 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useMe } from "../lib/app";
 import { unlockAudio } from "../lib/sound";
 import { haptic } from "../lib/tg";
-import type { BoxPrize, LuckyInfo, LuckyPrize, Package, PlanCode } from "../lib/types";
+import type { BoxPrize, LuckyInfo, LuckyPrize, Package, PlanCode, PointsInfo } from "../lib/types";
 import { Button, Section, Segmented } from "../ui";
+import { DiscountCard } from "../ui/Discount";
 import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
+import { PointsShop } from "../ui/PointsShop";
 import { PackCard } from "../ui/PackCard";
 import { CouponTear } from "../ui/CouponTear";
 import { PaidOverlay } from "../ui/PaidOverlay";
@@ -15,7 +17,27 @@ import { BackButton } from "../ui/TelegramButtons";
 
 const PLANS: Record<string, { total: number }> = { week: { total: 2 }, month: { total: 4 }, vip: { total: 10 } };
 
-const PRIZES: Record<BoxPrize, number> = { one: 1, two: 2, four: 4, vip: 10 };
+const PRIZES: Record<BoxPrize, number> = { one: 1, two: 2, four: 4, vip: 10, coupons: 3, discount: 30, points: 60 };
+
+/** Те же пакеты за баллы, что на сервере (services/points.py) — только для показа. */
+const POINTS_DEMO: PointsInfo = {
+  points: 260,
+  expire_at: new Date(Date.now() + 170 * 864e5).toISOString(),
+  per_presentation: 50,
+  expire_days: 180,
+  discount_pct: null,
+  boxes: [
+    { key: "small", price: 100, prizes: [
+      { prize: "one", value: 1, percent: 55 }, { prize: "two", value: 2, percent: 10 },
+      { prize: "discount", value: 30, percent: 20 }, { prize: "points", value: 60, percent: 15 } ] },
+    { key: "medium", price: 250, prizes: [
+      { prize: "coupons", value: 2, percent: 40 }, { prize: "two", value: 2, percent: 25 },
+      { prize: "coupons", value: 3, percent: 25 }, { prize: "discount", value: 50, percent: 10 } ] },
+    { key: "large", price: 500, prizes: [
+      { prize: "coupons", value: 3, percent: 15 }, { prize: "four", value: 4, percent: 40 },
+      { prize: "coupons", value: 5, percent: 35 }, { prize: "coupons", value: 6, percent: 10 } ] },
+  ],
+};
 /** Те же шансы, что на сервере (services/lucky.py) — здесь только для показа карточки. */
 const LUCKY_DEMO: LuckyInfo = {
   price: 17000,
@@ -128,6 +150,40 @@ export function Demo() {
         />
         <div className="mt-16">
           <Button onClick={openDemo}>Открыть бонус-пакет</Button>
+        </div>
+      </Section>
+      <Section title="Баллы и пакеты за баллы">
+        <PointsShop
+          info={POINTS_DEMO}
+          busy={null}
+          onOpen={(k) => {
+            haptic.tap();
+            unlockAudio();
+            setBox({ prize: k === "small" ? "discount" : k === "medium" ? "coupons" : "four", count: k === "small" ? 30 : k === "medium" ? 3 : 4 });
+          }}
+        />
+      </Section>
+      <Section title="Карта скидки">
+        <DiscountCard pct={30} holder={holder} />
+        <div className="mt-16">
+          <DiscountCard pct={50} holder={holder} />
+        </div>
+      </Section>
+      <Section title="Призы за баллы">
+        <div className="stack gap-12">
+          {(["coupons", "discount", "points"] as BoxPrize[]).map((p) => (
+            <Button
+              key={p}
+              kind="tinted"
+              onClick={() => {
+                haptic.tap();
+                unlockAudio();
+                setBox({ prize: p, count: PRIZES[p] });
+              }}
+            >
+              {p === "coupons" ? "3 купона" : p === "discount" ? "Скидка 30%" : "+60 баллов"}
+            </Button>
+          ))}
         </div>
       </Section>
       {coupon === "tear" && <CouponTear slides="s20" onDone={() => setCoupon(null)} />}

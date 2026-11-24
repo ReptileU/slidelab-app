@@ -65,7 +65,11 @@ class OrderService:
         balance = await self.packages.balance(user_id)
         coupons = await repo.open_coupons(self.session, user_id)
         voucher = coupons[0].slides if coupons else None
-        return pricing.quote(req, rules, first_order=first_order, package=balance, voucher=voucher)
+        user = await self.session.get(User, user_id)
+        discount = (user.discount_pct or 0) if user else 0
+        return pricing.quote(
+            req, rules, first_order=first_order, package=balance, voucher=voucher, discount_pct=discount
+        )
 
     def _due(self, draft: OrderDraft) -> datetime | None:
         """Срок к дате — только у «Обычно» и не раньше чем через NORMAL_MIN_HOURS: быстрее — это «Срочно»."""
@@ -130,6 +134,11 @@ class OrderService:
         )
         self.session.add(order)
         await self.session.flush()
+        if q.discount_pct:  # скидка из пакета за баллы потрачена этим заказом (вернётся, если его отменят до оплаты)
+            order.discount_pct = q.discount_pct
+            user = await self.session.get(User, user_id)
+            if user is not None:
+                user.discount_pct = None
         if q.voucher:  # база оплачена купоном
             coupon = (await repo.open_coupons(self.session, user_id, for_update=True))[0]
             coupon.used_order_id = order.id
@@ -359,6 +368,10 @@ class OrderService:
                 coupon = await self.session.get(Coupon, order.coupon_id, with_for_update=True)
                 if coupon is not None:
                     coupon.used_order_id = None
+            if order.discount_pct and not order.is_paid:  # не оплатил — скидка из пакета за баллы возвращается
+                user = await self.session.get(User, order.user_id)
+                if user is not None:
+                    user.discount_pct = max(user.discount_pct or 0, order.discount_pct)
             order.stage = None  # убираем из конвейера: Claude и сторож его больше не видят
             order.credit_until = None
 

@@ -41,6 +41,9 @@ class MeOut(BaseModel):
     voucher_list: list[SlideTier] = Field(default_factory=list)  # объём каждого купона — для кошелька
     coupons: list["CouponOut"] = Field(default_factory=list)
     wallet_cover: str | None = None  # версия обложки кошелька (меняется при замене фото)
+    points: int = 0  # баллы за покупки
+    points_expire_at: datetime | None = None
+    discount_pct: int | None = None  # скидка на следующий заказ из пакета за баллы
 
 
 class LangIn(BaseModel):
@@ -113,6 +116,7 @@ class QuoteOut(BaseModel):
     package_left_after: int | None
     first_order_discount: bool
     voucher: bool = False
+    discount_pct: int = 0  # скидка из пакета за баллы, уже учтена в price
 
 
 class EventOut(BaseModel):
@@ -264,6 +268,33 @@ class LuckyOddsOut(BaseModel):
     prize: BoxPrize
     count: int
     percent: float
+
+
+class PointsPrizeOut(BaseModel):
+    prize: BoxPrize
+    value: int
+    percent: float
+
+
+class PointsBoxOut(BaseModel):
+    key: str
+    price: int
+    prizes: list[PointsPrizeOut]
+
+
+class PointsOut(BaseModel):
+    points: int
+    expire_at: datetime | None
+    per_presentation: int
+    expire_days: int
+    discount_pct: int | None
+    boxes: list[PointsBoxOut]
+
+
+class PointsResultOut(BaseModel):
+    prize: BoxPrize
+    value: int
+    points: int  # баланс после покупки
 
 
 class LuckyPrizeOut(BaseModel):

@@ -7,12 +7,28 @@ import { money } from "../lib/i18n";
 import { playReveal, playTap, unlockAudio } from "../lib/sound";
 import { haptic } from "../lib/tg";
 import type { BoxPrize, LuckyInfo, LuckyPrize, PlanCode } from "../lib/types";
-import { presWord } from "../lib/words";
+import { couponWord, pointsWord, presWord } from "../lib/words";
 import { Coupon } from "./Coupon";
+import { DiscountCard, PointsCoin } from "./Discount";
 import { PackCard } from "./PackCard";
 
-/** Выпавший пакет — карта того же тарифа, что начислен на сервере (services/lucky.py). */
-const PRIZE_PLAN: Record<Exclude<BoxPrize, "one">, PlanCode> = { two: "week", four: "month", vip: "vip" };
+/** Выпавший пакет — карта того же тарифа, что начислен на сервере (services/lucky.py, services/points.py). */
+const PRIZE_PLAN: Partial<Record<BoxPrize, PlanCode>> = { two: "week", four: "month", vip: "vip" };
+
+/** Несколько купонов — стопкой, верхний целиком, под ним торчат остальные. */
+export function CouponStack({ n }: { n: number }) {
+  const shown = Math.min(n, 4);
+  return (
+    <div className="cstack" style={{ ["--k" as string]: shown }}>
+      {Array.from({ length: shown }, (_, i) => (
+        <div key={i} className="cstack-i" style={{ ["--i" as string]: shown - 1 - i }}>
+          <Coupon slides="s20" />
+        </div>
+      ))}
+      <span className="cstack-n tabular">×{n}</span>
+    </div>
+  );
+}
 
 const TAPS = 3; // сколько раз нажать, чтобы пакет открылся
 const clamp = (v: number) => Math.max(-1, Math.min(1, v));
@@ -132,7 +148,19 @@ export function LuckyCard({
  * Открытие бонус-пакета: по пакету нужно нажать три раза — он трясётся, трескается и раскрывается.
  * Приз уже начислен при оплате; здесь только показываем, что выпало.
  */
-export function LuckyReveal({ prize, onDone }: { prize: LuckyPrize; onDone: () => void }) {
+export function LuckyReveal({
+  prize,
+  onDone,
+  name,
+  points,
+}: {
+  prize: LuckyPrize;
+  onDone: () => void;
+  /** надпись на пакете (по умолчанию — «Бонус-пакет») */
+  name?: string;
+  /** пакет за баллы: сколько баллов осталось после него */
+  points?: number;
+}) {
   const t = useT();
   const { lang } = useLang();
   const holder = useMe().data?.first_name || "SlideLab";
@@ -140,7 +168,9 @@ export function LuckyReveal({ prize, onDone }: { prize: LuckyPrize; onDone: () =
   const tilt = useTilt<HTMLButtonElement>();
   const [taps, setTaps] = useState(0);
   const [open, setOpen] = useState(false);
-  const big = prize.count >= 4;
+  const big =
+    prize.prize === "discount" ? prize.count >= 50 : prize.prize === "points" ? false : prize.count >= (prize.prize === "coupons" ? 5 : 4);
+  const plan = PRIZE_PLAN[prize.prize];
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -190,7 +220,7 @@ export function LuckyReveal({ prize, onDone }: { prize: LuckyPrize; onDone: () =
               <b>S</b> SlideLab
             </span>
             <span className="lr-mark">?</span>
-            <span className="lr-name">{t("plan_lucky")}</span>
+            <span className="lr-name">{name ?? t("plan_lucky")}</span>
           </button>
           <div className="lr-steps" aria-hidden>
             {Array.from({ length: TAPS }, (_, i) => (
@@ -212,25 +242,38 @@ export function LuckyReveal({ prize, onDone }: { prize: LuckyPrize; onDone: () =
             <div className="lr-card">
               {prize.prize === "one" ? (
                 <Coupon slides="s20" />
-              ) : (
+              ) : prize.prize === "coupons" ? (
+                <CouponStack n={prize.count} />
+              ) : prize.prize === "discount" ? (
+                <DiscountCard pct={prize.count} holder={holder} />
+              ) : prize.prize === "points" ? (
+                <PointsCoin value={prize.count} size={150} />
+              ) : plan ? (
                 <PackCard
                   pkg={{
-                    plan: PRIZE_PLAN[prize.prize as Exclude<BoxPrize, "one">],
+                    plan,
                     left: prize.count,
                     total: prize.count,
-                    expires_at: new Date(Date.now() + (days[PRIZE_PLAN[prize.prize as Exclude<BoxPrize, "one">]] ?? 30) * 864e5).toISOString(),
+                    expires_at: new Date(Date.now() + (days[plan] ?? 30) * 864e5).toISOString(),
                   }}
                   holder={holder}
                   hint={false}
                   still
                 />
-              )}
+              ) : null}
             </div>
             <div className="lr-unit">
               {prize.prize === "one"
                 ? t("lucky_got_coupon")
-                : t(prize.prize === "vip" ? "lucky_got_vip" : "lucky_got_pack", { n: prize.count, word: presWord(lang, prize.count) })}
+                : prize.prize === "coupons"
+                  ? t("pts_got_coupons", { n: prize.count, word: couponWord(lang, prize.count) })
+                  : prize.prize === "discount"
+                    ? t("pts_got_discount", { n: prize.count })
+                    : prize.prize === "points"
+                      ? t("pts_got_points", { n: prize.count, word: pointsWord(lang, prize.count) })
+                      : t(prize.prize === "vip" ? "lucky_got_vip" : "lucky_got_pack", { n: prize.count, word: presWord(lang, prize.count) })}
             </div>
+            {points !== undefined && <div className="lr-left">{t("pts_left", { n: points })}</div>}
           </div>
           <button className="lr-take" onClick={onDone}>
             {t("lucky_take")}

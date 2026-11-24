@@ -1583,3 +1583,90 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
   .bottom-bar{background:linear-gradient(to top,var(--bg) 55%,transparent);backdrop-filter:none;-webkit-backdrop-filter:none;pointer-events:none;padding-top:28px}
   .bottom-bar .btn{pointer-events:auto;max-width:630px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
 }
+/* ---------- карта скидки (пакет за баллы) ---------- */
+.dcard{position:relative;overflow:hidden;isolation:isolate;aspect-ratio:1.586;width:100%;max-width:360px;margin:0 auto;border-radius:20px;padding:18px 20px;
+  display:flex;flex-direction:column;justify-content:space-between;color:#fff;
+  background:radial-gradient(120% 140% at 0% 0%,#3a1d6e 0%,#170b2e 45%,#07040f 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 1px rgba(255,255,255,.08),0 22px 60px rgba(98,52,200,.35)}
+.dcard.hot{background:radial-gradient(120% 140% at 0% 0%,#7a1238 0%,#2e0a1a 45%,#0d0408 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 1px rgba(255,255,255,.08),0 22px 60px rgba(220,40,90,.35)}
+.dcard-holo{position:absolute;inset:-30%;z-index:-1;opacity:.55;filter:blur(24px);
+  background:conic-gradient(from 210deg at 70% 40%,#ff5ea8,#ffd36e,#5effc8,#5ea8ff,#c45eff,#ff5ea8);
+  -webkit-mask:radial-gradient(60% 60% at 80% 30%,#000 0%,#0000 70%);mask:radial-gradient(60% 60% at 80% 30%,#000 0%,#0000 70%);
+  animation:dcardHolo 6s linear infinite}
+@keyframes dcardHolo{to{transform:rotate(360deg)}}
+.dcard-shine{position:absolute;inset:0;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:translateX(-140%) skewX(-18deg);animation:coupon-shine 1.6s .5s ease-out both}
+.dcard-top{display:flex;align-items:center;justify-content:space-between}
+.dcard-kind{font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+.dcard-chip{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#fbe39a,#d9a53a 55%,#fff3c4);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);position:relative}
+.dcard-chip::after{content:"";position:absolute;inset:6px 10px;border:1px solid rgba(60,40,0,.45);border-radius:3px}
+.dcard-pct{font-size:clamp(64px,22vw,92px);font-weight:900;letter-spacing:-.05em;line-height:.9;display:flex;align-items:flex-start;
+  background:linear-gradient(180deg,#fff 0%,#e9dcff 55%,#b9a2ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 18px rgba(185,162,255,.35))}
+.dcard.hot .dcard-pct{background:linear-gradient(180deg,#fff 0%,#ffe0ea 55%,#ff8fb3 100%);-webkit-background-clip:text;background-clip:text;
+  filter:drop-shadow(0 4px 18px rgba(255,120,160,.4))}
+.dcard-minus{font-size:.6em;margin-top:.12em;margin-right:.04em}
+.dcard-sign{font-size:.5em;margin-top:.14em;margin-left:.04em}
+.dcard-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;font-size:12px;letter-spacing:.14em;opacity:.85}
+.dcard-bottom span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.dcard-bottom b{font-weight:900;letter-spacing:.2em}
+.disc-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:600;color:#fff;
+  background:linear-gradient(135deg,#3a1d6e,#170b2e)}
+.disc-badge b{font-weight:900}
+
+/* ---------- монета баллов ---------- */
+.pcoin{position:relative;width:var(--s);height:var(--s);margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 35% 30%,#fff6cf 0%,#f3cd63 35%,#c8901f 75%,#8f6210 100%);
+  box-shadow:inset 0 -6px 14px rgba(90,55,0,.45),inset 0 4px 10px rgba(255,255,255,.6),0 20px 50px rgba(224,176,74,.4);
+  animation:pcoinSpin 1s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes pcoinSpin{from{transform:rotateY(540deg) scale(.4)}to{transform:none}}
+.pcoin-rim{position:absolute;inset:8%;border-radius:50%;border:2px dashed rgba(110,70,0,.4)}
+.pcoin-face{position:relative;font-size:calc(var(--s) * .27);font-weight:900;letter-spacing:-.04em;color:#5a3a00;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+.pcoin-shine{position:absolute;inset:0;border-radius:50%;overflow:hidden}
+.pcoin-shine::after{content:"";position:absolute;inset:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:translateX(-140%) skewX(-18deg);animation:coupon-shine 1.4s .7s ease-out both}
+
+/* ---------- стопка купонов ---------- */
+.cstack{position:relative;width:100%;max-width:340px;margin:0 auto;padding-top:calc((var(--k) - 1) * 14px)}
+.cstack-i{position:relative;transform:translateY(calc(var(--i) * -14px)) scale(calc(1 - var(--i) * .04));transform-origin:50% 0;
+  filter:brightness(calc(1 - var(--i) * .12));animation:cstackIn .5s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc((3 - var(--i)) * 90ms)}
+.cstack-i + .cstack-i{margin-top:-150px}
+@keyframes cstackIn{from{opacity:0;transform:translateY(40px) scale(.9)}}
+.cstack-n{position:absolute;right:-6px;top:-6px;z-index:5;min-width:44px;height:44px;padding:0 10px;border-radius:22px;display:flex;align-items:center;justify-content:center;
+  background:#fff;color:#000;font-size:18px;font-weight:900;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.lr-left{margin-top:8px;font-size:13px;color:rgba(245,245,247,.55);text-align:center}
+
+/* ---------- витрина баллов ---------- */
+.pts{border-radius:26px;padding:18px;color:#f5f5f7;background:linear-gradient(160deg,#241a08 0%,#100c04 60%,#0a0803 100%);
+  box-shadow:inset 0 0 0 1px rgba(243,205,99,.18),0 18px 50px rgba(0,0,0,.25)}
+.pts-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.pts-label{font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(245,245,247,.5)}
+.pts-num{display:flex;align-items:center;gap:8px;font-size:38px;font-weight:900;letter-spacing:-.03em;line-height:1.1;color:#f3cd63}
+.pts-rule{font-size:12.5px;line-height:1.3;color:rgba(245,245,247,.6);text-align:right;max-width:52%}
+.pts-track{position:relative;height:8px;margin:22px 14px 26px 0;border-radius:99px;background:rgba(255,255,255,.1)}
+.pts-track i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#c8901f,#f3cd63,#fff3c4);transition:width .6s}
+.pts-track span{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#2c2412;box-shadow:0 0 0 2px rgba(243,205,99,.35)}
+.pts-track span.on{background:#f3cd63;box-shadow:0 0 0 3px rgba(243,205,99,.3)}
+.pts-track em{position:absolute;top:16px;left:50%;white-space:nowrap;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:700;color:rgba(245,245,247,.5)}
+.pts-next{font-size:13px;color:rgba(245,245,247,.7);margin:0 0 14px}
+.pts-boxes{display:grid;gap:10px}
+@media (min-width:700px){.pts-boxes{grid-template-columns:repeat(3,1fr)}}
+.pts-box{border-radius:18px;padding:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column}
+.pts-box.medium{background:linear-gradient(160deg,rgba(200,200,215,.12),rgba(255,255,255,.03))}
+.pts-box.large{background:linear-gradient(160deg,rgba(243,205,99,.2),rgba(255,255,255,.03));border-color:rgba(243,205,99,.3)}
+.pts-box-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pts-tier{font-size:16px;font-weight:800}
+.pts-price{display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:800;color:#f3cd63}
+.pts-odds{flex:1}
+.pts-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(40px,1fr) 44px;align-items:center;gap:8px;padding:4px 0;font-size:13.5px;font-weight:600}
+.pts-row > span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pts-row > span:last-child{text-align:right;font-size:12.5px;color:rgba(245,245,247,.7)}
+.pts-row .lucky-bar i{background:linear-gradient(90deg,#8f6210,#f3cd63)}
+.pts-buy{margin-top:12px;height:46px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:700;
+  background:rgba(255,255,255,.08);color:rgba(245,245,247,.6)}
+.pts-box.can .pts-buy{background:linear-gradient(180deg,#fff3c4,#f3cd63 60%,#d9a53a);color:#2b1d00;box-shadow:inset 0 1px 0 #fff,0 8px 24px rgba(243,205,99,.25)}
+.pts-buy:disabled{cursor:default}
+.pts-box.can .pts-buy:disabled{opacity:.6}
+.pts-note{margin-top:12px}
