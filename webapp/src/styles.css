@@ -1266,7 +1266,6 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
   .promo{flex-basis:160px;height:150px;padding:14px}
   .promo-big{font-size:36px}
   .promo-text{font-size:14px}
-  .lucky,.wc{max-width:620px;margin-left:auto;margin-right:auto}
 }
 @media (min-width: 860px) {
   .packs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
@@ -2039,3 +2038,32 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .pa-card-in{display:block;width:320px;zoom:.26;pointer-events:none}
 .pa-card-in .pcard-stage{padding:0}
 .case-cell .pa-card-in{zoom:.25}
+
+/* ---------- выравнивание по общей сетке (ПК и планшет) ---------- */
+/* число презентаций в конверте никогда не разламывается на «1» и «0» */
+.env .pack-count{flex-wrap:wrap;row-gap:2px}
+.env .pack-unit{white-space:nowrap}
+.env .pack-num{white-space:nowrap}
+/* конверты одной высоты: карман растягивается, кнопки — на одной линии */
+.env{height:100%}
+.env-box{flex:1;display:flex;flex-direction:column}
+.env-pocket{flex:1;display:flex;flex-direction:column}
+.env-front{flex:1}
+@media (min-width: 860px) {
+  .packs-grid .env .pack-num{font-size:52px}
+}
+@media (min-width: 700px) {
+  /* плитки и стили — ровной сеткой по ширине контента, без обрезанных справа карточек */
+  .promos{overflow:visible;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .promo{flex:none;width:auto}
+  .styles-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 14px;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .styles-row .style-card{flex:none;width:auto}
+}
+@media (min-width: 1024px) {
+  /* стили — ровная сетка на всю ширину контента, без «хвоста» справа */
+  .styles-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .styles-row .style-card{flex:none;width:auto}
+  /* карусель работ — во всю ширину, как блоки над и под ней */
+  .wc{max-width:none}
+  .lucky{max-width:none}
+}
