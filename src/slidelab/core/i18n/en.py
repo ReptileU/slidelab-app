@@ -64,7 +64,7 @@ TEXTS: dict[str, str] = {
     "gift_err_revoked": "This gift was cancelled.",
     "gift_err_self": "This is your own gift 🙂 Send the link to a friend.",
     "gift_err_missing": "Gift not found — check the link.",
-    "invite_card": "🎁 <b>{name} gives you {n} points at SlideLab</b>\n\nWe make presentations for your topic — with charts, images and clear text, not a template.\nWe show the cover for free: you pay only if you like the style. First presentation — from {price} sum.\n\nPoints for your first order open a case right away: discounts and free presentations inside.",
+    "invite_card": "🎁 <b>{name} gives you {n} points at SlideLab</b>\n\n✅ <b>Title slide for free</b>, right away and without payment: send your topic and see the style\n✅ Like it — order the whole deck, the first one from {price} sum\n✅ Design for your topic: charts, images, clear text — not a template\n\nPlus a gift case is waiting: it may hold a free presentation.",
     "invite_forward": "☝️ Forward this card to a friend or your group chat. When your friend pays for their first order, you get +100 points.",
     "btn_claim_invite": "🎁 Get the gift",
     "btn_open_welcome": "🎁 Open the gift",
