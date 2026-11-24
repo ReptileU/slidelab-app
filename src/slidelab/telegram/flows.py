@@ -15,6 +15,8 @@ from slidelab.core.models import Coupon, Gift, Order, PackagePlan, ShowcaseStyle
 from slidelab.core.services.gifts import gift_card_path, link
 from slidelab.core.services.payments import PaidResult, PaymentService
 from slidelab.core.services.pipeline import Pipeline, fmt_of, formats_of
+from slidelab.core.services.points import PER_PRESENTATION
+from slidelab.core.services.referrals import FRIEND_BONUS, INVITER_POINTS, ReferralReward, ReferralService
 from slidelab.telegram import keyboards as kb
 from slidelab.telegram import views
 from slidelab.telegram.notifier import Notifier, lang_of
@@ -177,6 +179,8 @@ class Flows:
                 await self.n.send_gift(user, p.plan_code)
         if result.points:
             await self.points_earned(user, result.points)
+        if result.referral is not None:
+            await self.referral_paid(result.referral)
         if result.order is not None and not (result.attention and not result.started):
             order = result.order
             self.pipeline.sync_status(order)
@@ -187,6 +191,33 @@ class Flows:
             else:
                 await self.n.client(user, "paid_early", id=order.id)
                 await self.n.refresh_card(order, f"💰 оплачено {amount} — начнём после одобрения обложки")
+
+    async def referral_joined(self, friend: User, code: str) -> None:
+        """Друг открыл бота по ссылке: ему — что он получит, пригласившему — что ждать."""
+        service = ReferralService(self.n.session)
+        ref = await service.attach(friend, code)
+        if ref is None:
+            return
+        inviter = await service.inviter_of(friend)
+        if inviter is None:
+            return
+        await self.n.client(
+            friend,
+            "ref_welcome",
+            None,
+            name=html.escape(views.client_name(inviter)),
+            n=PER_PRESENTATION + FRIEND_BONUS,
+        )
+        await self.n.client(inviter, "ref_joined", None, name=html.escape(views.client_name(friend)), n=INVITER_POINTS)
+
+    async def referral_paid(self, reward: ReferralReward) -> None:
+        """Приглашённый впервые заплатил: пригласившему баллы (и бонус за 3 / 10 друзей)."""
+        inviter = reward.inviter
+        name = html.escape(views.client_name(reward.friend))
+        key = "ref_paid_milestone" if reward.milestone else "ref_paid"
+        await self.n.client(
+            inviter, key, None, name=name, n=reward.points, friends=reward.paid_friends, total=inviter.points or 0
+        )
 
     async def points_earned(self, user: User, n: int) -> None:
         """«+50 баллов» после оплаты деньгами — и сколько осталось до пакета за баллы."""

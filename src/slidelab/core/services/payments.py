@@ -34,6 +34,7 @@ from slidelab.core.services.orders import PAYABLE, OrderService
 from slidelab.core.services.packages import Credit
 from slidelab.core.services.points import PointsService
 from slidelab.core.services.pricing import to_stars
+from slidelab.core.services.referrals import ReferralReward, ReferralService
 
 STARS = "XTR"
 UZS = "UZS"
@@ -50,7 +51,8 @@ class PaidResult:
     attention: str | None = None  # деньги пришли, но что-то не так — владелец должен разобраться
     prize: Prize | None = None  # бонус-пакет: что выпало
     gift: Gift | None = None  # пакет куплен в подарок — ссылка для друга
-    points: int = 0  # сколько баллов начислено за эту оплату
+    points: int = 0  # сколько баллов начислено за эту оплату (вместе с бонусом за приглашение)
+    referral: ReferralReward | None = None  # первая покупка приглашённого: награда пригласившему
 
 
 @dataclass(frozen=True, slots=True)
@@ -217,6 +219,13 @@ class PaymentService:
             else:
                 started = await self.orders.mark_paid(order, actor_id=None)
         points = await self._award_points(payment, order, credit, bool(attention))
+        referral = None
+        if points > 0:
+            friend = await self.session.get(User, payment.user_id)
+            if friend is not None:
+                referral = await ReferralService(self.session, self.orders.clock).on_paid(friend, payment.id)
+                if referral is not None:
+                    points += referral.friend_bonus
         await self.session.flush()
         return PaidResult(
             payment=payment,
@@ -228,6 +237,7 @@ class PaymentService:
             prize=prize,
             gift=gift,
             points=points,
+            referral=referral,
         )
 
     async def _award_points(self, payment: Payment, order: Order | None, credit: Credit | None, odd: bool) -> int:

@@ -379,3 +379,11 @@ async def test_bonus_pack_no_longer_sold(env: dict[str, Any]) -> None:
     assert r.status_code == 422
     cases = (await c.get("/api/packages/points", headers=auth())).json()
     assert any(p["prize"] == "vip" for b in cases["boxes"] for p in b["prizes"])
+
+
+async def test_referrals_link(env: dict[str, Any]) -> None:
+    c: AsyncClient = env["client"]
+    data = (await c.get("/api/me/referrals", headers=auth())).json()
+    assert "?start=ref_" in data["link"]
+    assert data["paid"] == 0 and data["friends"] == [] and data["invited"] is False
+    assert [m["friends"] for m in data["milestones"]] == [3, 10]

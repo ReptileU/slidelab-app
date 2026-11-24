@@ -20,6 +20,7 @@ from slidelab.core.errors import NotFoundError
 from slidelab.core.i18n import DEFAULT, money, t
 from slidelab.core.models import Coupon, FaqItem, PackagePlan, User
 from slidelab.core.models.base import utcnow
+from slidelab.core.services import referrals
 from slidelab.core.services.gifts import GiftError, GiftService
 from slidelab.telegram import keyboards as kb
 from slidelab.telegram import legacy, views
@@ -84,6 +85,9 @@ async def route(
         await begin_ask(message, state, user)
     elif payload.startswith("gift_"):
         await claim_gift(payload[5:], message, session, user, flows)
+    elif payload.startswith(referrals.PREFIX):
+        await greet(message, user, flows.n)
+        await flows.referral_joined(user, payload[len(referrals.PREFIX) :])
     else:
         await greet(message, user, flows.n)
 

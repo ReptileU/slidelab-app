@@ -8,12 +8,22 @@ from sqlalchemy import func, select
 
 from slidelab.api.deps import SessionDep, SettingsDep, ViewerDep
 from slidelab.api.payments_flow import decode_image
-from slidelab.api.schemas import CouponOut, LangIn, MeOut, PackageOut, WalletCoverIn
+from slidelab.api.schemas import (
+    CouponOut,
+    FriendOut,
+    LangIn,
+    MeOut,
+    MilestoneOut,
+    PackageOut,
+    ReferralsOut,
+    WalletCoverIn,
+)
 from slidelab.core import repositories as repo
 from slidelab.core.errors import DomainError
 from slidelab.core.models import Order
 from slidelab.core.models.base import utcnow
-from slidelab.core.services.points import PointsService
+from slidelab.core.services import referrals as refs
+from slidelab.core.services.points import PER_PRESENTATION, PointsService
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -114,3 +124,21 @@ async def wallet_cover(viewer: ViewerDep, settings: SettingsDep) -> FileResponse
     if path is None or not path.is_file():
         raise HTTPException(status_code=404, detail="Обложки нет")
     return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "private, max-age=86400"})
+
+
+@router.get("/referrals")
+async def my_referrals(viewer: ViewerDep, session: SessionDep, settings: SettingsDep) -> ReferralsOut:
+    service = refs.ReferralService(session)
+    summary = await service.summary(viewer.user)
+    return ReferralsOut(
+        link=f"https://t.me/{settings.bot_username}?start={refs.PREFIX}{summary.code}",
+        inviter_points=refs.INVITER_POINTS,
+        friend_points=PER_PRESENTATION + refs.FRIEND_BONUS,
+        paid=summary.paid,
+        earned=summary.earned,
+        milestones=[MilestoneOut(friends=n, points=p, reached=summary.paid >= n) for n, p in refs.MILESTONES.items()],
+        friends=[
+            FriendOut(name=f.name, joined_at=f.joined_at, paid_at=f.paid_at, points=f.points) for f in summary.friends
+        ],
+        invited=await service.pending_for(viewer.user),
+    )

@@ -320,3 +320,29 @@ class ReviewOut(BaseModel):
 
 
 MeOut.model_rebuild()
+
+
+class FriendOut(BaseModel):
+    name: str
+    joined_at: datetime
+    paid_at: datetime | None
+    points: int
+
+
+class MilestoneOut(BaseModel):
+    friends: int
+    points: int
+    reached: bool
+
+
+class ReferralsOut(BaseModel):
+    """Пригласить друга: ссылка, кто пришёл, что начислено и что ещё впереди."""
+
+    link: str
+    inviter_points: int  # пригласившему за друга, который заплатил
+    friend_points: int  # другу за первую покупку (вместо обычных 50)
+    paid: int
+    earned: int
+    milestones: list[MilestoneOut]
+    friends: list[FriendOut]
+    invited: bool  # сам пришёл по ссылке и ещё не платил — показываем «×2 баллов за первую покупку»

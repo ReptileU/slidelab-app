@@ -125,8 +125,21 @@ class PointsService:
         payment_id: int | None = None,
     ) -> int:
         """Начислить за покупку деньгами: PER_PRESENTATION за каждую презентацию, срок — заново."""
+        return await self.grant(
+            user, PER_PRESENTATION * presentations, reason, order_id=order_id, payment_id=payment_id
+        )
+
+    async def grant(
+        self,
+        user: User,
+        amount: int,
+        reason: PointsReason,
+        *,
+        order_id: int | None = None,
+        payment_id: int | None = None,
+    ) -> int:
+        """Начислить сколько-то баллов (приглашения, бонусы); срок всех баллов — заново."""
         self._expire(user)
-        amount = PER_PRESENTATION * presentations
         if amount <= 0:
             return 0
         user.points += amount

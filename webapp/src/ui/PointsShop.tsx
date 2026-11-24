@@ -1,4 +1,5 @@
-import { Coins, Lock } from "lucide-react";
+import { Coins, Lock, UserPlus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { useLang, useT } from "../lib/app";
 import { formatDate } from "../lib/i18n";
@@ -12,6 +13,7 @@ import { CaseArt, TIER } from "./PointsCase";
 export function PointsShop({ info, onSelect }: { info: PointsInfo; onSelect: (key: PointsBoxKey) => void }) {
   const t = useT();
   const { lang } = useLang();
+  const nav = useNavigate();
   const max = Math.max(...info.boxes.map((b) => b.price));
   const next = info.boxes.find((b) => b.price > info.points);
   const fill = Math.min(100, (info.points / max) * 100);
@@ -56,6 +58,11 @@ export function PointsShop({ info, onSelect }: { info: PointsInfo; onSelect: (ke
           );
         })}
       </div>
+      <button className="pts-invite" onClick={() => nav("/invite")}>
+        <UserPlus size={18} />
+        <span>{t("ref_shop")}</span>
+        <b>+100</b>
+      </button>
       <p className="lucky-note pts-note">{t("pts_note", { days: info.expire_days })}</p>
     </div>
   );

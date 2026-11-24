@@ -656,6 +656,7 @@ async def cmd_emoji(message: Message, command: CommandObject, settings: Settings
     buttons = sorted(set(button_keys().values()))
     parts = (command.args or "").split()
     if not parts:
+
         def row(key: str, about: str, group: str) -> str:
             item = data[group].get(key)
             if not item:
