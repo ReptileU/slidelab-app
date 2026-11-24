@@ -153,6 +153,7 @@ export function LuckyReveal({
   onDone,
   name,
   points,
+  opened = false,
 }: {
   prize: LuckyPrize;
   onDone: () => void;
@@ -160,6 +161,8 @@ export function LuckyReveal({
   name?: string;
   /** пакет за баллы: сколько баллов осталось после него */
   points?: number;
+  /** сразу показать приз (кейс уже «открылся» рулеткой) */
+  opened?: boolean;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -167,10 +170,15 @@ export function LuckyReveal({
   const days: Record<string, number> = Object.fromEntries((useCatalog().data?.plans ?? []).map((p) => [p.code, p.days]));
   const tilt = useTilt<HTMLButtonElement>();
   const [taps, setTaps] = useState(0);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(opened);
   const big =
     prize.prize === "discount" ? prize.count >= 50 : prize.prize === "points" ? false : prize.count >= (prize.prize === "coupons" ? 5 : 4);
   const plan = PRIZE_PLAN[prize.prize];
+
+  useEffect(() => {
+    if (opened) playReveal(big);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;

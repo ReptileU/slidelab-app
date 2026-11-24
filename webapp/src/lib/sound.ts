@@ -196,3 +196,25 @@ export function playTear(): void {
     /* без звука — не страшно */
   }
 }
+
+/** Щелчок рулетки кейса: короткий сухой «тик» на каждой проехавшей ячейке. */
+export function playTick(): void {
+  const c = context();
+  if (!c) return;
+  try {
+    if (c.state === "suspended") void c.resume();
+    const now = c.currentTime + 0.005;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(1800, now);
+    osc.frequency.exponentialRampToValueAtTime(900, now + 0.03);
+    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.exponentialRampToValueAtTime(0.0006, now + 0.04);
+    osc.connect(gain).connect(c.destination);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  } catch {
+    /* без звука — не страшно */
+  }
+}

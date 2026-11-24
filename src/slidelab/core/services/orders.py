@@ -15,7 +15,7 @@ from slidelab.core.errors import DueTooSoonError, ForbiddenError, InvalidTransit
 from slidelab.core.models import Coupon, Order, OrderEvent, Revision, User
 from slidelab.core.models.base import as_utc, utcnow
 from slidelab.core.schemas.order import OrderDraft
-from slidelab.core.services import pricing
+from slidelab.core.services import points, pricing
 from slidelab.core.services.packages import PackageService
 
 S = OrderStatus
@@ -347,7 +347,7 @@ class OrderService:
             if order.discount_pct and not order.is_paid:  # не оплатил — скидка из пакета за баллы возвращается
                 user = await self.session.get(User, order.user_id)
                 if user is not None:
-                    user.discount_pct = max(user.discount_pct or 0, order.discount_pct)
+                    user.discount_pct = min((user.discount_pct or 0) + order.discount_pct, points.DISCOUNT_MAX)
             order.stage = None  # убираем из конвейера: Claude и сторож его больше не видят
             order.credit_until = None
 

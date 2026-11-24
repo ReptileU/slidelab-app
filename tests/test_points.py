@@ -147,6 +147,12 @@ async def test_discount_card_applies_once_and_returns_on_cancel(
     user.points = 100
     await PointsService(session, clock, Pick(BoxPrize.DISCOUNT, 30)).open_box(user, "small")
     assert user.discount_pct == 30
+    user.points = 200
+    await PointsService(session, clock, Pick(BoxPrize.DISCOUNT, 20)).open_box(user, "small")
+    assert user.discount_pct == 50  # карты складываются
+    await PointsService(session, clock, Pick(BoxPrize.DISCOUNT, 30)).open_box(user, "small")
+    assert user.discount_pct == points.DISCOUNT_MAX
+    user.discount_pct = 30
 
     full = await payments.orders.quote(user.id, _req())
     order = await payments.orders.create(user.id, draft())

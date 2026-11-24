@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { useMe } from "../lib/app";
 import { unlockAudio } from "../lib/sound";
 import { haptic } from "../lib/tg";
-import type { BoxPrize, LuckyInfo, LuckyPrize, Package, PlanCode, PointsInfo } from "../lib/types";
+import type { BoxPrize, LuckyInfo, LuckyPrize, Package, PlanCode, PointsBoxKey, PointsInfo } from "../lib/types";
 import { Button, Section, Segmented } from "../ui";
 import { DiscountCard } from "../ui/Discount";
 import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
+import { CaseSheet } from "../ui/PointsCase";
 import { PointsShop } from "../ui/PointsShop";
 import { PackCard } from "../ui/PackCard";
 import { CouponTear } from "../ui/CouponTear";
@@ -28,14 +29,14 @@ const POINTS_DEMO: PointsInfo = {
   discount_pct: null,
   boxes: [
     { key: "small", price: 100, prizes: [
-      { prize: "one", value: 1, percent: 55 }, { prize: "two", value: 2, percent: 10 },
-      { prize: "discount", value: 30, percent: 20 }, { prize: "points", value: 60, percent: 15 } ] },
+      { prize: "discount", value: 20, percent: 45 }, { prize: "discount", value: 30, percent: 25 },
+      { prize: "one", value: 1, percent: 15 }, { prize: "points", value: 60, percent: 10 }, { prize: "two", value: 2, percent: 5 } ] },
     { key: "medium", price: 250, prizes: [
-      { prize: "coupons", value: 2, percent: 40 }, { prize: "two", value: 2, percent: 25 },
-      { prize: "coupons", value: 3, percent: 25 }, { prize: "discount", value: 50, percent: 10 } ] },
+      { prize: "discount", value: 30, percent: 30 }, { prize: "discount", value: 50, percent: 25 },
+      { prize: "coupons", value: 2, percent: 25 }, { prize: "two", value: 2, percent: 15 }, { prize: "coupons", value: 3, percent: 5 } ] },
     { key: "large", price: 500, prizes: [
-      { prize: "coupons", value: 3, percent: 15 }, { prize: "four", value: 4, percent: 40 },
-      { prize: "coupons", value: 5, percent: 35 }, { prize: "coupons", value: 6, percent: 10 } ] },
+      { prize: "discount", value: 50, percent: 35 }, { prize: "coupons", value: 3, percent: 20 },
+      { prize: "four", value: 4, percent: 25 }, { prize: "coupons", value: 5, percent: 15 }, { prize: "coupons", value: 6, percent: 5 } ] },
   ],
 };
 /** Те же шансы, что на сервере (services/lucky.py) — здесь только для показа карточки. */
@@ -58,6 +59,7 @@ export function Demo() {
   const nav = useNavigate();
   const me = useMe();
   const [plan, setPlan] = useState<PlanCode>("month");
+  const [demoCase, setDemoCase] = useState<PointsBoxKey | null>(null);
   const [show, setShow] = useState<null | "paid" | "last">(null);
   const [coupon, setCoupon] = useState<null | "tear" | "back" | "mend">(null);
   const play = (k: "tear" | "back" | "mend") => {
@@ -152,17 +154,21 @@ export function Demo() {
           <Button onClick={openDemo}>Открыть бонус-пакет</Button>
         </div>
       </Section>
-      <Section title="Баллы и пакеты за баллы">
-        <PointsShop
-          info={POINTS_DEMO}
-          busy={null}
-          onOpen={(k) => {
-            haptic.tap();
-            unlockAudio();
-            setBox({ prize: k === "small" ? "discount" : k === "medium" ? "coupons" : "four", count: k === "small" ? 30 : k === "medium" ? 3 : 4 });
-          }}
-        />
+      <Section title="Баллы и кейсы за баллы">
+        <PointsShop info={POINTS_DEMO} onSelect={(k) => setDemoCase(k)} />
       </Section>
+      {demoCase && (
+        <CaseSheet
+          box={POINTS_DEMO.boxes.find((b) => b.key === demoCase)!}
+          points={POINTS_DEMO.points}
+          onOpen={async () => {
+            const box = POINTS_DEMO.boxes.find((b) => b.key === demoCase)!;
+            const p = box.prizes[Math.floor(Math.random() * box.prizes.length)]!;
+            return { prize: p.prize, value: p.value, points: POINTS_DEMO.points - box.price };
+          }}
+          onClose={() => setDemoCase(null)}
+        />
+      )}
       <Section title="Карта скидки">
         <DiscountCard pct={30} holder={holder} />
         <div className="mt-16">
