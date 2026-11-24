@@ -1,27 +1,30 @@
 import { useT } from "../lib/app";
 
 /**
- * Карта скидки из пакета за баллы: тёмная «металлическая» карта с голограммой и крупным −N%.
+ * Карта скидки из кейса — обычная скидочная карточка-купон, не банковская:
+ * яркий фон, крупное −N%, отрывной корешок с перфорацией и штрихкодом.
  * Скидка ложится на следующий заказ, оплаченный деньгами, и не складывается со скидкой первого заказа.
  */
 export function DiscountCard({ pct, holder }: { pct: number; holder?: string }) {
   const t = useT();
+  const tone = pct >= 50 ? "hot" : pct >= 30 ? "mid" : "cool";
   return (
-    <div className={`dcard${pct >= 50 ? " hot" : ""}`}>
-      <span className="dcard-holo" />
-      <span className="dcard-shine" />
-      <div className="dcard-top">
-        <span className="dcard-kind">{t("disc_card")}</span>
-        <span className="dcard-chip" aria-hidden />
+    <div className={`dtag ${tone}`}>
+      <div className="dtag-main">
+        <span className="dtag-shine" />
+        <span className="dtag-kind">{t("disc_card")}</span>
+        <div className="dtag-pct tabular">
+          <span className="dtag-minus">−</span>
+          {pct}
+          <span className="dtag-sign">%</span>
+        </div>
+        <span className="dtag-for">{t("disc_next_short")}</span>
+        {holder && <span className="dtag-holder">{holder}</span>}
       </div>
-      <div className="dcard-pct tabular">
-        <span className="dcard-minus">−</span>
-        {pct}
-        <span className="dcard-sign">%</span>
-      </div>
-      <div className="dcard-bottom">
-        <span>{holder ? holder.toUpperCase() : t("disc_next")}</span>
-        <b>SLIDELAB</b>
+      <div className="dtag-stub" aria-hidden>
+        <span className="dtag-hole" />
+        <span className="dtag-brand">SLIDELAB</span>
+        <span className="dtag-bars" />
       </div>
     </div>
   );
