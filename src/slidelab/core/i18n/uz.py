@@ -65,7 +65,7 @@ TEXTS: dict[str, str] = {
     "gift_err_revoked": "Bu sovg‘a bekor qilingan.",
     "gift_err_self": "Bu sizning sovg‘angiz 🙂 Havolani do‘stingizga yuboring.",
     "gift_err_missing": "Sovg‘a topilmadi — havolani tekshiring.",
-    "invite_card": "🎁 <b>{name} sizga SlideLab’da {n} ball sovg‘a qiladi</b>\n\nMavzuingizga mos taqdimotlar — grafiklar, rasmlar va tushunarli matn bilan, shablon emas.\nMuqovani bepul ko‘rsatamiz: uslub yoqsagina to‘laysiz. Birinchi taqdimot — {price} so‘mdan.\n\nBirinchi buyurtma ballari darhol keysni ochadi: ichida chegirmalar va bepul taqdimotlar.",
+    "invite_card": "🎁 <b>{name} sizga SlideLab’da {n} ball sovg‘a qiladi</b>\n\n✅ <b>Titul slayd — bepul</b>, darhol va to‘lovsiz: mavzuni yuboring va uslubni ko‘ring\n✅ Yoqsa — butun taqdimotni buyurtma qilasiz, birinchisi {price} so‘mdan\n✅ Mavzuingizga mos dizayn: grafiklar, rasmlar, tushunarli matn — shablon emas\n\nYana sizni sovg‘a-keys kutmoqda: ichida bepul taqdimot bo‘lishi mumkin.",
     "invite_forward": "☝️ Bu kartani do‘stingizga yoki guruh chatiga yuboring. Do‘stingiz birinchi buyurtmani to‘laganda — sizga +100 ball.",
     "btn_claim_invite": "🎁 Sovg‘ani olish",
     "btn_open_welcome": "🎁 Sovg‘ani ochish",
