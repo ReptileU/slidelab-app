@@ -32,7 +32,16 @@ from slidelab.core.enums import (
 )
 from slidelab.core.errors import DomainError
 from slidelab.core.i18n import money, t
-from slidelab.core.models import Attachment, Order, OrderEvent, Payment, SupportMessage, User, UserPackage
+from slidelab.core.models import (
+    Attachment,
+    Order,
+    OrderEvent,
+    Payment,
+    Referral,
+    SupportMessage,
+    User,
+    UserPackage,
+)
 from slidelab.core.models.base import utcnow
 from slidelab.core.services.orders import OrderService
 from slidelab.core.services.packages import PackageService
@@ -532,6 +541,45 @@ async def _revenue(session: AsyncSession, since: datetime, currency: str) -> int
         Payment.status == PaymentStatus.PAID, Payment.currency == currency, Payment.created_at >= since
     )
     return int(await session.scalar(stmt) or 0)
+
+
+@router.message(Command("users"))
+async def cmd_users(message: Message, command: CommandObject, session: AsyncSession) -> None:
+    """Кто заходил в бота: сколько новых за сутки / неделю / месяц и последние пришедшие.
+
+    /users — последние 20, /users 50 — последние 50 (не больше 100). «Пришёл» — первый запуск бота
+    или приложения; ✓ — оформил хоть один заказ, ← — по чьей ссылке пришёл."""
+    arg = (command.args or "").strip()
+    limit = min(int(arg), 100) if arg.isdigit() and int(arg) > 0 else 20
+    now = utcnow()
+    total = await session.scalar(select(func.count(User.id))) or 0
+    counts = []
+    for label, delta in (("сутки", timedelta(days=1)), ("7 дней", timedelta(days=7)), ("30 дней", timedelta(days=30))):
+        n = await session.scalar(select(func.count(User.id)).where(User.created_at >= now - delta)) or 0
+        counts.append(f"{label}: {n}")
+    users = list(await session.scalars(select(User).order_by(User.id.desc()).limit(limit)))
+    ordered = set(
+        await session.scalars(
+            select(Order.user_id).where(Order.user_id.in_([u.id for u in users])).group_by(Order.user_id)
+        )
+    )
+    refs = dict(
+        (
+            await session.execute(
+                select(Referral.friend_id, User.first_name)
+                .join(User, User.id == Referral.inviter_id)
+                .where(Referral.friend_id.in_([u.id for u in users]))
+            )
+        ).all()
+    )
+    lines = [f"<b>Пользователи</b> · всего {total}", "Новых — " + " · ".join(counts), ""]
+    for u in users:
+        name = html.escape(views.client_name(u))
+        mark = " ✓" if u.id in ordered else ""
+        via = f" ← {html.escape(refs[u.id] or '—')}" if u.id in refs else ""
+        lines.append(f"• {name} <code>{u.tg_id}</code> — {views.date_short(u.created_at)}{mark}{via}")
+    lines.append("\n✓ — заказывал · ← — пришёл по ссылке друга · /users 50 — показать больше")
+    await message.answer("\n".join(lines))
 
 
 @router.message(Command("subs"))
