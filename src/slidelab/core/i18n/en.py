@@ -46,6 +46,7 @@ TEXTS: dict[str, str] = {
     "plan_month": "4 presentations",
     "plan_vip": "VIP · 10 presentations",
     "plan_lucky": "Bonus pack",
+    "btn_open_cases": "🎁 Open cases",
     "btn_open_lucky": "Open bonus pack",
     "btn_wallet": "Open wallet",
     "btn_send_gift": "🎁 Send to a friend",

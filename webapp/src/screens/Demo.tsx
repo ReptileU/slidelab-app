@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useMe } from "../lib/app";
 import { unlockAudio } from "../lib/sound";
 import { haptic } from "../lib/tg";
-import type { BoxPrize, LuckyInfo, LuckyPrize, Package, PlanCode, PointsBoxKey, PointsInfo } from "../lib/types";
+import type { BoxPrize, LuckyPrize, Package, PlanCode, PointsBox, PointsBoxKey, PointsInfo } from "../lib/types";
 import { Button, Section, Segmented } from "../ui";
 import { DiscountCard } from "../ui/Discount";
-import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
+import { LuckyReveal, type Rarity } from "../ui/LuckyPack";
 import { CaseSheet } from "../ui/PointsCase";
 import { DEMO as FLY_DEMO } from "../ui/PointsFly";
 import { PointsShop } from "../ui/PointsShop";
@@ -18,8 +18,6 @@ import { ReturnOverlay } from "../ui/ReturnOverlay";
 import { BackButton } from "../ui/TelegramButtons";
 
 const PLANS: Record<string, { total: number }> = { week: { total: 2 }, month: { total: 4 }, vip: { total: 10 } };
-
-const PRIZES: Record<BoxPrize, number> = { one: 1, two: 2, four: 4, vip: 10, coupons: 3, discount: 30, points: 60 };
 
 /** Те же пакеты за баллы, что на сервере (services/points.py) — только для показа. */
 const POINTS_DEMO: PointsInfo = {
@@ -40,20 +38,26 @@ const POINTS_DEMO: PointsInfo = {
       { prize: "two", value: 2, percent: 25 }, { prize: "four", value: 4, percent: 40 }, { prize: "vip", value: 10, percent: 3 } ] },
   ],
 };
-/** Те же шансы, что на сервере (services/lucky.py) — здесь только для показа карточки. */
-const LUCKY_DEMO: LuckyInfo = {
-  price: 17000,
-  odds: [
-    { prize: "one", count: 1, percent: 88 },
-    { prize: "two", count: 2, percent: 9 },
-    { prize: "four", count: 4, percent: 2.5 },
-    { prize: "vip", count: 10, percent: 0.5 },
+/** Приветственный кейс — как на сервере (points.WELCOME). */
+const WELCOME_DEMO: PointsBox = {
+  key: "welcome",
+  price: 0,
+  prizes: [
+    { prize: "one", value: 1, percent: 15 },
+    { prize: "discount", value: 30, percent: 40 },
+    { prize: "discount", value: 20, percent: 45 },
   ],
-  limit: 2,
-  window_days: 7,
-  can_buy: true,
-  pending: null,
 };
+
+/** Призы кейсов — по одному каждого вида, с той редкостью, с какой они выпадают в кейсах. */
+const DEMO_DROPS: { label: string; prize: BoxPrize; value: number; rarity: Rarity }[] = [
+  { label: "Скидка 20% — обычный", prize: "discount", value: 20, rarity: "common" },
+  { label: "1 купон — редкий", prize: "one", value: 1, rarity: "rare" },
+  { label: "+60 баллов — эпический", prize: "points", value: 60, rarity: "epic" },
+  { label: "Пакет на 2 — редкий", prize: "two", value: 2, rarity: "rare" },
+  { label: "Пакет на 4 — эпический", prize: "four", value: 4, rarity: "epic" },
+  { label: "VIP на 10 — легендарный", prize: "vip", value: 10, rarity: "legend" },
+];
 
 /** Демо эффектов пакета для владельца (/demo в боте): ничего не заказывается и не списывается. */
 export function Demo() {
@@ -61,6 +65,7 @@ export function Demo() {
   const me = useMe();
   const [plan, setPlan] = useState<PlanCode>("month");
   const [demoCase, setDemoCase] = useState<PointsBoxKey | null>(null);
+  const [welcome, setWelcome] = useState(false);
   const [show, setShow] = useState<null | "paid" | "last">(null);
   const [coupon, setCoupon] = useState<null | "tear" | "back" | "mend">(null);
   const play = (k: "tear" | "back" | "mend") => {
@@ -68,13 +73,7 @@ export function Demo() {
     unlockAudio();
     setCoupon(k);
   };
-  const [prize, setPrize] = useState<BoxPrize>("one");
-  const [box, setBox] = useState<LuckyPrize | null>(null);
-  const openDemo = () => {
-    haptic.tap();
-    unlockAudio();
-    setBox({ prize, count: PRIZES[prize] });
-  };
+  const [box, setBox] = useState<(LuckyPrize & { rarity: Rarity }) | null>(null);
   const total = PLANS[plan]?.total ?? 4;
   const expires = new Date(Date.now() + 14 * 864e5).toISOString();
   const pkg: Package = { plan, left: Math.max(1, total - 1), total, expires_at: expires };
@@ -137,24 +136,6 @@ export function Demo() {
           </Button>
         </div>
       </Section>
-      <Section title="Бонус-пакет">
-        <LuckyCard info={LUCKY_DEMO} preview onBuy={openDemo} onOpen={openDemo} />
-      </Section>
-      <Section title="Что выпадет в демо">
-        <Segmented
-          value={prize}
-          onChange={setPrize}
-          options={[
-            { value: "one" as BoxPrize, label: "1" },
-            { value: "two", label: "2" },
-            { value: "four", label: "4" },
-            { value: "vip", label: "VIP" },
-          ]}
-        />
-        <div className="mt-16">
-          <Button onClick={openDemo}>Открыть бонус-пакет</Button>
-        </div>
-      </Section>
       <Section title="Баллы и кейсы за баллы">
         <PointsShop info={POINTS_DEMO} onSelect={(k) => setDemoCase(k)} />
       </Section>
@@ -164,10 +145,28 @@ export function Demo() {
           points={POINTS_DEMO.points}
           onOpen={async () => {
             const box = POINTS_DEMO.boxes.find((b) => b.key === demoCase)!;
-            const p = box.prizes[Math.floor(Math.random() * box.prizes.length)]!;
+            let r = Math.random() * 100;
+            const p = box.prizes.find((x) => (r -= x.percent) <= 0) ?? box.prizes[0]!;
             return { prize: p.prize, value: p.value, points: POINTS_DEMO.points - box.price };
           }}
           onClose={() => setDemoCase(null)}
+        />
+      )}
+      <Section title="Новичок по ссылке друга" footer="Так приветственный кейс видит человек, который впервые пришёл по приглашению.">
+        <Button kind="tinted" onClick={() => setWelcome(true)}>
+          Подарок от друга — приветственный кейс
+        </Button>
+      </Section>
+      {welcome && (
+        <CaseSheet
+          box={WELCOME_DEMO}
+          points={0}
+          onOpen={async () => {
+            let r = Math.random() * 100;
+            const p = WELCOME_DEMO.prizes.find((x) => (r -= x.percent) <= 0) ?? WELCOME_DEMO.prizes[0]!;
+            return { prize: p.prize, value: p.value, points: 0 };
+          }}
+          onClose={() => setWelcome(false)}
         />
       )}
       <Section title="Баллы после оплаты">
@@ -191,19 +190,19 @@ export function Demo() {
           <DiscountCard pct={50} holder={holder} />
         </div>
       </Section>
-      <Section title="Призы за баллы">
+      <Section title="Выпадение призов" footer="Чем реже приз, тем громче выпадение: обычный, редкий, эпический, легендарный.">
         <div className="stack gap-12">
-          {(["four", "discount", "points"] as BoxPrize[]).map((p) => (
+          {DEMO_DROPS.map((d) => (
             <Button
-              key={p}
+              key={d.label}
               kind="tinted"
               onClick={() => {
                 haptic.tap();
                 unlockAudio();
-                setBox({ prize: p, count: PRIZES[p] });
+                setBox({ prize: d.prize, count: d.value, rarity: d.rarity });
               }}
             >
-              {p === "four" ? "Пакет на 4" : p === "discount" ? "Скидка 30%" : "+60 баллов"}
+              {d.label}
             </Button>
           ))}
         </div>
@@ -219,7 +218,16 @@ export function Demo() {
           onDone={() => setCoupon(null)}
         />
       )}
-      {box && <LuckyReveal key={box.prize} prize={box} onDone={() => setBox(null)} />}
+      {box && (
+        <LuckyReveal
+          key={`${box.prize}${box.count}`}
+          opened
+          rarity={box.rarity}
+          prize={box}
+          name="Демо-кейс"
+          onDone={() => setBox(null)}
+        />
+      )}
       {show && (
         <PaidOverlay
           key={show + plan}
