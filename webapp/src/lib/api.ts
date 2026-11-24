@@ -75,6 +75,7 @@ export const api = {
   luckyOpen: () => post<LuckyPrize>("/packages/lucky/open"),
   points: () => request<PointsInfo>("/packages/points"),
   referrals: () => request<Referrals>("/me/referrals"),
+  shareInvite: () => post<{ prepared_id: string | null }>("/me/referrals/share"),
   pointsOpen: (key: PointsBoxKey) => post<PointsResult>(`/packages/points/${key}`),
   ask: (text: string) => post("/support/messages", { text }),
   review: (stars: number, text: string, orderId?: number) =>

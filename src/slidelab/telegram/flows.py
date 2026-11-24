@@ -9,6 +9,7 @@ from aiogram.exceptions import TelegramAPIError, TelegramBadRequest
 from aiogram.types import FSInputFile, InlineKeyboardMarkup, InlineQueryResultCachedPhoto
 from sqlalchemy import select
 
+from slidelab.core import repositories as repo
 from slidelab.core.enums import GiftKind, Lang, PaidFrom, PaymentProvider, PlanCode, SlideTier
 from slidelab.core.i18n import money, t
 from slidelab.core.models import Coupon, Gift, Order, PackagePlan, ShowcaseStyle, User
@@ -17,12 +18,23 @@ from slidelab.core.services.payments import PaidResult, PaymentService
 from slidelab.core.services.pipeline import Pipeline, fmt_of, formats_of
 from slidelab.core.services.points import PER_PRESENTATION
 from slidelab.core.services.referrals import FRIEND_BONUS, INVITER_POINTS, ReferralReward, ReferralService
+from slidelab.core.services.referrals import PREFIX as REF_PREFIX
+from slidelab.core.services.referrals import code_for as ref_code
 from slidelab.telegram import keyboards as kb
 from slidelab.telegram import views
 from slidelab.telegram.notifier import Notifier, lang_of
 from slidelab.telegram.widgets import service as widgets
 
 log = logging.getLogger(__name__)
+
+INVITE_ASSETS = Path(__file__).resolve().parent.parent / "assets" / "invite"
+_INVITE_FILE_IDS: dict[Lang, str] = {}  # file_id карточки-приглашения по языку — загружаем один раз
+
+
+def invite_card_path(lang: Lang) -> Path:
+    path = INVITE_ASSETS / f"invite_{lang.value}.jpg"
+    return path if path.is_file() else INVITE_ASSETS / "invite_ru.jpg"
+
 
 PHOTO_MAX = 9_000_000
 
@@ -214,7 +226,7 @@ class Flows:
         """Приглашённый впервые заплатил: пригласившему баллы (и бонус за 3 / 10 друзей)."""
         inviter = reward.inviter
         name = html.escape(views.client_name(reward.friend))
-        key = "ref_paid_milestone" if reward.milestone else "ref_paid"
+        key = "ref_paid_coupon" if reward.coupon else "ref_paid_milestone" if reward.milestone else "ref_paid"
         await self.n.client(
             inviter, key, None, name=name, n=reward.points, friends=reward.paid_friends, total=inviter.points or 0
         )
@@ -284,6 +296,67 @@ class Flows:
             )
         except TelegramAPIError as e:
             log.warning("Подарок %s: не получилось подготовить сообщение для пересылки: %s", gift.id, e)
+            return None
+        return prepared.id
+
+    # --- приглашение друга: рекламная карточка ---------------------------------
+
+    def invite_link(self, user: User) -> str:
+        return f"https://t.me/{self.settings.bot_username}?start={REF_PREFIX}{ref_code(user.id)}"
+
+    async def invite_caption(self, user: User) -> str:
+        """Текст для того, кто ещё не знает SlideLab: что это, почему не страшно попробовать, что за подарок."""
+        rules = await repo.get_price_rules(self.session)
+        return t(
+            user.lang,
+            "invite_card",
+            name=html.escape(views.client_name(user)),
+            price=money(rules.first_order_s10),
+            n=PER_PRESENTATION + FRIEND_BONUS,
+        )
+
+    async def send_invite_card(self, user: User) -> str | None:
+        """Карточка с нашими работами и кнопкой «Забрать подарок» — в чат пригласившему, чтобы переслать.
+
+        Возвращает file_id фото (Telegram хранит его — второй раз не загружаем)."""
+        lang = user.lang or Lang.RU
+        photo: str | FSInputFile = _INVITE_FILE_IDS.get(lang) or FSInputFile(invite_card_path(lang))
+        try:
+            msg = await self.bot.send_photo(
+                user.tg_id,
+                photo,
+                caption=await self.invite_caption(user),
+                reply_markup=kb.claim_invite(lang, self.invite_link(user)),
+            )
+        except TelegramAPIError as e:
+            log.warning("Приглашение для %s не отправлено: %s", user.id, e)
+            return None
+        await self.bot.send_message(user.tg_id, t(lang, "invite_forward"))
+        if msg.photo:
+            _INVITE_FILE_IDS[lang] = msg.photo[-1].file_id
+        return _INVITE_FILE_IDS.get(lang)
+
+    async def prepare_invite_share(self, user: User) -> str | None:
+        """Готовое сообщение для «Поделиться» в Mini App: друг получит карточку с работами и кнопкой."""
+        lang = user.lang or Lang.RU
+        file_id = _INVITE_FILE_IDS.get(lang) or await self.send_invite_card(user)
+        if not file_id:
+            return None
+        try:
+            prepared = await self.bot.save_prepared_inline_message(
+                user_id=user.tg_id,
+                result=InlineQueryResultCachedPhoto(
+                    id=f"invite{user.id}",
+                    photo_file_id=file_id,
+                    caption=await self.invite_caption(user),
+                    parse_mode="HTML",
+                    reply_markup=kb.claim_invite(lang, self.invite_link(user)),
+                ),
+                allow_user_chats=True,
+                allow_group_chats=True,
+            )
+        except TelegramAPIError as e:
+            log.warning("Приглашение %s: не получилось подготовить сообщение: %s", user.id, e)
             return None
         return prepared.id
 

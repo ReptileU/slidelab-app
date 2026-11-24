@@ -61,7 +61,7 @@ export function PointsShop({ info, onSelect }: { info: PointsInfo; onSelect: (ke
       <button className="pts-invite" onClick={() => nav("/invite")}>
         <UserPlus size={18} />
         <span>{t("ref_shop")}</span>
-        <b>+100</b>
+        <b>🎁</b>
       </button>
       <p className="lucky-note pts-note">{t("pts_note", { days: info.expire_days })}</p>
     </div>

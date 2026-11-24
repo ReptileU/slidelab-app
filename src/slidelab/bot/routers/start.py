@@ -259,6 +259,15 @@ async def show_examples(message: Message, user: User, flows: Flows) -> None:
         await message.answer(t(user.lang, "examples_soon"))
 
 
+# --- пригласить друга ----------------------------------------------------------
+
+
+@router.message(Command("invite"))
+async def invite(message: Message, user: User, flows: Flows) -> None:
+    """Карточка-приглашение с нашими работами и кнопкой — переслать другу."""
+    await flows.send_invite_card(user)
+
+
 # --- вопросы --------------------------------------------------------------------
 
 

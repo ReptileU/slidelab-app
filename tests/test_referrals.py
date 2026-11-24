@@ -8,6 +8,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from conftest import FakeClock
+from slidelab.core import repositories as repo
 from slidelab.core.enums import CouponOrigin, PaymentProvider, SlideTier
 from slidelab.core.models import Coupon, User
 from slidelab.core.services import points, referrals
@@ -100,6 +101,8 @@ async def test_milestone_bonus(
         friend = await invite(session, clock, make_user, inviter)
         rewards.append((await pay_order(payments, friend.id)).referral)
     assert [r.milestone for r in rewards] == [None, None, 3]
-    assert inviter.points == 3 * referrals.INVITER_POINTS + referrals.MILESTONES[3]
+    assert [r.coupon for r in rewards] == [False, False, True]  # третий друг — бесплатная презентация
+    assert inviter.points == 3 * referrals.INVITER_POINTS
+    assert len(await repo.open_coupons(session, inviter.id)) == 1
     summary = await ReferralService(session, clock).summary(inviter)
     assert summary.paid == 3 and summary.earned == inviter.points and len(summary.friends) == 3

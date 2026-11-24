@@ -6,11 +6,12 @@ from fastapi.responses import FileResponse
 from PIL import Image, ImageOps
 from sqlalchemy import func, select
 
-from slidelab.api.deps import SessionDep, SettingsDep, ViewerDep
+from slidelab.api.deps import FlowsDep, SessionDep, SettingsDep, ViewerDep
 from slidelab.api.payments_flow import decode_image
 from slidelab.api.schemas import (
     CouponOut,
     FriendOut,
+    GiftShareOut,
     LangIn,
     MeOut,
     MilestoneOut,
@@ -131,14 +132,26 @@ async def my_referrals(viewer: ViewerDep, session: SessionDep, settings: Setting
     service = refs.ReferralService(session)
     summary = await service.summary(viewer.user)
     return ReferralsOut(
-        link=f"https://t.me/{settings.bot_username}?start={refs.PREFIX}{summary.code}",
+        link=f"https://t.me/{settings.bot_username}?start={refs.PREFIX}{summary.code}",  # имя бота уже без t.me/
         inviter_points=refs.INVITER_POINTS,
         friend_points=PER_PRESENTATION + refs.FRIEND_BONUS,
         paid=summary.paid,
         earned=summary.earned,
-        milestones=[MilestoneOut(friends=n, points=p, reached=summary.paid >= n) for n, p in refs.MILESTONES.items()],
+        milestones=[
+            MilestoneOut(friends=n, prize=kind, points=v, reached=summary.paid >= n)
+            for n, (kind, v) in refs.MILESTONES.items()
+        ],
         friends=[
             FriendOut(name=f.name, joined_at=f.joined_at, paid_at=f.paid_at, points=f.points) for f in summary.friends
         ],
         invited=await service.pending_for(viewer.user),
     )
+
+
+@router.post("/referrals/share")
+async def share_invite(viewer: ViewerDep, session: SessionDep, flows: FlowsDep) -> GiftShareOut:
+    """Карточка-приглашение: приходит в чат с ботом (можно переслать) и, где Telegram умеет,
+    готовое сообщение для «Поделиться» прямо из приложения."""
+    prepared = await flows.prepare_invite_share(viewer.user)
+    await session.commit()
+    return GiftShareOut(prepared_id=prepared)
