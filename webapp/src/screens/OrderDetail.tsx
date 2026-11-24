@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Star, Ticket } from "lucide-react";
+import { Check, DoorOpen, Star, Ticket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
@@ -216,6 +216,14 @@ function OrderView({ order }: { order: Order }) {
                 : t(hintKey(order.status))}
         </p>
       </div>
+
+      {/* пока делаем обложку или презентацию — честно говорим, что можно уйти: ничего не потеряется */}
+      {(order.status === "new" || order.status === "work" || order.status === "revision") && !payNow && (
+        <div className="leave-note">
+          <DoorOpen size={20} />
+          <span>{t("ord_leave")}</span>
+        </div>
+      )}
 
       {order.voucher_open && (
         <Section>

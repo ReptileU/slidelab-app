@@ -39,7 +39,7 @@ export function QuickCover() {
     onSuccess: (order) => {
       haptic.success();
       void qc.invalidateQueries({ queryKey: ["orders"] });
-      nav(`/orders/${order.id}`, { replace: true });
+      nav(`/order/done/${order.id}?quick=1`, { replace: true });
     },
     onError: (e) => {
       haptic.error();
