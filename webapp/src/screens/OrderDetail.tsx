@@ -183,6 +183,9 @@ function OrderView({ order }: { order: Order }) {
 
   const main = (() => {
     if (payNow) return { text: t("pay_full_btn", { price }), run: () => setSheet("pay"), loading: false };
+    // короткая заявка: обложка понравилась — дооформить всю (объём, срок), цена — там
+    if (order.quick && order.status === "cover")
+      return { text: t("ord_quick_cta"), run: () => nav(`/order?complete=${order.id}`), loading: false };
     switch (order.status) {
       case "cover":
         return { text: order.price > 0 ? t("cover_like_pay", { price }) : t("cover_like"), run: () => approve.mutate(), loading: approve.isPending };
@@ -204,7 +207,13 @@ function OrderView({ order }: { order: Order }) {
         </div>
         <h1 className="title2 mt-8">{order.topic}</h1>
         <p className="subhead secondary" style={{ margin: "6px 0 0" }}>
-          {payNow ? t("hint_full_pay") : order.skip_cover && order.status === "new" ? t("hint_work") : t(hintKey(order.status))}
+          {payNow
+            ? t("hint_full_pay")
+            : order.quick && order.status === "new"
+              ? t("ord_quick_wait")
+              : order.skip_cover && order.status === "new"
+                ? t("hint_work")
+                : t(hintKey(order.status))}
         </p>
       </div>
 
@@ -285,14 +294,17 @@ function OrderView({ order }: { order: Order }) {
 
       <Section title={t("details_t")}>
         <Group>
-          <Cell title={t("d_slides")} value={t(slidesKey(order.slides))} />
-          <Cell title={t("d_deadline")} value={t(deadlineKey(order.deadline))} />
+          {/* у короткой заявки объёма, срока и цены ещё нет — не показываем заглушки */}
+          {!order.quick && <Cell title={t("d_slides")} value={t(slidesKey(order.slides))} />}
+          {!order.quick && <Cell title={t("d_deadline")} value={t(deadlineKey(order.deadline))} />}
           <Cell title={t("d_lang")} value={{ ru: "Русский", uz: "O‘zbek", en: "English" }[order.pres_lang]} />
           <Cell title={t("d_design")} value={order.design === "own" ? t("ds_own") : t("ds_ours")} />
           <Cell
             title={t("d_price")}
             value={
-              order.paid_from === "package"
+              order.quick
+                ? t("qc_price_free")
+                : order.paid_from === "package"
                 ? `${t("d_from_package")}${order.price ? ` + ${price}` : ""}`
                 : order.by_voucher
                   ? `${t("d_by_voucher")}${order.price ? ` + ${price}` : ""}`

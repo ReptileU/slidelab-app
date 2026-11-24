@@ -70,7 +70,7 @@ export function FriendGift() {
     );
   if (!q.data.invited) return null;
   return (
-    <button className="fgift" onClick={() => nav("/order")}>
+    <button className="fgift" onClick={() => nav("/cover")}>
       <CaseArt tier="small" size={84} />
       <span className="fgift-t">
         <b>{t("ref_gift_t")}</b>

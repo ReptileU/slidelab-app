@@ -158,6 +158,10 @@ TEXTS: dict[str, str] = {
     "text_label": "matn yozib berish",
     "notes_label": "chiqish uchun nutq",
     # --- ariza qabul qilindi ---
+    "order_created_quick": "⟦order⟧<b>#{id} ariza qabul qilindi</b>\nBepul muqova tayyorlaymiz — shu yerga yuboraman. Hozir hech narsa to‘lash shart emas.\nUslub yoqsa — butun taqdimotni rasmiylashtirasiz: hajm va muddatni o‘shanda tanlaysiz.",
+    "cover_ready_quick": "⟦cover⟧<b>Bepul muqovangiz · #{id}</b>\nUslub yoqdimi? Butun taqdimotni rasmiylashtiring — mavzu va uslub to‘ldirilgan, hajm va muddatni tanlash qoldi.",
+    "btn_cover_complete": "✨ Yoqdi — butunini rasmiylashtirish",
+    "cover_quick_app": "Ajoyib! Hajm va muddatni tanlash qoldi — quyidagi tugma orqali oching, mavzu va uslub to‘ldirilgan.",
     "order_created": (
         "⟦order⟧<b>#{id} buyurtma qabul qilindi</b>\nBepul muqova tayyorlayapmiz — shu yerga yuboraman.{package}"
     ),

@@ -20,6 +20,9 @@ initTelegram();
   const demo = start === "demo" || new URLSearchParams(location.search).has("demo");
   const go = new URLSearchParams(location.search).get("go"); // кнопка «Продлить пакет» под напоминанием
   if (demo) history.replaceState(null, "", `${location.pathname}${location.search}#/demo`);
+  else if (go === "complete" && /^\d+$/.test(new URLSearchParams(location.search).get("id") ?? ""))
+    history.replaceState(null, "", `${location.pathname}${location.search}#/order?complete=${new URLSearchParams(location.search).get("id")}`); // обложка понравилась — дооформить
+  else if (go === "cover") history.replaceState(null, "", `${location.pathname}${location.search}#/cover`); // реклама: бесплатная обложка
   else if (go === "welcome") history.replaceState(null, "", `${location.pathname}${location.search}#/?welcome=1`); // подарок от друга
   else if (go === "cases") history.replaceState(null, "", `${location.pathname}${location.search}#/packages?points=1`); // «+50 баллов» → кейсы
   else if (go === "packages") history.replaceState(null, "", `${location.pathname}${location.search}#/packages`);

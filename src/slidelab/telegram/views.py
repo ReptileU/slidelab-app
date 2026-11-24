@@ -63,8 +63,14 @@ def staff_card(order: Order, user: User, style_name: str | None = None) -> str:
         f"{SOURCE_RU[order.source]} · общение: {LANG_RU[order.ui_lang]}",
         "",
         f"<b>{e(order.topic)}</b>",
-        f"{order.slides.value[1:]} слайдов · {deadline_ru(order)} · {LANG_RU[order.pres_lang]}",
+        (
+            f"только обложка · {LANG_RU[order.pres_lang]}"
+            if order.quick
+            else f"{order.slides.value[1:]} слайдов · {deadline_ru(order)} · {LANG_RU[order.pres_lang]}"
+        ),
     ]
+    if order.quick:
+        lines.append("✨ <b>Короткая заявка</b> — бесплатная обложка; объём, срок и оплата — если понравится")
     if order.skip_cover:
         lines.append("⚡ <b>Сразу всю презентацию</b> — без обложки, в работу после оплаты")
     if order.coupon_id is not None:

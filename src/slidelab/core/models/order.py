@@ -41,6 +41,8 @@ class Order(CreatedAtMixin, Base):
     due_at: Mapped[datetime | None]  # к какому сроку нужна (UTC); выбирают при «Обычно»
     # «Сразу всю презентацию»: без бесплатной обложки, работа начинается после оплаты
     skip_cover: Mapped[bool] = mapped_column(default=False, server_default="0")
+    # короткая заявка «бесплатная обложка»: только тема и стиль; объём, срок и цена — когда обложка понравится
+    quick: Mapped[bool] = mapped_column(default=False, server_default="0")
     pres_lang: Mapped[Lang] = mapped_column(str_enum(Lang))
     design: Mapped[Design] = mapped_column(str_enum(Design))
     style_id: Mapped[int | None] = mapped_column(ForeignKey("showcase_styles.id"))

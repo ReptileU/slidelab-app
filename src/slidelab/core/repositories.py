@@ -69,8 +69,13 @@ async def get_order_by_idempotency_key(session: AsyncSession, user_id: int, key:
 
 
 async def has_orders(session: AsyncSession, user_id: int) -> bool:
-    """Был ли у клиента хоть один не отменённый заказ (иначе он новый)."""
-    stmt = select(exists().where(Order.user_id == user_id, Order.status != OrderStatus.CANCELLED))
+    """Был ли у клиента хоть один не отменённый заказ (иначе он новый).
+
+    Короткая заявка на бесплатную обложку, пока её не дооформили, заказом не считается —
+    скидка на первую презентацию за клиентом остаётся."""
+    stmt = select(
+        exists().where(Order.user_id == user_id, Order.status != OrderStatus.CANCELLED, Order.quick.is_(False))
+    )
     return bool(await session.scalar(stmt))
 
 

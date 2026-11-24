@@ -107,7 +107,14 @@ export function NewOrder() {
   const [params] = useSearchParams();
   const me = useMe();
   const catalog = useCatalog();
-  const [step, setStep] = useState(1);
+  // ?complete=<id> — обложка по короткой заявке понравилась: дооформляем ту же заявку (тема и стиль уже есть)
+  const completeId = Number(params.get("complete")) || null;
+  const quickOrder = useQuery({
+    queryKey: ["order", completeId],
+    queryFn: () => api.order(completeId!),
+    enabled: completeId !== null,
+  });
+  const [step, setStep] = useState(completeId ? 2 : 1);
   const [stylePicker, setStylePicker] = useState(false);
   const [draft, setDraft] = useState<Draft>(() => {
     const d = loadDraft(lang);
@@ -118,7 +125,25 @@ export function NewOrder() {
     return d;
   });
 
+  // подставляем тему, язык, стиль и имя из короткой заявки — один раз, когда она загрузилась
+  const [prefilled, setPrefilled] = useState(false);
   useEffect(() => {
+    const o = quickOrder.data;
+    if (!o || prefilled) return;
+    setPrefilled(true);
+    setDraft((d) => ({
+      ...d,
+      topic: o.topic,
+      pres_lang: o.pres_lang,
+      design: "ours",
+      style_key: o.style_key ?? null,
+      title_author: o.title_author ?? d.title_author,
+      title_plate: !!o.title_author || d.title_plate,
+    }));
+  }, [quickOrder.data, prefilled]);
+
+  useEffect(() => {
+    if (completeId) return; // дооформление не трогает черновик обычной анкеты
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     } catch {
@@ -264,10 +289,12 @@ export function NewOrder() {
         title_teacher: plate(draft.title_teacher),
         skip_cover: full,
       };
+      if (completeId) return api.completeOrder(completeId, { ...body, skip_cover: false });
       return api.createOrder(body, key);
     },
     onSuccess: (order) => {
-      localStorage.removeItem(DRAFT_KEY);
+      if (!completeId) localStorage.removeItem(DRAFT_KEY);
+      qc.invalidateQueries({ queryKey: ["order", order.id] });
       qc.invalidateQueries({ queryKey: ["orders"] });
       const pkg = me.data?.package;
       // Оплачено из пакета — сначала «карта и галочка», потом экран заказа
@@ -282,13 +309,21 @@ export function NewOrder() {
       // Оплачено купоном (отменённым заказом) — купон рвётся, потом экран заказа
       if (order.by_voucher) {
         qc.invalidateQueries({ queryKey: ["me"] });
-        setTorn({ order: order.id, slides: order.slides, pay: !!order.skip_cover && !order.is_paid && order.price > 0 });
+        setTorn({
+          order: order.id,
+          slides: order.slides,
+          pay: (!!order.skip_cover || !!completeId) && !order.is_paid && order.price > 0,
+        });
         return;
       }
       haptic.success();
       qc.invalidateQueries({ queryKey: ["me"] });
-      if (order.skip_cover && !order.is_paid && order.price > 0) {
-        nav(`/orders/${order.id}?pay=1`, { replace: true }); // «сразу всю» — сразу к оплате
+      if ((order.skip_cover || completeId) && !order.is_paid && order.price > 0) {
+        nav(`/orders/${order.id}?pay=1`, { replace: true }); // «сразу всю» или дооформили обложку — к оплате
+        return;
+      }
+      if (completeId) {
+        nav(`/orders/${order.id}`, { replace: true }); // оплачено пакетом/купоном — сразу в работу
         return;
       }
       nav(`/order/done/${order.id}`, { replace: true });
@@ -342,7 +377,9 @@ export function NewOrder() {
       })
     : step < 3
       ? t("next")
-      : shown?.paid_from === "package"
+      : completeId
+        ? t("complete_go") // дооформляем: обложка уже есть — дальше оплата
+        : shown?.paid_from === "package"
         ? t("send") // из пакета презентация списывается сразу — «бесплатно» тут было бы неправдой
         : t("send_free_cover");
 
@@ -373,7 +410,10 @@ export function NewOrder() {
       )}
       <BackButton onClick={back} />
       <div style={{ margin: "8px 0 20px" }}>
-        <div className="footnote secondary">{t("step", { n: step })}</div>
+        <div className="footnote secondary">
+          {completeId ? `${t("complete_kicker")} · ` : ""}
+          {t("step", { n: step })}
+        </div>
         <h1 className="title1">
           {t(step === 1 ? "step1_t" : step === 2 ? "step2_t" : "step3_t")}
         </h1>
@@ -714,7 +754,7 @@ export function NewOrder() {
           )}
 
           {/* Вторая кнопка: не ждать титулку, а оплатить и получить всю презентацию */}
-          {shown && shown.paid_from !== "package" && shown.price > 0 && !missing.length && (
+          {!completeId && shown && shown.paid_from !== "package" && shown.price > 0 && !missing.length && (
             <div className="full-now">
               <button className="full-now-btn" disabled={submit.isPending} onClick={() => go(true)}>
                 <Zap size={18} />
