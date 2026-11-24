@@ -2034,3 +2034,8 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .case-hero .chest.welcome .chest-rays{opacity:.7}
 .fgift.welcome{animation:giftGlow 2.2s ease-in-out infinite}
 @keyframes giftGlow{50%{box-shadow:inset 0 0 0 1px rgba(240,171,252,.6),0 12px 40px rgba(217,70,239,.45)}}
+/* карта пакета в ячейке кейса: настоящая PackCard, уменьшенная (zoom меняет и раскладку) */
+.pa-card{display:block;width:100%;filter:drop-shadow(0 4px 8px rgba(0,0,0,.45))}
+.pa-card-in{display:block;width:320px;zoom:.26;pointer-events:none}
+.pa-card-in .pcard-stage{padding:0}
+.case-cell .pa-card-in{zoom:.25}

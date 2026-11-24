@@ -42,10 +42,11 @@ class PointsBox:
     prizes: tuple[PointsPrize, ...]
 
 
-# Призы: ONE — 1 купон, COUPONS — несколько купонов (без срока), TWO — пакет «Неделя», FOUR — пакет «Месяц»,
+# Призы: ONE — 1 купон, COUPONS — несколько купонов (без срока), FOUR — пакет «Месяц», VIP — пакет VIP,
+# (пакета «Неделя» в кейсах нет: для клиента это то же, что 2 купона),
 # DISCOUNT — скидка % на следующий заказ, POINTS — часть баллов обратно.
 # Скидка — самый частый приз: купон — это целая презентация, а со скидкой клиент всё равно платит.
-# В пересчёте на 100 баллов (скидка N% ≈ N/100 презентации): малый ≈ 0,44, средний ≈ 0,47, большой ≈ 0,58 —
+# В пересчёте на 100 баллов (скидка N% ≈ N/100 презентации): малый ≈ 0,44, средний ≈ 0,49, большой ≈ 0,58 —
 # копить выгоднее, чем открывать сразу.
 # пакет, который выпадает в кейсе
 PRIZE_PLAN = {BoxPrize.TWO: PlanCode.WEEK, BoxPrize.FOUR: PlanCode.MONTH, BoxPrize.VIP: PlanCode.VIP}
@@ -74,7 +75,7 @@ BOXES: dict[str, PointsBox] = {
             PointsPrize(BoxPrize.DISCOUNT, 30, 250),
             PointsPrize(BoxPrize.ONE, 1, 150),
             PointsPrize(BoxPrize.POINTS, 60, 100),
-            PointsPrize(BoxPrize.TWO, 2, 50),
+            PointsPrize(BoxPrize.COUPONS, 2, 50),
         ),
     ),
     "medium": PointsBox(
@@ -83,9 +84,8 @@ BOXES: dict[str, PointsBox] = {
         (
             PointsPrize(BoxPrize.DISCOUNT, 30, 300),
             PointsPrize(BoxPrize.DISCOUNT, 50, 250),
-            PointsPrize(BoxPrize.COUPONS, 2, 250),
-            PointsPrize(BoxPrize.TWO, 2, 150),
-            PointsPrize(BoxPrize.COUPONS, 3, 50),
+            PointsPrize(BoxPrize.COUPONS, 2, 350),
+            PointsPrize(BoxPrize.COUPONS, 3, 100),
         ),
     ),
     "large": PointsBox(
