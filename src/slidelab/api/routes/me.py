@@ -16,6 +16,9 @@ from slidelab.api.schemas import (
     MeOut,
     MilestoneOut,
     PackageOut,
+    PointsBoxOut,
+    PointsPrizeOut,
+    PointsResultOut,
     ReferralsOut,
     WalletCoverIn,
 )
@@ -23,6 +26,7 @@ from slidelab.core import repositories as repo
 from slidelab.core.errors import DomainError
 from slidelab.core.models import Order
 from slidelab.core.models.base import utcnow
+from slidelab.core.services import points
 from slidelab.core.services import referrals as refs
 from slidelab.core.services.points import PER_PRESENTATION, PointsService
 
@@ -153,7 +157,24 @@ async def my_referrals(viewer: ViewerDep, session: SessionDep, settings: Setting
             FriendOut(name=f.name, joined_at=f.joined_at, paid_at=f.paid_at, points=f.points) for f in summary.friends
         ],
         invited=await service.pending_for(viewer.user),
+        welcome=_box_out(points.WELCOME) if await service.welcome_available(viewer.user) else None,
     )
+
+
+def _box_out(box: points.PointsBox) -> PointsBoxOut:
+    return PointsBoxOut(
+        key=box.key,
+        price=box.price,
+        prizes=[PointsPrizeOut(prize=p.code, value=p.value, percent=p.percent) for p in box.prizes],
+    )
+
+
+@router.post("/referrals/welcome")
+async def open_welcome(viewer: ViewerDep, session: SessionDep) -> PointsResultOut:
+    """Открыть приветственный кейс (один раз, бесплатно)."""
+    box = await refs.ReferralService(session).open_welcome(viewer.user)
+    await session.commit()
+    return PointsResultOut(prize=box.prize, value=box.count, points=viewer.user.points)
 
 
 @router.post("/referrals/share")

@@ -347,3 +347,4 @@ class ReferralsOut(BaseModel):
     milestones: list[MilestoneOut]
     friends: list[FriendOut]
     invited: bool  # сам пришёл по ссылке и ещё не платил — показываем «×2 баллов за первую покупку»
+    welcome: PointsBoxOut | None = None  # приветственный кейс — пока не открыт

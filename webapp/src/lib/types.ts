@@ -24,7 +24,7 @@ export interface LuckyInfo {
   pending: LuckyPrize | null;
 }
 /** Пакеты за баллы: баллы даются за покупки деньгами (services/points.py). */
-export type PointsBoxKey = "small" | "medium" | "large";
+export type PointsBoxKey = "small" | "medium" | "large" | "welcome";
 export interface PointsBox {
   key: PointsBoxKey;
   price: number;
@@ -215,4 +215,5 @@ export interface Referrals {
   milestones: { friends: number; prize: "coupon" | "points"; points: number; reached: boolean }[];
   friends: { name: string; joined_at: string; paid_at: string | null; points: number }[];
   invited: boolean;
+  welcome: PointsBox | null; // приветственный кейс от друга — пока не открыт
 }

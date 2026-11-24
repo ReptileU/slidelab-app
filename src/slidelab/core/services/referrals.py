@@ -11,6 +11,7 @@
   за десятого — баллы на золотой кейс (MILESTONES).
 """
 
+import random
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -19,7 +20,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from slidelab.core.enums import CouponOrigin, PaymentStatus, PointsReason, SlideTier
-from slidelab.core.models import Coupon, Payment, Referral, User
+from slidelab.core.errors import DomainError
+from slidelab.core.models import Coupon, PackageBox, Payment, Referral, User
 from slidelab.core.models.base import as_utc, utcnow
 
 INVITER_POINTS = 100  # = бронзовый кейс
@@ -28,6 +30,12 @@ FRIEND_BONUS = 50  # сверх обычных 50 за первую покупк
 MILESTONES: dict[int, tuple[str, int]] = {3: ("coupon", 1), 10: ("points", 500)}
 NEW_WINDOW = timedelta(hours=24)
 PREFIX = "ref_"
+
+
+class NoWelcomeError(DomainError):
+    code = "no_welcome"
+
+
 _ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz"
 
 
@@ -116,6 +124,31 @@ class ReferralService:
             )
             is not None
         )
+
+    async def welcome_available(self, friend: User) -> bool:
+        """Пришёл по ссылке и ещё не открывал приветственный кейс."""
+        return (
+            await self.session.scalar(
+                select(Referral.id).where(Referral.friend_id == friend.id, Referral.welcome_opened_at.is_(None))
+            )
+            is not None
+        )
+
+    async def open_welcome(self, friend: User, rng: random.Random | None = None) -> PackageBox:
+        """Бесплатный приветственный кейс — один раз. Бесплатная презентация в нём — купон до 15 слайдов (S10)."""
+        from slidelab.core.services.points import WELCOME, PointsService  # без цикла импортов
+
+        ref = await self.session.scalar(
+            select(Referral)
+            .where(Referral.friend_id == friend.id, Referral.welcome_opened_at.is_(None))
+            .with_for_update()
+        )
+        if ref is None:
+            raise NoWelcomeError("Приветственный кейс уже открыт или его нет")
+        ref.welcome_opened_at = self.clock()
+        service = PointsService(self.session, self.clock, rng)
+        prize = service.roll(WELCOME)
+        return await service.give(friend, prize, slides=SlideTier.S10)
 
     async def on_paid(self, friend: User, payment_id: int | None) -> ReferralReward | None:
         """Друг впервые заплатил деньгами: баллы обоим. Повторно — ничего."""

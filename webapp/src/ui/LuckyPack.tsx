@@ -169,6 +169,7 @@ export function LuckyReveal({
   points,
   opened = false,
   rarity,
+  couponSlides = "s20",
 }: {
   prize: LuckyPrize;
   onDone: () => void;
@@ -180,6 +181,8 @@ export function LuckyReveal({
   opened?: boolean;
   /** редкость приза в кейсе: чем реже, тем громче выпадение */
   rarity?: Rarity;
+  /** объём купона (приветственный кейс — 10 слайдов) */
+  couponSlides?: "s10" | "s20" | "s30";
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -321,7 +324,7 @@ export function LuckyReveal({
             {/* что выпало — сразу той карточкой, что ляжет в кошелёк: купон или карта пакета */}
             <div className="lr-card">
               {prize.prize === "one" ? (
-                <Coupon slides="s20" />
+                <Coupon slides={couponSlides} />
               ) : prize.prize === "coupons" ? (
                 <CouponStack n={prize.count} />
               ) : prize.prize === "discount" ? (
