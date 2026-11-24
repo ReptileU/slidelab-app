@@ -8,7 +8,7 @@ import type { Key } from "../lib/i18n";
 import { playTick, unlockAudio } from "../lib/sound";
 import { alert, haptic } from "../lib/tg";
 import type { BoxPrize, PointsBox, PointsBoxKey, PointsResult } from "../lib/types";
-import { LuckyReveal } from "./LuckyPack";
+import { LuckyReveal, type Rarity } from "./LuckyPack";
 import { couponWord, pointsWord, presWord } from "../lib/words";
 
 export const TIER: Record<PointsBoxKey, Key> = { small: "pts_small", medium: "pts_medium", large: "pts_large" };
@@ -30,7 +30,6 @@ export function usePrizeName() {
             ? t("pts_row_vip", { n })
             : t("pts_row_pack", { n, word: presWord(lang, n) });
 }
-type Rarity = "common" | "rare" | "epic" | "legend";
 
 /** Редкость по шансу — цвет полоски у ячейки, как в кейсах. */
 function rarity(percent: number): Rarity {
@@ -92,7 +91,8 @@ const CASE_IMG: Record<PointsBoxKey, string> = { small: "bronze", medium: "silve
 const CELL = 112; // ширина ячейки ленты + зазор, px
 const WIN_AT = 42; // на какой ячейке остановится лента
 const LENGTH = 50;
-const SPIN_MS = 5600;
+// чем реже приз, тем дольше лента тянет — больше напряжения перед остановкой
+const SPIN_MS: Record<Rarity, number> = { common: 5600, rare: 6000, epic: 6600, legend: 7600 };
 
 function pick(prizes: Prize[]): Prize {
   let r = Math.random() * 100;
@@ -129,6 +129,9 @@ export function CaseSheet({
   const winRef = useRef<HTMLDivElement>(null);
   const stripRef = useRef<HTMLDivElement>(null);
   const can = points >= box.price;
+  const won = result && (box.prizes.find((p) => p.prize === result.prize && p.value === result.value) ?? null);
+  const winRarity: Rarity = won ? rarity(won.percent) : "common";
+  const spinMs = SPIN_MS[winRarity];
 
   // до открытия лента — случайные призы этого кейса; после ответа сервера на WIN_AT кладём выпавший
   const idle = useMemo(() => Array.from({ length: LENGTH }, () => pick(box.prizes)), [box]);
@@ -182,6 +185,8 @@ export function CaseSheet({
     try {
       const r = await onOpen();
       setResult(r);
+      const hit = box.prizes.find((p) => p.prize === r.prize && p.value === r.value);
+      const r2: Rarity = hit ? rarity(hit.percent) : "common";
       const w = winRef.current?.clientWidth ?? 360;
       // центр выпавшей ячейки — под стрелкой, со случайным сдвигом внутри ячейки (чтобы не было «ровно по центру»)
       const jitter = (Math.random() - 0.5) * (CELL - 30);
@@ -194,8 +199,9 @@ export function CaseSheet({
       setTimeout(() => {
         setSpinning(false);
         haptic.success();
-        setTimeout(() => setReveal(true), 650);
-      }, SPIN_MS + 80);
+        // редкий приз сначала подсвечивается на ленте, и только потом — большой показ
+        setTimeout(() => setReveal(true), r2 === "legend" ? 1400 : r2 === "epic" ? 1000 : 650);
+      }, SPIN_MS[r2] + 80);
     } catch (e) {
       setBusy(false);
       await alert(e instanceof ApiError ? e.message : t("error"));
@@ -218,13 +224,16 @@ export function CaseSheet({
         <h2>{t(TIER[box.key])}</h2>
       </div>
 
-      <div className={`case-roll${spinning ? " spin" : ""}${result && !spinning ? " done" : ""}`} ref={winRef}>
+      <div
+        className={`case-roll${spinning ? " spin" : ""}${result && !spinning ? ` done r-${winRarity}` : ""}`}
+        ref={winRef}
+      >
         <div
           className="case-strip"
           ref={stripRef}
           style={{
             transform: `translate3d(${-shift}px,0,0)`,
-            transition: shift ? `transform ${SPIN_MS}ms cubic-bezier(.08,.6,.12,1)` : "none",
+            transition: shift ? `transform ${spinMs}ms cubic-bezier(.08,.6,.12,1)` : "none",
           }}
         >
           {strip.map((p, i) => (
@@ -270,6 +279,7 @@ export function CaseSheet({
       {reveal && result && (
         <LuckyReveal
           opened
+          rarity={winRarity}
           prize={{ prize: result.prize, count: result.value }}
           name={t(TIER[box.key])}
           points={result.points}

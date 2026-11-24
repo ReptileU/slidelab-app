@@ -1895,3 +1895,62 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .ptile.legend{animation:legendGlow 2.4s ease-in-out infinite}
 @keyframes legendGlow{50%{box-shadow:inset 0 0 0 1px rgba(255,210,74,.6),inset 0 -3px 0 var(--r),0 0 18px rgba(255,210,74,.35)}}
 .dtag-main{text-align:left;align-items:flex-start}
+
+/* ---------- выпадение по редкости ---------- */
+.case-roll.done.r-rare{box-shadow:inset 0 0 0 2px #4f8cff,0 0 30px rgba(79,140,255,.45)}
+.case-roll.done.r-epic{box-shadow:inset 0 0 0 2px #c45eff,0 0 40px rgba(196,94,255,.55)}
+.case-roll.done.r-legend{box-shadow:inset 0 0 0 2px #ffd24a,0 0 60px rgba(255,210,74,.7)}
+@keyframes rollPulse{50%{filter:brightness(1.35)}}
+.case-roll.done.r-legend .case-cell.win{transform:scale(1.14)}
+
+.lr-rarity{display:inline-block;margin:6px auto 10px;padding:5px 14px;border-radius:99px;font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;
+  animation:rarIn .5s cubic-bezier(.2,1.6,.4,1) both .15s}
+.lr-rarity.rare{color:#cfe0ff;background:rgba(79,140,255,.25);box-shadow:0 0 0 1px rgba(79,140,255,.6)}
+.lr-rarity.epic{color:#f3dcff;background:rgba(196,94,255,.28);box-shadow:0 0 0 1px rgba(196,94,255,.7),0 0 24px rgba(196,94,255,.5)}
+.lr-rarity.legend{color:#2b1d00;background:linear-gradient(180deg,#fff3c4,#ffd24a 55%,#d9a53a);box-shadow:0 0 30px rgba(255,210,74,.7);font-size:15px}
+@keyframes rarIn{from{opacity:0;transform:scale(.4)}}
+
+.lr-flash{position:fixed;inset:0;z-index:5;pointer-events:none;animation:lrFlash .7s ease-out both}
+.r-rare .lr-flash{background:radial-gradient(circle at 50% 45%,rgba(79,140,255,.55),transparent 65%)}
+.r-epic .lr-flash{background:radial-gradient(circle at 50% 45%,rgba(196,94,255,.75),transparent 70%)}
+.r-legend .lr-flash{background:radial-gradient(circle at 50% 45%,rgba(255,236,170,.95),rgba(255,190,40,.4) 40%,transparent 75%);animation-delay:1.25s}
+@keyframes lrFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+.lr-wave{position:fixed;left:50%;top:45%;z-index:4;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;pointer-events:none;
+  border:4px solid #c45eff;animation:lrWave 1s ease-out both}
+.r-legend .lr-wave{border-color:#ffd24a;animation-delay:1.25s;animation-duration:1.3s}
+@keyframes lrWave{from{opacity:1;transform:scale(.2)}to{opacity:0;transform:scale(28)}}
+.r-epic .lr-rays{opacity:.9;background:repeating-conic-gradient(from 0deg,rgba(196,94,255,.28) 0 8deg,transparent 8deg 24deg)}
+.r-legend .lr-rays{opacity:1;background:repeating-conic-gradient(from 0deg,rgba(255,210,74,.35) 0 8deg,transparent 8deg 22deg)}
+/* легендарный: сначала темнота и столб света, приз появляется позже */
+.lr.r-legend::before{content:"";position:fixed;inset:0;z-index:3;background:#000;pointer-events:none;animation:lrDark 1.6s ease both}
+@keyframes lrDark{0%{opacity:0}20%{opacity:.92}75%{opacity:.92}100%{opacity:0}}
+.lr-beam{position:fixed;left:50%;top:-10%;bottom:-10%;z-index:4;width:120px;margin-left:-60px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,236,170,.85) 45%,#fff 50%,rgba(255,236,170,.85) 55%,transparent);filter:blur(6px);
+  animation:lrBeam 1.9s ease-out both}
+@keyframes lrBeam{0%{opacity:0;transform:scaleX(.05)}35%{opacity:1;transform:scaleX(.3)}65%{opacity:1;transform:scaleX(1.6)}100%{opacity:0;transform:scaleX(3)}}
+.r-legend:not(.shown) .lr-prize,.r-legend:not(.shown) .lr-take,.r-legend:not(.shown) .lr-sparks{opacity:0}
+.r-legend.shown .lr-card{animation:legendIn .9s cubic-bezier(.2,1.5,.35,1) both}
+@keyframes legendIn{from{opacity:0;transform:scale(.2) rotate(-12deg)}}
+.lr-coins{position:fixed;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.lr-coins i{position:absolute;top:-40px;left:var(--x);width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff6cf,#f3cd63 40%,#c8901f 80%);box-shadow:inset 0 -2px 4px rgba(90,55,0,.5),0 0 10px rgba(255,210,74,.6);
+  animation:coinRain var(--d) linear var(--w) 3 both}
+@keyframes coinRain{from{transform:translateY(0) rotateY(0)}to{transform:translateY(115vh) rotateY(720deg)}}
+.lr-confetti{position:fixed;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.lr-confetti i{position:absolute;top:-20px;left:var(--x);width:9px;height:15px;border-radius:2px;background:var(--c);
+  animation:confFall var(--t) cubic-bezier(.25,.6,.45,1) var(--d) both}
+@keyframes confFall{0%{opacity:1;transform:translateY(0) rotate(var(--r))}100%{opacity:.8;transform:translateY(110vh) translateX(40px) rotate(calc(var(--r) + 540deg))}}
+.case-roll.done:not(.r-common) .case-cell.win .ptile{animation:winPulse .8s ease-in-out infinite}
+.case-roll.done.r-rare .case-cell.win .ptile{--wg:rgba(79,140,255,.9)}
+.case-roll.done.r-epic .case-cell.win .ptile{--wg:rgba(196,94,255,.95)}
+.case-roll.done.r-legend .case-cell.win .ptile{--wg:rgba(255,210,74,1)}
+@keyframes winPulse{50%{box-shadow:inset 0 0 0 2px var(--wg),0 0 34px var(--wg)}}
+.lr.open.shown{cursor:pointer}
+.lr-anywhere{position:relative;z-index:7;margin:22px auto 0;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;color:rgba(255,255,255,.8);
+  animation:anyIn .5s ease 1s both,anyPulse 1.6s ease-in-out 1.5s infinite}
+.lr-anywhere::before{content:"";width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.75);animation:anyTap 1.6s ease-in-out 1.5s infinite}
+.r-legend .lr-anywhere{animation-delay:2.2s,2.7s}
+@keyframes anyIn{from{opacity:0;transform:translateY(8px)}}
+@keyframes anyPulse{50%{opacity:.45}}
+@keyframes anyTap{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{transform:scale(.8);box-shadow:0 0 0 10px rgba(255,255,255,0)}}
+.lr-unit{max-width:min(92vw,520px);margin-left:auto;margin-right:auto;padding:0 12px;overflow-wrap:anywhere}
