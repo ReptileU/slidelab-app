@@ -245,8 +245,8 @@ class Flows:
         lang = user.lang
         nxt = t(lang, "points_ready") if total >= cheapest else t(lang, "points_next", left=cheapest - total)
         settings = self.settings
-        ready = total >= cheapest and not settings.legacy_webapp
-        markup = kb.open_lucky(user.lang or Lang.RU, settings.webapp_url) if ready else None
+        # кнопка всегда: человек видит, куда «улетели» баллы, и сколько не хватает до кейса
+        markup = None if settings.legacy_webapp else kb.open_cases(user.lang or Lang.RU, settings.webapp_url)
         await self.n.client(user, "points_earned", markup, n=n, total=total, next=nxt)
 
     # --- подарок: открытка ----------------------------------------------------------

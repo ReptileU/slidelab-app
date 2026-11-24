@@ -388,3 +388,29 @@ async def test_referrals_link(env: dict[str, Any]) -> None:
     assert data["paid"] == 0 and data["friends"] == [] and data["invited"] is False and data["welcome"] is None
     assert (await c.post("/api/me/referrals/welcome", headers=auth())).status_code >= 400
     assert [(m["friends"], m["prize"]) for m in data["milestones"]] == [(3, "coupon"), (10, "points")]
+
+
+async def test_open_every_case_over_http(env: dict[str, Any]) -> None:
+    """Каждый кейс открывается настоящим запросом, каждый приз выдаётся (в т.ч. пакет поверх пакета)."""
+    from sqlalchemy import select
+
+    from slidelab.core.models import User
+    from slidelab.core.services import points as pts
+
+    c: AsyncClient = env["client"]
+    await c.get("/api/me", headers=auth())
+    for key, box in pts.BOXES.items():
+        for prize in box.prizes:
+            async with env["sm"]() as s:
+                user = await s.scalar(select(User).where(User.tg_id == CLIENT_TG))
+                assert user is not None
+                user.points = box.price
+                await s.commit()
+            orig = pts.PointsService.roll
+            pts.PointsService.roll = lambda self, b, _p=prize: _p  # type: ignore[method-assign]
+            try:
+                r = await c.post(f"/api/packages/points/{key}", headers=auth())
+            finally:
+                pts.PointsService.roll = orig  # type: ignore[method-assign]
+            assert r.status_code == 200, (key, prize, r.text)
+            assert r.json()["prize"] == prize.code.value

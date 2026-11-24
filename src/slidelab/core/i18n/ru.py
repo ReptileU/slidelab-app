@@ -50,6 +50,7 @@ TEXTS: dict[str, str] = {
     "plan_month": "4 презентации",
     "plan_vip": "VIP · 10 презентаций",
     "plan_lucky": "Бонус-пакет",
+    "btn_open_cases": "🎁 Открыть кейсы",
     "btn_open_lucky": "Открыть бонус-пакет",
     "btn_wallet": "Открыть кошелёк",
     "btn_send_gift": "🎁 Отправить другу",
