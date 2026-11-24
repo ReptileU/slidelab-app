@@ -68,7 +68,7 @@ export function Packages() {
 
   // Из профиля (?points=1) — к баллам
   const pointsRef = useRef<HTMLDivElement>(null);
-  const toPoints = params.get("points") === "1";
+  const toPoints = params.get("points") === "1" || params.get("lucky") === "1"; // старые ссылки на бонус-пакет — к кейсам
   useEffect(() => {
     if (toPoints && points.data && catalog.data) {
       const id = setTimeout(
@@ -202,7 +202,8 @@ export function Packages() {
         </div>
       </Section>
 
-      {lucky.data && (
+      {/* бонус-пакет снят с продажи — карточка только чтобы открыть купленный раньше */}
+      {lucky.data?.pending && (
         <Section title={t("plan_lucky")}>
           <div ref={luckyRef} />
           <LuckyCard

@@ -37,7 +37,8 @@ const POINTS_DEMO: PointsInfo = {
       { prize: "coupons", value: 2, percent: 25 }, { prize: "two", value: 2, percent: 15 }, { prize: "coupons", value: 3, percent: 5 } ] },
     { key: "large", price: 500, prizes: [
       { prize: "discount", value: 50, percent: 35 }, { prize: "coupons", value: 3, percent: 20 },
-      { prize: "four", value: 4, percent: 25 }, { prize: "coupons", value: 5, percent: 15 }, { prize: "coupons", value: 6, percent: 5 } ] },
+      { prize: "four", value: 4, percent: 25 }, { prize: "coupons", value: 5, percent: 14 }, { prize: "coupons", value: 6, percent: 4.5 },
+      { prize: "vip", value: 10, percent: 1.5 } ] },
   ],
 };
 /** Те же шансы, что на сервере (services/lucky.py) — здесь только для показа карточки. */

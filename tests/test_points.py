@@ -124,6 +124,10 @@ async def test_box_package_and_points(session: AsyncSession, clock: FakeClock, m
     balance = await PackageService(session, clock).balance(user.id)
     assert balance is not None and balance.left == 2
     await PointsService(session, clock, Pick(BoxPrize.POINTS, 60)).open_box(user, "small")
+    user.points += 500
+    await PointsService(session, clock, Pick(BoxPrize.VIP, 10)).open_box(user, "large")
+    vip = await PackageService(session, clock).balance(user.id)
+    assert vip is not None and vip.plan is PlanCode.VIP
     assert user.points == 350 - 250 - 100 + 60
 
 

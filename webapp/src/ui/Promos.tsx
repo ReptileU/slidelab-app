@@ -5,7 +5,7 @@ import { money } from "../lib/i18n";
 import { haptic } from "../lib/tg";
 
 /**
- * Рекламные плитки на главной: скидка на первую презентацию, пакеты, бонус-пакет, бесплатная обложка.
+ * Рекламные плитки на главной: скидка на первую презентацию, пакеты, кейсы за баллы, бесплатная обложка.
  * Цифры берутся из прайса — плитка не обещает того, чего нет в приложении.
  */
 export function Promos() {
@@ -40,10 +40,10 @@ export function Promos() {
           <span className="promo-text">{t("promo_packs")}</span>
         </button>
       )}
-      <button className="promo promo-lucky" onClick={() => go("/packages?lucky=1")}>
+      <button className="promo promo-lucky promo-cases" onClick={() => go("/packages?points=1")}>
         <i className="promo-holo" />
-        <span className="promo-big silver-text">1→10</span>
-        <span className="promo-text">{t("promo_lucky")}</span>
+        <span className="promo-big silver-text">+50</span>
+        <span className="promo-text">{t("promo_cases")}</span>
       </button>
       <button className="promo promo-cover" onClick={() => go("/order?design=ours")}>
         <span className="promo-big">

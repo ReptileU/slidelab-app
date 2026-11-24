@@ -436,3 +436,14 @@ async def test_docs_hidden_and_rate_limited(env: dict[str, Any]) -> None:
     assert statuses[0] == 200 and statuses[-1] == 429
     assert (await c.get("/api/me", headers=auth(778))).status_code == 200  # другой аккаунт — свой лимит
     assert (await c.get("/api/health")).status_code == 200  # пинг не ограничен
+
+
+async def test_bonus_pack_no_longer_sold(env: dict[str, Any]) -> None:
+    """Бонус-пакет снят с продажи: вместо него кейсы за баллы. Витрина отвечает, но купить нельзя."""
+    c = env["client"]
+    info = (await c.get("/api/packages/lucky", headers=auth())).json()
+    assert info["can_buy"] is False and info["pending"] is None
+    r = await c.post("/api/packages/lucky/invoice", json={"provider": "card", "app": True}, headers=auth())
+    assert r.status_code == 422
+    cases = (await c.get("/api/packages/points", headers=auth())).json()
+    assert any(p["prize"] == "vip" for b in cases["boxes"] for p in b["prizes"])
