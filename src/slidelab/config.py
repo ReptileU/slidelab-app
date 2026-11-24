@@ -1,5 +1,6 @@
 """Настройки из .env. Имена переменных совпадают со старым settings.txt — его можно переименовать в .env."""
 
+import re
 from datetime import date
 from functools import lru_cache
 from pathlib import Path
@@ -108,6 +109,16 @@ class Settings(BaseSettings):
     @classmethod
     def _db_url(cls, value: str) -> str:
         return normalize_db_url(value)
+
+    @field_validator("bot_username", mode="before")
+    @classmethod
+    def _bare_username(cls, value: object) -> object:
+        # В Render могли вписать ссылку: https://t.me/SlideLabTestbot или @SlideLabTestbot — нужен голый username
+        if isinstance(value, str):
+            v = value.strip().rstrip("/")
+            v = re.sub(r"^(https?://)?(www\.)?(t\.me|telegram\.me)/", "", v)
+            return v.lstrip("@")
+        return value
 
     @field_validator(
         "admin_id",

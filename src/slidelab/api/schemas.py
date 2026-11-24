@@ -331,7 +331,8 @@ class FriendOut(BaseModel):
 
 class MilestoneOut(BaseModel):
     friends: int
-    points: int
+    prize: str  # "coupon" — бесплатная презентация, "points" — баллы
+    points: int  # для "coupon" — сколько купонов
     reached: bool
 
 

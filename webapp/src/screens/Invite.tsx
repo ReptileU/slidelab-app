@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { useLang, useT } from "../lib/app";
 import { formatDate } from "../lib/i18n";
-import { haptic, openTelegramUrl } from "../lib/tg";
+import { haptic, openTelegramUrl, shareMessage } from "../lib/tg";
 import { Section, Skeleton, Toast } from "../ui";
 import { CaseArt } from "../ui/PointsCase";
 import { BackButton } from "../ui/TelegramButtons";
@@ -23,11 +23,22 @@ export function Invite() {
   const [toast, setToast] = useState<string | null>(null);
   const d = q.data;
 
-  const share = () => {
-    if (!d) return;
+  const [sharing, setSharing] = useState(false);
+  // Отправляем рекламную карточку (наши работы + подарок + кнопка), а не голую ссылку
+  const share = async () => {
+    if (!d || sharing) return;
     haptic.tap();
-    const text = t("ref_share_text", { n: d.friend_points });
-    openTelegramUrl(`https://t.me/share/url?url=${encodeURIComponent(d.link)}&text=${encodeURIComponent(text)}`);
+    setSharing(true);
+    try {
+      const { prepared_id } = await api.shareInvite();
+      const sent = prepared_id ? await shareMessage(prepared_id) : null;
+      if (sent === null) setToast(t("ref_in_chat")); // старый Telegram: карточка уже в чате с ботом — переслать оттуда
+    } catch {
+      const text = t("ref_share_text", { n: d.friend_points });
+      openTelegramUrl(`https://t.me/share/url?url=${encodeURIComponent(d.link)}&text=${encodeURIComponent(text)}`);
+    } finally {
+      setSharing(false);
+    }
   };
   const copy = async () => {
     if (!d) return;
@@ -76,9 +87,19 @@ export function Invite() {
             </div>
           </div>
 
+          {d.milestones.some((m) => m.prize === "coupon") && (
+            <div className="inv-free">
+              <span className="inv-free-n tabular">3</span>
+              <span className="inv-free-t">
+                <b>{t("ref_free_t")}</b>
+                <span>{t("ref_free_s")}</span>
+              </span>
+            </div>
+          )}
+
           <div className="inv-actions">
-            <button className="inv-share" onClick={share}>
-              <Send size={18} /> {t("ref_share")}
+            <button className="inv-share" disabled={sharing} onClick={() => void share()}>
+              {sharing ? <span className="btn-spinner" /> : <Send size={18} />} {t("ref_share")}
             </button>
             <button className="inv-copy" onClick={() => void copy()} aria-label={t("ref_copy")}>
               <Copy size={18} />
@@ -93,14 +114,16 @@ export function Invite() {
                 {d.milestones.map((m) => (
                   <span key={m.friends} className={m.reached ? "on" : ""} style={{ left: `${(m.friends / top) * 100}%` }}>
                     <em>
-                      {m.friends} · +{m.points}
+                      {m.prize === "coupon" ? t("ref_ms_coupon", { n: m.friends }) : `${m.friends} · +${m.points}`}
                     </em>
                   </span>
                 ))}
               </div>
               <p className="inv-next">
                 {next
-                  ? t("ref_next", { n: next.friends - d.paid, pts: next.points })
+                  ? next.prize === "coupon"
+                    ? t("ref_next_coupon", { n: next.friends - d.paid })
+                    : t("ref_next", { n: next.friends - d.paid, pts: next.points })
                   : t("ref_all_goals")}
               </p>
               <div className="inv-stats">

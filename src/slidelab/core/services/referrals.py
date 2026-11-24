@@ -7,7 +7,8 @@
 - другу — выгода сразу видна: за первую покупку деньгами баллов вдвое больше (обычные 50 + FRIEND_BONUS),
   то есть сразу бронзовый кейс. Второй скидки нет — со скидкой на первую презентацию ничего не путается;
 - пригласившему — INVITER_POINTS, когда друг впервые заплатит деньгами (не за регистрацию — иначе накрутят),
-  и бонусы за количество оплативших друзей (MILESTONES).
+  и бонусы за количество оплативших друзей: за третьего — бесплатная презентация (купон),
+  за десятого — баллы на золотой кейс (MILESTONES).
 """
 
 from collections.abc import Callable
@@ -17,13 +18,14 @@ from datetime import datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from slidelab.core.enums import PaymentStatus, PointsReason
-from slidelab.core.models import Payment, Referral, User
+from slidelab.core.enums import CouponOrigin, PaymentStatus, PointsReason, SlideTier
+from slidelab.core.models import Coupon, Payment, Referral, User
 from slidelab.core.models.base import as_utc, utcnow
 
 INVITER_POINTS = 100  # = бронзовый кейс
 FRIEND_BONUS = 50  # сверх обычных 50 за первую покупку
-MILESTONES = {3: 150, 10: 500}  # оплативших друзей → бонус баллами
+# оплативших друзей → бонус: ("coupon", 1) — купон на бесплатную презентацию до 20 слайдов, ("points", N) — баллы
+MILESTONES: dict[int, tuple[str, int]] = {3: ("coupon", 1), 10: ("points", 500)}
 NEW_WINDOW = timedelta(hours=24)
 PREFIX = "ref_"
 _ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz"
@@ -56,6 +58,7 @@ class ReferralReward:
     milestone: int | None = None  # сколько оплативших друзей дало бонус (3, 10)
     friend_bonus: int = 0
     paid_friends: int = 0
+    coupon: bool = False  # за этого друга выдан купон на бесплатную презентацию
 
 
 @dataclass(slots=True)
@@ -138,11 +141,16 @@ class ReferralService:
             )
             or 0
         )
-        total, milestone = INVITER_POINTS, None
+        total, milestone, coupon = INVITER_POINTS, None, False
         if paid in MILESTONES:
             milestone = paid
-            await points.grant(inviter, MILESTONES[paid], PointsReason.REFERRAL_BONUS, payment_id=payment_id)
-            total += MILESTONES[paid]
+            kind, value = MILESTONES[paid]
+            if kind == "coupon":
+                self.session.add(Coupon(user_id=inviter.id, slides=SlideTier.S20, origin=CouponOrigin.REFERRAL))
+                coupon = True
+            else:
+                await points.grant(inviter, value, PointsReason.REFERRAL_BONUS, payment_id=payment_id)
+                total += value
         ref.points = total
         await self.session.flush()
         return ReferralReward(
@@ -152,6 +160,7 @@ class ReferralService:
             milestone=milestone,
             friend_bonus=FRIEND_BONUS,
             paid_friends=paid,
+            coupon=coupon,
         )
 
     async def summary(self, inviter: User) -> Summary:

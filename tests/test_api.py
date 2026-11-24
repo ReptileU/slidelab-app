@@ -454,4 +454,4 @@ async def test_referrals_link(env: dict[str, Any]) -> None:
     data = (await c.get("/api/me/referrals", headers=auth())).json()
     assert "?start=ref_" in data["link"]
     assert data["paid"] == 0 and data["friends"] == [] and data["invited"] is False
-    assert [m["friends"] for m in data["milestones"]] == [3, 10]
+    assert [(m["friends"], m["prize"]) for m in data["milestones"]] == [(3, "coupon"), (10, "points")]

@@ -212,7 +212,7 @@ export interface Referrals {
   friend_points: number;
   paid: number;
   earned: number;
-  milestones: { friends: number; points: number; reached: boolean }[];
+  milestones: { friends: number; prize: "coupon" | "points"; points: number; reached: boolean }[];
   friends: { name: string; joined_at: string; paid_at: string | null; points: number }[];
   invited: boolean;
 }

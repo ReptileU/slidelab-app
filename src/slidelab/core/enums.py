@@ -139,6 +139,7 @@ class CouponOrigin(StrEnum):
     CANCEL = "cancel"  # отменил оплаченный заказ (или пакет истёк до отмены)
     GIFT = "gift"  # подарили
     BONUS = "bonus"  # выпал в бонус-пакете
+    REFERRAL = "referral"  # за трёх оплативших друзей
 
 
 class GiftKind(StrEnum):
