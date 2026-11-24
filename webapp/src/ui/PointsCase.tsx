@@ -26,7 +26,9 @@ export function usePrizeName() {
         ? t("pts_row_discount", { n })
         : prize === "points"
           ? `+${n} ${pointsWord(lang, n)}`
-          : t("pts_row_pack", { n, word: presWord(lang, n) });
+          : prize === "vip"
+            ? t("pts_row_vip", { n })
+            : t("pts_row_pack", { n, word: presWord(lang, n) });
 }
 type Rarity = "common" | "rare" | "epic" | "legend";
 

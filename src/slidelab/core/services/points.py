@@ -1,11 +1,11 @@
-"""Баллы за покупки и пакеты за баллы.
+"""Баллы за покупки и кейсы за баллы.
 
 Правила (цифры — здесь, в одном месте):
 - баллы дают только за деньги: оплаченный заказ, пакет (за каждую презентацию в нём), бонус-пакет, пакет в подарок;
   за заказы из пакета, по купону или из пакета за баллы — ничего, иначе получился бы бесконечный круг;
 - баллы сгорают, если EXPIRE_DAYS не было ни одной покупки за деньги (каждая покупка продлевает срок);
-- три пакета за баллы: чем больше накопил, тем выгоднее каждый балл. Пустых исходов нет;
-- самое ценное — гарантия и шанс на 10 презентаций — остаётся только у денежного бонус-пакета.
+- три кейса за баллы: чем больше накопил, тем выгоднее каждый балл. Пустых исходов нет;
+- денежный бонус-пакет снят с продажи — шанс на 10 презентаций (VIP) теперь в золотом кейсе.
 """
 
 import random
@@ -45,8 +45,11 @@ class PointsBox:
 # Призы: ONE — 1 купон, COUPONS — несколько купонов (без срока), TWO — пакет «Неделя», FOUR — пакет «Месяц»,
 # DISCOUNT — скидка % на следующий заказ, POINTS — часть баллов обратно.
 # Скидка — самый частый приз: купон — это целая презентация, а со скидкой клиент всё равно платит.
-# В пересчёте на 100 баллов (скидка N% ≈ N/100 презентации): малый ≈ 0,44, средний ≈ 0,47, большой ≈ 0,57 —
+# В пересчёте на 100 баллов (скидка N% ≈ N/100 презентации): малый ≈ 0,44, средний ≈ 0,47, большой ≈ 0,58 —
 # копить выгоднее, чем открывать сразу.
+# пакет, который выпадает в кейсе
+PRIZE_PLAN = {BoxPrize.TWO: PlanCode.WEEK, BoxPrize.FOUR: PlanCode.MONTH, BoxPrize.VIP: PlanCode.VIP}
+
 DISCOUNT_MAX = 70  # потолок сложенных карт скидки, %
 
 BOXES: dict[str, PointsBox] = {
@@ -79,8 +82,9 @@ BOXES: dict[str, PointsBox] = {
             PointsPrize(BoxPrize.DISCOUNT, 50, 350),
             PointsPrize(BoxPrize.COUPONS, 3, 200),
             PointsPrize(BoxPrize.FOUR, 4, 250),
-            PointsPrize(BoxPrize.COUPONS, 5, 150),
-            PointsPrize(BoxPrize.COUPONS, 6, 50),
+            PointsPrize(BoxPrize.COUPONS, 5, 140),
+            PointsPrize(BoxPrize.COUPONS, 6, 45),
+            PointsPrize(BoxPrize.VIP, 10, 15),  # пакет VIP на 10 презентаций — 1,5%
         ),
     ),
 }
@@ -163,8 +167,8 @@ class PointsService:
             self.session.add_all(coupons)
             await self.session.flush()
             record.coupon_id = coupons[0].id
-        elif prize.code in (BoxPrize.TWO, BoxPrize.FOUR):
-            plan = PlanCode.WEEK if prize.code is BoxPrize.TWO else PlanCode.MONTH
+        elif prize.code in PRIZE_PLAN:
+            plan = PRIZE_PLAN[prize.code]
             package = await PackageService(self.session, self.clock).activate(user.id, plan, LedgerReason.BONUS)
             record.user_package_id = package.id
         elif prize.code is BoxPrize.DISCOUNT:

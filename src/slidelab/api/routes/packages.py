@@ -33,13 +33,12 @@ async def lucky_info(viewer: ViewerDep, session: SessionDep) -> LuckyOut:
     service = LuckyService(session)
     plan = await repo.get_plan(session, PlanCode.LUCKY)
     box = await service.pending(viewer.user.id)
-    bought = await service.bought_recently(viewer.user.id)
     return LuckyOut(
         price=plan.price,
         odds=[LuckyOddsOut(prize=p.code, count=p.count, percent=p.percent) for p in lucky.PRIZES],
         limit=lucky.LIMIT,
         window_days=lucky.WINDOW.days,
-        can_buy=plan.is_active and bought < lucky.LIMIT,
+        can_buy=False,  # снят с продажи; витрина нужна только чтобы открыть купленный раньше
         pending=LuckyPrizeOut(prize=box.prize, count=box.count) if box else None,
     )
 
@@ -92,10 +91,9 @@ async def invoice(
     """Как в боте: недавно сданный заказ засчитывается в пакет сам, владелец получает заявку."""
     user = viewer.user
     payments = PaymentService(session)
-    if body.gift and plan is PlanCode.LUCKY:
-        raise HTTPException(status_code=422, detail="Бонус-пакет в подарок не покупается")
     if plan is PlanCode.LUCKY:
-        await payments.lucky.ensure_can_buy(user.id)  # лимит — до показа реквизитов, а не после перевода
+        # бонус-пакет снят с продажи (вместо него — кейсы за баллы); купленные раньше открываются как прежде
+        raise HTTPException(status_code=422, detail="Бонус-пакет больше не продаётся")
     credit_id = None if body.gift else await payments.best_credit(user.id, plan)
     quote = await payments.plan_quote(plan, credit_id, user.id)
     if body.provider == "card":

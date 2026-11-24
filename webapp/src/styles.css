@@ -1806,3 +1806,7 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .env .pack-perks{margin:6px 0 0}
 .env-month .pack-buy{color:#1d1d1f;background:linear-gradient(180deg,#fff,#e5e5ea 55%,#c7c7cc);box-shadow:inset 0 1px 0 #fff,0 6px 18px rgba(255,255,255,.12)}
 .env-vip .pack-buy{color:#2b1d00;background:linear-gradient(180deg,#fff3c4 0%,#f0c85a 45%,#c9952b 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 8px 22px rgba(224,176,74,.3)}
+.promo-cases .promo-big{background:linear-gradient(180deg,#fff3c4,#f3cd63 55%,#c8901f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pa-pack.vip{background:linear-gradient(160deg,#3a2a06,#0b0904);box-shadow:inset 0 0 0 1px rgba(243,205,99,.6),0 4px 12px rgba(243,205,99,.35)}
+.pa-pack.vip b{background:linear-gradient(180deg,#fff3c4,#e2b44d);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pa-pack.vip em{color:#f3cd63}
