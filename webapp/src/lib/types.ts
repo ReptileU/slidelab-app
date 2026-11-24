@@ -224,6 +224,8 @@ export interface Referrals {
 export interface QuickCover {
   topic: string;
   pres_lang: Lang;
+  design: Design;
   style_key: string | null;
+  template_url: string | null;
   title_author: string | null;
 }

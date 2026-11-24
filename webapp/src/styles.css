@@ -2093,3 +2093,54 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .qd-row{display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:16px;background:var(--surface,rgba(120,120,128,.1));font-size:14.5px;line-height:1.35}
 .qd-row svg{flex:none;color:#10b981;margin-top:1px}
 .qd-row b{font-weight:700}
+
+/* ---------- анкета: пронумерованные блоки ---------- */
+.fblock{margin:0 0 26px}
+.fblock-h{display:flex;align-items:flex-start;gap:12px;margin:0 2px 10px}
+.fblock-n{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:800;background:var(--label);color:var(--bg)}
+.fblock-t{display:flex;flex-direction:column;gap:2px;padding-top:3px;min-width:0}
+.fblock-t b{font-size:17px;font-weight:700;line-height:1.2}
+.fblock-t b em{font-style:normal;font-weight:500;font-size:13px;color:var(--secondary);margin-left:8px}
+.fblock-t > span{font-size:13.5px;line-height:1.35;color:var(--secondary)}
+.fblock.need .fblock-n{background:var(--danger);color:#fff}
+.fblock.need .fblock-t b{color:var(--danger)}
+.fblock.need .group,.fblock.need .segmented{box-shadow:0 0 0 1.5px var(--danger);animation:shake .4s var(--ease-out)}
+
+/* ---------- выбор дизайна: три карточки ---------- */
+.dpick{display:flex;flex-direction:column;gap:10px}
+.dopt{position:relative;display:flex;align-items:flex-start;gap:12px;width:100%;padding:14px 14px 14px 12px;border-radius:18px;text-align:left;color:inherit;
+  background:var(--surface);box-shadow:inset 0 0 0 1px var(--separator),var(--shadow);transition:box-shadow .2s,transform .15s}
+.dopt:active{transform:scale(.99)}
+.dopt.on{box-shadow:inset 0 0 0 2px var(--label),var(--shadow)}
+.dopt-ic{flex:none;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--fill);color:var(--label)}
+.dopt.hero .dopt-ic{background:linear-gradient(135deg,#a855f7,#ec4899 55%,#f59e0b);color:#fff}
+.dopt-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.dopt-t b{font-size:16px;font-weight:700;line-height:1.25}
+.dopt-t > span{font-size:13.5px;line-height:1.35;color:var(--secondary)}
+.dopt-badge{display:inline-block;vertical-align:2px;margin-left:4px;padding:2px 8px;border-radius:99px;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;color:#fff;
+  background:linear-gradient(135deg,#a855f7,#ec4899)}
+.dopt-dot{flex:none;width:22px;height:22px;margin-top:2px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1.5px var(--tertiary)}
+.dopt.on .dopt-dot{background:var(--label);color:var(--bg);box-shadow:none}
+/* примеры «тема → стиль»: маленькие плашки с палитрой */
+.dopt-examples{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dx{display:inline-flex;align-items:center;gap:6px;padding:4px 9px 4px 4px;border-radius:99px;background:var(--fill);font-size:12px;font-weight:600;color:var(--label)}
+.dx i{width:22px;height:16px;border-radius:99px}
+.dx.aral i{background:linear-gradient(90deg,#d6b98c,#a8c3c9 60%,#5b7f8c)}
+.dx.gta i{background:linear-gradient(90deg,#ff3ea5,#7c3aed 55%,#29e3d6)}
+.dx.bank i{background:linear-gradient(90deg,#0f2a4a,#1e5aa8 55%,#d4af37)}
+/* галерея наших стилей — прямо в анкете */
+.dgal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:-2px 0 4px}
+@media (min-width:560px){.dgal{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.dgal-i{position:relative;display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:14px;text-align:left;color:inherit;background:var(--surface);
+  box-shadow:inset 0 0 0 1px var(--separator);transition:box-shadow .2s}
+.dgal-i.on{box-shadow:inset 0 0 0 2px var(--label)}
+.dgal-i img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:left center;border-radius:9px;background:var(--fill)}
+.dgal-i span{font-size:13px;font-weight:600;padding:0 4px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dgal-ok{position:absolute;top:10px;right:10px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--label);color:var(--bg)}
+.down{margin:-2px 0 4px;padding:12px 14px;border-radius:14px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--separator)}
+.down.need{box-shadow:inset 0 0 0 1.5px var(--danger);animation:shake .4s var(--ease-out)}
+.down p{margin:8px 0 0;font-size:12.5px;line-height:1.35;color:var(--secondary)}
+/* бейдж «0 сум» не обрезается сверху */
+.qc-hero{padding-top:6px}
+.qc-after{margin:-8px 4px 24px}

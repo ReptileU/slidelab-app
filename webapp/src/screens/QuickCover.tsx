@@ -3,16 +3,17 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
-import { useCatalog, useLang, useT } from "../lib/app";
+import { useLang, useT } from "../lib/app";
 import { alert, haptic } from "../lib/tg";
 import type { Lang } from "../lib/types";
-import { Cell, Group, Section, Segmented, Sheet, TextArea, TextInput } from "../ui";
+import { Group, Segmented, TextArea, TextInput } from "../ui";
+import { DesignPicker, type DesignValue, FormBlock } from "../ui/FormKit";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 
 /**
  * Короткая заявка «бесплатная обложка» — для того, кто пришёл посмотреть, без длинной анкеты:
- * тема, стиль, язык и (по желанию) имя на титульном слайде. Ни объёма, ни срока, ни оплаты.
- * Понравится обложка — та же заявка дооформляется в обычной анкете (NewOrder ?complete=<id>).
+ * тема, как будет выглядеть (под тему / наш стиль / свой шаблон), язык и (по желанию) имя на титульном.
+ * Ни объёма, ни срока, ни оплаты. Понравится обложка — та же заявка дооформляется в анкете (NewOrder ?complete=<id>).
  */
 export function QuickCover() {
   const t = useT();
@@ -20,20 +21,30 @@ export function QuickCover() {
   const qc = useQueryClient();
   const { lang } = useLang();
   const [params] = useSearchParams();
-  const catalog = useCatalog();
   const [topic, setTopic] = useState("");
   const [presLang, setPresLang] = useState<Lang>(lang);
-  const [styleKey, setStyleKey] = useState<string | null>(params.get("style"));
+  const [design, setDesign] = useState<DesignValue>(() => {
+    const style = params.get("style");
+    return { design: "ours", style_key: style, template_url: null };
+  });
   const [name, setName] = useState("");
-  const [picker, setPicker] = useState(false);
+  const [tried, setTried] = useState(false);
   const [key] = useState(() => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`);
-  const style = catalog.data?.styles.find((s) => s.key === styleKey);
-  const ready = topic.trim().length >= 3;
+  const topicOk = topic.trim().length >= 3;
+  const templateOk = design.design !== "own" || (design.template_url ?? "").trim().length > 3;
+  const ready = topicOk && templateOk;
 
   const send = useMutation({
     mutationFn: () =>
       api.quickCover(
-        { topic: topic.trim(), pres_lang: presLang, style_key: styleKey, title_author: name.trim() || null },
+        {
+          topic: topic.trim(),
+          pres_lang: presLang,
+          design: design.design,
+          style_key: design.design === "ours" ? design.style_key : null,
+          template_url: design.design === "own" ? design.template_url?.trim() || null : null,
+          title_author: name.trim() || null,
+        },
         key,
       ),
     onSuccess: (order) => {
@@ -56,19 +67,17 @@ export function QuickCover() {
         <p className="secondary">{t("qc_sub")}</p>
       </div>
 
-      <Section title={t("qc_topic")}>
+      <FormBlock n={1} title={t("fb_topic_t")} hint={t("fb_topic_h")} need={tried && !topicOk} id="need-topic">
         <Group>
-          <TextArea value={topic} onChange={setTopic} placeholder={t("qc_topic_ph")} maxLength={300} rows={2} />
+          <TextArea value={topic} onChange={setTopic} placeholder={t("qc_topic_ph")} maxLength={300} rows={3} />
         </Group>
-      </Section>
+      </FormBlock>
 
-      <Section title={t("qc_style")}>
-        <Group>
-          <Cell title={t("qc_style")} value={style?.name ?? t("f_style_none")} chevron onClick={() => setPicker(true)} />
-        </Group>
-      </Section>
+      <FormBlock n={2} title={t("fb_design_t")} hint={t("fb_design_h")}>
+        <DesignPicker value={design} onChange={setDesign} need={tried && !templateOk} />
+      </FormBlock>
 
-      <Section title={t("qc_lang")}>
+      <FormBlock n={3} title={t("fb_lang_t")} hint={t("fb_lang_h")}>
         <Segmented
           value={presLang}
           onChange={setPresLang}
@@ -78,13 +87,15 @@ export function QuickCover() {
             { value: "en", label: "English" },
           ]}
         />
-      </Section>
+      </FormBlock>
 
-      <Section title={t("qc_name")} footer={t("qc_after")}>
+      <FormBlock n={4} title={t("fb_name_t")} hint={t("fb_name_h")} optional>
         <Group>
           <TextInput value={name} onChange={setName} placeholder={t("qc_name_ph")} maxLength={80} />
         </Group>
-      </Section>
+      </FormBlock>
+
+      <p className="footnote secondary qc-after">{t("qc_after")}</p>
 
       <MainButton
         text={t("qc_go")}
@@ -93,40 +104,13 @@ export function QuickCover() {
         onClick={() => {
           if (!ready) {
             haptic.error();
+            setTried(true);
+            document.getElementById("need-topic")?.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
           }
           if (!send.isPending) send.mutate();
         }}
       />
-
-      <Sheet open={picker} onClose={() => setPicker(false)} title={t("qc_style")}>
-        <Group>
-          <Cell
-            title={t("f_style_none")}
-            checked={!styleKey}
-            onClick={() => {
-              setStyleKey(null);
-              setPicker(false);
-            }}
-          />
-          {catalog.data?.styles.map((s) => (
-            <Cell
-              key={s.key}
-              icon={
-                <img src={s.images[0]} alt="" style={{ width: 30, height: 30, objectFit: "cover", borderRadius: 7 }} />
-              }
-              iconBg="transparent"
-              title={s.name}
-              subtitle={s.hint}
-              checked={styleKey === s.key}
-              onClick={() => {
-                setStyleKey(s.key);
-                setPicker(false);
-              }}
-            />
-          ))}
-        </Group>
-      </Sheet>
     </div>
   );
 }

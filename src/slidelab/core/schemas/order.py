@@ -76,7 +76,9 @@ class QuickCoverDraft(BaseModel):
 
     topic: Topic
     pres_lang: Lang
+    design: Design = Design.OURS  # под тему / наш стиль (style_key) / шаблон клиента (template_url)
     style_key: str | None = None
+    template_url: TemplateUrl | None = None
     title_author: TitleName | None = None
 
     def as_draft(self) -> OrderDraft:
@@ -86,7 +88,8 @@ class QuickCoverDraft(BaseModel):
             slides=SlideTier.S10,
             deadline=Deadline.NORMAL,
             pres_lang=self.pres_lang,
-            design=Design.OURS,
-            style_key=self.style_key or None,
+            design=self.design,
+            style_key=(self.style_key or None) if self.design is Design.OURS else None,
+            template_url=(self.template_url or None) if self.design is Design.OWN else None,
             title_author=self.title_author or None,
         )

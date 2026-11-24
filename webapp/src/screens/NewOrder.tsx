@@ -33,6 +33,7 @@ import type {
   SlideTier,
 } from "../lib/types";
 import { CouponTear } from "../ui/CouponTear";
+import { DesignPicker, FormBlock } from "../ui/FormKit";
 import { PaidOverlay } from "../ui/PaidOverlay";
 import { BackButton, MainButton } from "../ui/TelegramButtons";
 import {
@@ -424,22 +425,40 @@ export function NewOrder() {
 
       {step === 1 && (
         <>
-          <Section title={t("f_topic")} id="need-topic" need={need("topic")}>
+          <FormBlock n={1} title={t("fb_topic_t")} hint={t("fb_topic_h")} id="need-topic" need={need("topic")}>
             <Group>
               <TextArea
                 value={draft.topic}
                 onChange={(v) => set("topic", v)}
                 placeholder={t("f_topic_ph")}
                 maxLength={300}
-                rows={2}
+                rows={3}
               />
             </Group>
-          </Section>
-          {/* Подпись на титульном — сразу после темы: студенту она нужна почти всегда, выключается одним касанием */}
-          <Section
-            title={t("plate_t")}
-            footer={draft.title_plate ? t("plate_hint") : undefined}
-          >
+          </FormBlock>
+          {/* Главная особенность SlideLab — дизайн под тему: три понятные карточки вместо строки в списке */}
+          <FormBlock n={2} title={t("fb_design_t")} hint={t("fb_design_h")} id="need-template" need={need("template")}>
+            <DesignPicker
+              value={{ design: draft.design, style_key: draft.style_key ?? null, template_url: draft.template_url ?? null }}
+              onChange={(v) =>
+                setDraft((d) => ({ ...d, design: v.design, style_key: v.style_key, template_url: v.template_url }))
+              }
+              need={need("template")}
+            />
+          </FormBlock>
+          <FormBlock n={3} title={t("fb_lang_t")} hint={t("fb_lang_h")}>
+            <Segmented
+              value={draft.pres_lang}
+              onChange={(v) => set("pres_lang", v)}
+              options={[
+                { value: "ru", label: "Русский" },
+                { value: "uz", label: "O‘zbek" },
+                { value: "en", label: "English" },
+              ]}
+            />
+          </FormBlock>
+          {/* Подпись на титульном: студенту нужна почти всегда, выключается одним касанием */}
+          <FormBlock n={4} title={t("fb_plate_t")} hint={t("fb_plate_h")} optional>
             <Group>
               <ToggleCell
                 title={t("x_plate")}
@@ -473,60 +492,13 @@ export function NewOrder() {
                 </>
               )}
             </Group>
-          </Section>
-          <Section title={t("f_plang")}>
-            <Segmented
-              value={draft.pres_lang}
-              onChange={(v) => set("pres_lang", v)}
-              options={[
-                { value: "ru", label: "Русский" },
-                { value: "uz", label: "O‘zbek" },
-                { value: "en", label: "English" },
-              ]}
-            />
-          </Section>
-          <Section
-            title={t("f_design")}
-            footer={draft.design === "own" ? t("f_template_hint") : undefined}
-            id="need-template"
-            need={need("template")}
-          >
-            <Segmented
-              value={draft.design}
-              onChange={(v) => set("design", v)}
-              options={[
-                { value: "ours", label: t("ds_ours") },
-                { value: "own", label: t("ds_own") },
-              ]}
-            />
-            <div className="mt-8">
-              <Group>
-                {draft.design === "ours" ? (
-                  <Cell
-                    title={t("f_style")}
-                    value={style?.name ?? t("f_style_none")}
-                    chevron
-                    onClick={() => setStylePicker(true)}
-                  />
-                ) : (
-                  <TextInput
-                    value={draft.template_url ?? ""}
-                    onChange={(v) => set("template_url", v)}
-                    placeholder={t("f_template_ph")}
-                    label={t("f_template")}
-                    maxLength={500}
-                    inputMode="url"
-                  />
-                )}
-              </Group>
-            </div>
-          </Section>
+          </FormBlock>
         </>
       )}
 
       {step === 2 && c && (
         <>
-          <Section title={t("f_slides")} id="need-slides" need={need("slides")}>
+          <FormBlock n={1} title={t("fb_slides_t")} hint={t("fb_slides_h")} id="need-slides" need={need("slides")}>
             <Group>
               {TIERS.map((tier) => (
                 <Cell
@@ -557,12 +529,8 @@ export function NewOrder() {
                 />
               ))}
             </Group>
-          </Section>
-          <Section
-            title={t("f_deadline")}
-            id="need-deadline"
-            need={need("deadline")}
-          >
+          </FormBlock>
+          <FormBlock n={2} title={t("fb_deadline_t")} hint={t("fb_deadline_h")} id="need-deadline" need={need("deadline")}>
             <Group>
               {DEADLINES.map((d) => (
                 <Fragment key={d}>
@@ -611,14 +579,14 @@ export function NewOrder() {
                 </Fragment>
               ))}
             </Group>
-          </Section>
+          </FormBlock>
           {draft.deadline === "normal" && draft.due_at && !dueOk && (
             <p className="due-warn">
               {t("due_too_soon", { h: NORMAL_MIN_HOURS })}
             </p>
           )}
           {/* Платное — отдельным блоком, с суммой */}
-          <Section title={t("f_paid")}>
+          <FormBlock n={3} title={t("fb_paid_t")} hint={t("fb_paid_h")} optional>
             <Group>
               <ToggleCell
                 title={t("x_notes")}
@@ -636,7 +604,7 @@ export function NewOrder() {
                 onChange={(v) => set("extra_notes", v)}
               />
             </Group>
-          </Section>
+          </FormBlock>
           {shown && (
             <PriceCard
               q={shown}
