@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 
 import { useCatalog, useLang, useMe, useT } from "../lib/app";
 import { money } from "../lib/i18n";
-import { playReveal, playTap, unlockAudio } from "../lib/sound";
+import { playFanfare, playReveal, playTap, unlockAudio } from "../lib/sound";
 import { haptic } from "../lib/tg";
 import type { BoxPrize, LuckyInfo, LuckyPrize, PlanCode } from "../lib/types";
 import { couponWord, pointsWord, presWord } from "../lib/words";
@@ -14,6 +14,20 @@ import { PackCard } from "./PackCard";
 
 /** Выпавший пакет — карта того же тарифа, что начислен на сервере (services/lucky.py, services/points.py). */
 const PRIZE_PLAN: Partial<Record<BoxPrize, PlanCode>> = { two: "week", four: "month", vip: "vip" };
+
+export type Rarity = "common" | "rare" | "epic" | "legend";
+
+const CONFETTI: Record<"epic" | "legend", string[]> = {
+  epic: ["#c45eff", "#ff5ea8", "#5ea8ff", "#ffffff"],
+  legend: ["#ffd24a", "#fff3c4", "#f3b63f", "#ffffff", "#ff9a3d"],
+};
+
+/** Вибрация по редкости: легендарный — серия сильных толчков. */
+function celebrate(r: Rarity) {
+  if (r === "common") return haptic.success();
+  const n = r === "rare" ? 2 : r === "epic" ? 3 : 6;
+  for (let i = 0; i < n; i++) setTimeout(() => haptic.success(), i * (r === "legend" ? 220 : 160));
+}
 
 /** Несколько купонов — стопкой, верхний целиком, под ним торчат остальные. */
 export function CouponStack({ n }: { n: number }) {
@@ -154,6 +168,7 @@ export function LuckyReveal({
   name,
   points,
   opened = false,
+  rarity,
 }: {
   prize: LuckyPrize;
   onDone: () => void;
@@ -163,6 +178,8 @@ export function LuckyReveal({
   points?: number;
   /** сразу показать приз (кейс уже «открылся» рулеткой) */
   opened?: boolean;
+  /** редкость приза в кейсе: чем реже, тем громче выпадение */
+  rarity?: Rarity;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -175,10 +192,28 @@ export function LuckyReveal({
     prize.prize === "discount" ? prize.count >= 50 : prize.prize === "points" ? false : prize.count >= (prize.prize === "coupons" ? 5 : 4);
   const plan = PRIZE_PLAN[prize.prize];
 
+  // легендарный приз показывается не сразу: сначала темнеет экран и бьёт столб света
+  const [shown, setShown] = useState(rarity !== "legend");
   useEffect(() => {
-    if (opened) playReveal(big);
+    if (!opened) return;
+    if (rarity) {
+      playFanfare(rarity);
+      celebrate(rarity);
+    } else playReveal(big);
+    if (rarity === "legend") {
+      const id = setTimeout(() => setShown(true), 1300);
+      return () => clearTimeout(id);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const tier = rarity ?? (big ? "epic" : "common");
+  // чтобы случайное касание в момент выпадения не закрыло показ раньше времени
+  const [canClose, setCanClose] = useState(false);
+  useEffect(() => {
+    if (!open || !shown) return;
+    const id = setTimeout(() => setCanClose(true), 900);
+    return () => clearTimeout(id);
+  }, [open, shown]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -208,8 +243,44 @@ export function LuckyReveal({
   }
 
   return createPortal(
-    <div className={`lr${open ? " open" : ""}${big ? " big" : ""}`} role="dialog" aria-modal="true">
+    <div
+      onClick={() => {
+        // приз уже начислен — закрыть можно касанием в любом месте, когда анимация отыграла
+        if (open && shown && canClose) onDone();
+      }}
+      className={`lr${open ? " open" : ""}${big || rarity === "epic" || rarity === "legend" ? " big" : ""} r-${tier}${shown ? " shown" : ""}`}
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="lr-rays" />
+      {open && tier !== "common" && <div className="lr-flash" />}
+      {open && (tier === "epic" || tier === "legend") && <div className="lr-wave" />}
+      {open && tier === "legend" && (
+        <>
+          <div className="lr-beam" />
+          <div className="lr-coins" aria-hidden>
+            {Array.from({ length: 26 }, (_, i) => (
+              <i key={i} style={{ ["--x" as string]: `${(i * 37) % 100}%`, ["--d" as string]: `${1.2 + ((i * 53) % 17) / 10}s`, ["--w" as string]: `${(i * 29) % 1500}ms` }} />
+            ))}
+          </div>
+        </>
+      )}
+      {open && shown && (tier === "epic" || tier === "legend") && (
+        <div className="lr-confetti" aria-hidden>
+          {Array.from({ length: tier === "legend" ? 60 : 36 }, (_, i) => (
+            <i
+              key={i}
+              style={{
+                ["--x" as string]: `${(i * 61) % 100}vw`,
+                ["--r" as string]: `${(i * 47) % 360}deg`,
+                ["--d" as string]: `${(i * 37) % 900}ms`,
+                ["--t" as string]: `${2.2 + ((i * 13) % 14) / 10}s`,
+                ["--c" as string]: CONFETTI[tier][i % CONFETTI[tier].length],
+              }}
+            />
+          ))}
+        </div>
+      )}
       {!open ? (
         <>
           <button
@@ -246,6 +317,7 @@ export function LuckyReveal({
           </div>
           <div className="lr-prize">
             <div className="lr-got">{t("lucky_got")}</div>
+            {rarity && rarity !== "common" && <div className={`lr-rarity ${rarity}`}>{t(`rar_${rarity}`)}</div>}
             {/* что выпало — сразу той карточкой, что ляжет в кошелёк: купон или карта пакета */}
             <div className="lr-card">
               {prize.prize === "one" ? (
@@ -283,9 +355,7 @@ export function LuckyReveal({
             </div>
             {points !== undefined && <div className="lr-left">{t("pts_left", { n: points })}</div>}
           </div>
-          <button className="lr-take" onClick={onDone}>
-            {t("lucky_take")}
-          </button>
+          <p className="lr-anywhere">{t("lucky_anywhere")}</p>
         </>
       )}
     </div>,

@@ -218,3 +218,49 @@ export function playTick(): void {
     /* без звука — не страшно */
   }
 }
+
+function tone(c: AudioContext, freq: number, at: number, len: number, vol: number, type: OscillatorType = "sine", to?: number): void {
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, at);
+  if (to) osc.frequency.exponentialRampToValueAtTime(to, at + len);
+  gain.gain.setValueAtTime(0, at);
+  gain.gain.linearRampToValueAtTime(vol, at + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0006, at + len);
+  osc.connect(gain).connect(c.destination);
+  osc.start(at);
+  osc.stop(at + len + 0.05);
+}
+
+/**
+ * Выпадение приза из кейса — громче, чем реже приз:
+ * обычный — короткий аккорд, редкий — с перезвоном, эпический — взлёт и большой аккорд,
+ * легендарный — низкий удар, нарастание и торжественный аккорд через секунду.
+ */
+export function playFanfare(r: "common" | "rare" | "epic" | "legend"): void {
+  const c = context();
+  if (!c) return;
+  try {
+    if (c.state === "suspended") void c.resume();
+    const now = c.currentTime + 0.02;
+    if (r === "common") return playReveal(false);
+    if (r === "rare") {
+      playReveal(false);
+      [1568, 2093, 2637].forEach((f, i) => tone(c, f, now + 0.3 + i * 0.07, 0.5, 0.06));
+      return;
+    }
+    if (r === "epic") {
+      tone(c, 220, now, 0.45, 0.12, "triangle", 880);
+      setTimeout(() => playReveal(true), 300);
+      [1568, 2093, 2637, 3136].forEach((f, i) => tone(c, f, now + 0.7 + i * 0.06, 0.6, 0.05));
+      return;
+    }
+    tone(c, 90, now, 1.1, 0.35, "sine", 38); // удар
+    tone(c, 180, now + 0.15, 1.1, 0.1, "sawtooth", 1400); // нарастание
+    [523.25, 659.25, 783.99, 1046.5].forEach((f) => tone(c, f, now + 1.3, 2.2, 0.09, "triangle"));
+    [1318.5, 1568, 2093, 2637, 3136].forEach((f, i) => tone(c, f, now + 1.35 + i * 0.08, 0.9, 0.05));
+  } catch {
+    /* без звука — не страшно */
+  }
+}
