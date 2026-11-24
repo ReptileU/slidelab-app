@@ -47,9 +47,7 @@ def upgrade() -> None:
     for table, cols in TZ.items():
         for col in cols:
             # старые значения записаны в UTC без пояса
-            op.alter_column(
-                table, col, type_=sa.DateTime(timezone=True), postgresql_using=f"{col} AT TIME ZONE 'UTC'"
-            )
+            op.alter_column(table, col, type_=sa.DateTime(timezone=True), postgresql_using=f"{col} AT TIME ZONE 'UTC'")
     for name, table, col in FKS:
         op.create_foreign_key(name, table, "coupons", [col], ["id"])
 
