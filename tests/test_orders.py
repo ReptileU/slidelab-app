@@ -497,9 +497,7 @@ async def test_cancel_before_work_always_refunds(orders: OrderService, make_user
     assert len(await repo.open_coupons(orders.session, user.id)) == 1
 
 
-async def test_free_covers_are_limited_but_pay_now_is_not(
-    orders: OrderService, make_user: Callable[..., Any]
-) -> None:
+async def test_free_covers_are_limited_but_pay_now_is_not(orders: OrderService, make_user: Callable[..., Any]) -> None:
     from slidelab.core.errors import CoverLimitError
     from slidelab.core.services.orders import FREE_COVERS_MAX
 

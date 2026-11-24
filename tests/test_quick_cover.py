@@ -72,3 +72,18 @@ async def test_complete_uses_coupon(session: AsyncSession, clock: FakeClock, mak
     done = await service.complete_quick(order.id, user.id, draft(slides=SlideTier.S20))
     assert done.coupon_id is not None and done.is_paid and done.price == 0
     assert done.status is OrderStatus.WORK
+
+
+async def test_quick_respects_free_cover_limit(
+    session: AsyncSession, clock: FakeClock, make_user: Callable[..., Any]
+) -> None:
+    """Короткие заявки тоже не больше FREE_COVERS_MAX без ответа — защита от спама обложками."""
+    from slidelab.core.errors import CoverLimitError
+    from slidelab.core.services.orders import FREE_COVERS_MAX
+
+    user = await make_user()
+    service = OrderService(session, clock)
+    for _ in range(FREE_COVERS_MAX):
+        await service.create(user.id, quick().as_draft(), quick=True)
+    with pytest.raises(CoverLimitError):
+        await service.create(user.id, quick().as_draft(), quick=True)

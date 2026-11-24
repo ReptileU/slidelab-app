@@ -97,7 +97,7 @@ class OrderService:
 
         due_at = self._due(draft)
         q = await self.quote(user_id, draft.quote_request())
-        if not draft.skip_cover and q.price > 0:
+        if quick or (not draft.skip_cover and q.price > 0):  # короткая заявка — всегда бесплатная обложка
             await self._check_free_covers(user_id)
         style_id = await repo.get_style_id(self.session, draft.style_key) if draft.style_key else None
         order = Order(
