@@ -5,6 +5,7 @@ import { useCatalog, useMe, useOrders, useT } from "../lib/app";
 import type { Key } from "../lib/i18n";
 import { haptic } from "../lib/tg";
 import { Img, Logo, Section, Skeleton, useGlare } from "../ui";
+import { FriendGift } from "../ui/FriendGift";
 import { Promos } from "../ui/Promos";
 import { WorksCarousel } from "../ui/WorksCarousel";
 
@@ -51,6 +52,9 @@ export function Home() {
           {t("own_link")} ›
         </button>
       </header>
+
+      {/* пришёл по ссылке друга — показываем его подарок */}
+      <FriendGift />
 
       {/* 3. Рекламные плитки: первая презентация, пакеты, кейсы за баллы */}
       <Promos />

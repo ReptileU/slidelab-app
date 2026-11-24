@@ -94,6 +94,9 @@ class PointsReason(StrEnum):
     BOX_PRIZE = "box_prize"  # баллы выпали в пакете за баллы
     EXPIRED = "expired"  # сгорели: полгода без покупок
     GRANT = "grant"  # начислил менеджер
+    REFERRAL = "referral"  # приглашённый друг оплатил первую покупку
+    REFERRAL_BONUS = "referral_bonus"  # бонус за 3 / 10 оплативших друзей
+    REFERRAL_WELCOME = "referral_welcome"  # пришёл по ссылке друга: доплата к баллам за первую покупку
 
 
 class LedgerReason(StrEnum):

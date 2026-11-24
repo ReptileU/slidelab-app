@@ -204,3 +204,15 @@ export interface Gift {
   link: string;
   created_at: string;
 }
+
+/** Пригласить друга (/me/referrals). */
+export interface Referrals {
+  link: string;
+  inviter_points: number;
+  friend_points: number;
+  paid: number;
+  earned: number;
+  milestones: { friends: number; points: number; reached: boolean }[];
+  friends: { name: string; joined_at: string; paid_at: string | null; points: number }[];
+  invited: boolean;
+}

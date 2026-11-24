@@ -90,6 +90,18 @@ class PointsLedger(CreatedAtMixin, Base):
     payment_id: Mapped[int | None] = mapped_column(ForeignKey("payments.id"))
 
 
+class Referral(CreatedAtMixin, Base):
+    """Друг пришёл по ссылке. Награда пригласившему — когда друг впервые заплатит деньгами (paid_at)."""
+
+    __tablename__ = "referrals"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    inviter_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    friend_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True)  # у человека один пригласивший
+    paid_at: Mapped[datetime | None]
+    points: Mapped[int] = mapped_column(default=0, server_default="0")  # сколько получил пригласивший
+
+
 class PackageLedger(CreatedAtMixin, Base):
     """Каждое движение по пакету отдельной строкой — остаток всегда можно пересчитать."""
 

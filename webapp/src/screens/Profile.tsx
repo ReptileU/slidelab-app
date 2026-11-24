@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CircleHelp, Coins, FileText, Globe, Megaphone, MessageCircle, Palette, Star, SunMoon } from "lucide-react";
+import { CircleHelp, Coins, FileText, Globe, Megaphone, MessageCircle, Palette, Star, SunMoon, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -56,6 +56,13 @@ export function Profile() {
         <Wallet />
         <div className="mt-12">
           <Group>
+            <Cell
+              icon={<UserPlus />}
+              title={t("ref_cell")}
+              subtitle={t("ref_cell_s")}
+              chevron
+              onClick={() => nav("/invite")}
+            />
             <Cell
               icon={<Coins />}
               title={t("pts_balance")}

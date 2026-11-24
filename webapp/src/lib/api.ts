@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
+import type { BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
 
 /** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
 export interface MyReview {
@@ -85,6 +85,7 @@ export const api = {
   lucky: () => request<LuckyInfo>("/packages/lucky"),
   luckyOpen: () => post<LuckyPrize>("/packages/lucky/open"),
   points: () => request<PointsInfo>("/packages/points"),
+  referrals: () => request<Referrals>("/me/referrals"),
   pointsOpen: (key: PointsBoxKey) => post<PointsResult>(`/packages/points/${key}`),
   ask: (text: string) => post("/support/messages", { text }),
   review: (stars: number, text: string, orderId?: number) =>

@@ -9,6 +9,7 @@ from slidelab.core.models.billing import (
     PointsLedger,
     PriceRule,
     Promo,
+    Referral,
     UserPackage,
 )
 from slidelab.core.models.content import FaqItem, PortfolioWork, Review, ShowcaseStyle, SupportMessage
@@ -32,6 +33,7 @@ __all__ = [
     "PortfolioWork",
     "PriceRule",
     "Promo",
+    "Referral",
     "Review",
     "Revision",
     "ShowcaseStyle",
