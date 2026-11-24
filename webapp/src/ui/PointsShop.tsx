@@ -3,7 +3,7 @@ import { Coins, Lock } from "lucide-react";
 import { useLang, useT } from "../lib/app";
 import { formatDate } from "../lib/i18n";
 import type { PointsBoxKey, PointsInfo } from "../lib/types";
-import { CaseArt, PrizeTile, TIER } from "./PointsCase";
+import { CaseArt, TIER } from "./PointsCase";
 
 /**
  * Баллы за покупки и три кейса за баллы на вкладке «Пакеты».
@@ -45,15 +45,10 @@ export function PointsShop({ info, onSelect }: { info: PointsInfo; onSelect: (ke
       <div className="pts-cases">
         {info.boxes.map((b) => {
           const can = info.points >= b.price;
-          // лучший приз кейса — тот, что реже всего выпадает
-          const best = [...b.prizes].sort((x, y) => x.percent - y.percent)[0]!;
           return (
             <button key={b.key} className={`pts-case ${b.key}${can ? " can" : ""}`} onClick={() => onSelect(b.key)}>
-              <CaseArt tier={b.key} size={78} />
+              <CaseArt tier={b.key} size={96} />
               <span className="pts-case-name">{t(TIER[b.key])}</span>
-              <span className="pts-case-best">
-                <PrizeTile p={best} />
-              </span>
               <span className="pts-case-price tabular">
                 {can ? <Coins size={14} /> : <Lock size={13} />} {b.price}
               </span>

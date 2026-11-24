@@ -1823,3 +1823,88 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 .pa-pack.vip{background:linear-gradient(160deg,#3a2a06,#0b0904);box-shadow:inset 0 0 0 1px rgba(243,205,99,.6),0 4px 12px rgba(243,205,99,.35)}
 .pa-pack.vip b{background:linear-gradient(180deg,#fff3c4,#e2b44d);-webkit-background-clip:text;background-clip:text;color:transparent}
 .pa-pack.vip em{color:#f3cd63}
+
+/* ---------- карта скидки: обычная скидочная карточка с отрывным корешком ---------- */
+.dtag{--a:#ff5a5f;--b:#ff2d55;--c:#c3123a;position:relative;display:flex;width:100%;max-width:360px;margin:0 auto;aspect-ratio:1.75;
+  filter:drop-shadow(0 18px 36px color-mix(in srgb,var(--b) 40%,transparent))}
+.dtag.cool{--a:#ff9f43;--b:#ff6b2c;--c:#d9480f}
+.dtag.hot{--a:#d946ef;--b:#a21caf;--c:#6b21a8}
+.dtag-main,.dtag-stub{position:relative;overflow:hidden}
+.dtag-main{flex:1;border-radius:18px 6px 6px 18px;padding:16px 18px;display:flex;flex-direction:column;color:#fff;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 10px,transparent 10px 22px),radial-gradient(120% 120% at 0% 0%,var(--a),var(--b) 55%,var(--c));
+  -webkit-mask:radial-gradient(circle 9px at 100% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 9px at 100% 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+  mask:radial-gradient(circle 9px at 100% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 9px at 100% 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
+.dtag-stub{width:24%;border-radius:6px 18px 18px 6px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:14px 0;
+  background:linear-gradient(180deg,#fff,#f1f1f4);border-left:2px dashed color-mix(in srgb,var(--b) 55%,#fff);
+  -webkit-mask:radial-gradient(circle 9px at 0 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 9px at 0 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+  mask:radial-gradient(circle 9px at 0 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 9px at 0 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
+.dtag-shine{position:absolute;inset:0;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.4),transparent);
+  transform:translateX(-140%) skewX(-18deg);animation:coupon-shine 1.6s .5s ease-out both}
+.dtag-kind{font-size:12px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;opacity:.9}
+.dtag-pct{display:flex;align-items:flex-start;margin-top:auto;font-size:clamp(58px,19vw,84px);font-weight:900;letter-spacing:-.05em;line-height:.85;
+  text-shadow:0 3px 0 rgba(0,0,0,.12),0 8px 24px rgba(0,0,0,.18)}
+.dtag-minus{font-size:.55em;margin-top:.14em;margin-right:.03em}
+.dtag-sign{font-size:.48em;margin-top:.1em;margin-left:.04em}
+.dtag-for{margin-top:8px;font-size:13px;font-weight:700;opacity:.92}
+.dtag-holder{position:absolute;right:16px;top:14px;font-size:11px;font-weight:700;letter-spacing:.06em;opacity:.75;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dtag-hole{width:14px;height:14px;border-radius:50%;background:#1c1c1e;box-shadow:inset 0 2px 3px rgba(0,0,0,.5)}
+.dtag-brand{writing-mode:vertical-rl;transform:rotate(180deg);font-size:11px;font-weight:900;letter-spacing:.24em;color:var(--c)}
+.dtag-bars{width:58%;height:22%;background:repeating-linear-gradient(90deg,#1c1c1e 0 2px,transparent 2px 4px,#1c1c1e 4px 5px,transparent 5px 8px,#1c1c1e 8px 11px,transparent 11px 12px)}
+.disc-badge{background:linear-gradient(135deg,#ff5a5f,#c3123a)}
+.pa-disc{--a:#ff5a5f;--b:#ff2d55;--c:#c3123a;justify-content:flex-start;padding-left:9%;color:#fff;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.35);
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.08) 0 5px,transparent 5px 11px),linear-gradient(135deg,var(--a),var(--b) 55%,var(--c));
+  -webkit-mask:radial-gradient(circle 4px at 76% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 4px at 76% 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+  mask:radial-gradient(circle 4px at 76% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 4px at 76% 100%,#0000 98%,#000) bottom/100% 51% no-repeat}
+.pa-disc.cool{--a:#ff9f43;--b:#ff6b2c;--c:#d9480f}
+.pa-disc.hot{--a:#d946ef;--b:#a21caf;--c:#6b21a8;color:#fff}
+.pa-disc i{position:absolute;left:76%;right:0;top:0;bottom:0;width:auto;height:auto;border-radius:0;background:#fff;border-left:1.5px dashed rgba(0,0,0,.25)}
+
+/* ---------- сундуки кейсов (картинки public/cases) ---------- */
+.chest{--g:#ff9a3d;position:relative;display:block;width:var(--cs);height:var(--cs);flex:none}
+.chest.medium{--g:#7cc4ff}
+.chest.large{--g:#ffd24a}
+.chest img{position:relative;z-index:2;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 calc(var(--cs) * .08) calc(var(--cs) * .08) rgba(0,0,0,.55));
+  animation:chestFloat 3.2s ease-in-out infinite;user-select:none;-webkit-user-drag:none}
+@keyframes chestFloat{50%{transform:translateY(-4%)}}
+.chest-glow{position:absolute;inset:12%;z-index:1;border-radius:50%;background:radial-gradient(closest-side,var(--g),transparent);opacity:.55;filter:blur(calc(var(--cs) * .08));
+  animation:chestPulse 3.2s ease-in-out infinite}
+@keyframes chestPulse{50%{opacity:.85;transform:scale(1.08)}}
+.chest-rays{position:absolute;inset:-35%;z-index:0;opacity:.0;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--g) 55%,transparent) 0 6deg,transparent 6deg 22deg);
+  -webkit-mask:radial-gradient(closest-side,#000 25%,transparent 72%);mask:radial-gradient(closest-side,#000 25%,transparent 72%);
+  animation:chestRays 18s linear infinite}
+.case-hero .chest-rays{opacity:.55}
+.chest.large .chest-rays{opacity:.35}
+.case-hero .chest.large .chest-rays{opacity:.75}
+@keyframes chestRays{to{transform:rotate(360deg)}}
+.chest-spark{position:absolute;z-index:3;width:calc(var(--cs) * .05);height:calc(var(--cs) * .05);opacity:0;
+  background:radial-gradient(circle,#fff 0 20%,var(--g) 40%,transparent 70%);
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:chestSpark 2.6s ease-in-out infinite}
+.chest-spark.s1{left:14%;top:22%}
+.chest-spark.s2{right:12%;top:34%;animation-delay:.9s}
+.chest-spark.s3{left:58%;top:10%;animation-delay:1.7s}
+@keyframes chestSpark{0%,100%{opacity:0;transform:scale(.3) rotate(0)}40%{opacity:1;transform:scale(1.3) rotate(45deg)}}
+.chest.shake img{animation:chestShake .35s ease-in-out infinite}
+@keyframes chestShake{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg) translateY(-2%)}75%{transform:rotate(5deg) translateY(-2%)}}
+
+/* витрина кейсов */
+.pts-case{overflow:hidden;padding-top:6px}
+.pts-case::before{content:"";position:absolute;left:50%;top:-30%;width:140%;aspect-ratio:1;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,154,61,.28),transparent);pointer-events:none}
+.pts-case.medium::before{background:radial-gradient(closest-side,rgba(124,196,255,.28),transparent)}
+.pts-case.large::before{background:radial-gradient(closest-side,rgba(255,210,74,.35),transparent)}
+.pts-case .chest{margin:-4px 0 -8px}
+.pts-case-best{display:none}
+
+/* страница кейса */
+.case-hero{margin:0 0 8px;gap:0}
+.case-hero h2{margin-top:-6px;font-size:26px;text-shadow:0 4px 20px rgba(0,0,0,.6)}
+.case-sheet.small{background:radial-gradient(90% 55% at 50% 12%,rgba(255,140,50,.35),transparent 70%),radial-gradient(60% 40% at 50% 100%,rgba(255,140,50,.08),transparent),#0b0907}
+.case-sheet.medium{background:radial-gradient(90% 55% at 50% 12%,rgba(90,160,255,.32),transparent 70%),radial-gradient(60% 40% at 50% 100%,rgba(90,160,255,.08),transparent),#07090d}
+.case-sheet.large{background:radial-gradient(90% 55% at 50% 12%,rgba(255,200,60,.38),transparent 70%),radial-gradient(60% 40% at 50% 100%,rgba(255,200,60,.1),transparent),#0b0904}
+.case-roll{background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,.3));box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),inset 0 10px 30px rgba(0,0,0,.6)}
+.ptile{background:radial-gradient(90% 70% at 50% 110%,color-mix(in srgb,var(--r) 55%,transparent),transparent),linear-gradient(180deg,#24242c,#121216)}
+.ptile::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,rgba(255,255,255,.12),transparent 40%);pointer-events:none}
+.ptile.legend{animation:legendGlow 2.4s ease-in-out infinite}
+@keyframes legendGlow{50%{box-shadow:inset 0 0 0 1px rgba(255,210,74,.6),inset 0 -3px 0 var(--r),0 0 18px rgba(255,210,74,.35)}}
+.dtag-main{text-align:left;align-items:flex-start}

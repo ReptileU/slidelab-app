@@ -41,8 +41,8 @@ function rarity(percent: number): Rarity {
 function PrizeArt({ prize, value }: { prize: BoxPrize; value: number }) {
   if (prize === "discount")
     return (
-      <span className={`pa-disc${value >= 50 ? " hot" : ""}`}>
-        <i />−{value}%
+      <span className={`pa-disc ${value >= 50 ? "hot" : value >= 30 ? "mid" : "cool"}`}>
+        −{value}%<i />
       </span>
     );
   if (prize === "one" || prize === "coupons")
@@ -74,17 +74,20 @@ export function PrizeTile({ p, label }: { p: Prize; label?: string }) {
 }
 
 /** Обложка кейса: коробка с крышкой в цвете уровня. */
-export function CaseArt({ tier, size = 96 }: { tier: PointsBoxKey; size?: number }) {
+export function CaseArt({ tier, size = 96, shake = false }: { tier: PointsBoxKey; size?: number; shake?: boolean }) {
   return (
-    <span className={`case-art ${tier}`} style={{ ["--cs" as string]: `${size}px` }} aria-hidden>
-      <span className="case-lid" />
-      <span className="case-body">
-        <span className="case-lock" />
-      </span>
-      <span className="case-glow" />
+    <span className={`chest ${tier}${shake ? " shake" : ""}`} style={{ ["--cs" as string]: `${size}px` }} aria-hidden>
+      <span className="chest-rays" />
+      <span className="chest-glow" />
+      <img src={`./cases/case-${CASE_IMG[tier]}.webp`} alt="" draggable={false} />
+      <span className="chest-spark s1" />
+      <span className="chest-spark s2" />
+      <span className="chest-spark s3" />
     </span>
   );
 }
+
+const CASE_IMG: Record<PointsBoxKey, string> = { small: "bronze", medium: "silver", large: "gold" };
 
 const CELL = 112; // ширина ячейки ленты + зазор, px
 const WIN_AT = 42; // на какой ячейке остановится лента
@@ -211,7 +214,7 @@ export function CaseSheet({
       </div>
 
       <div className="case-hero">
-        <CaseArt tier={box.key} size={120} />
+        <CaseArt tier={box.key} size={190} shake={busy && !spinning && !result} />
         <h2>{t(TIER[box.key])}</h2>
       </div>
 
