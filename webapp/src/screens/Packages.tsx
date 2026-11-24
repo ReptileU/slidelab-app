@@ -1,6 +1,6 @@
 import { Gift } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { api, ApiError } from "../lib/api";
@@ -13,10 +13,10 @@ import { Section, Skeleton, Toast } from "../ui";
 import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
 import { PackCard } from "../ui/PackCard";
 import { PaySheet } from "../ui/PaySheet";
+import { CaseSheet } from "../ui/PointsCase";
 import { PointsShop } from "../ui/PointsShop";
 
 /** Картинка-фон пакета: чем дороже пакет, тем статуснее (серебро → платина → золото). */
-const PACK_ART: Record<string, string> = { week: "p0", month: "p1b", vip: "p2" };
 
 export function Packages() {
   const t = useT();
@@ -26,14 +26,26 @@ export function Packages() {
   const catalog = useCatalog();
   const nav = useNavigate();
   // gift — пакет покупают в подарок: после оплаты ссылка для друга (в боте и в кошельке)
-  const [buying, setBuying] = useState<{ code: BuyPlan; price: number; gift?: boolean } | null>(null);
+  const [buying, setBuying] = useState<{
+    code: BuyPlan;
+    price: number;
+    gift?: boolean;
+  } | null>(null);
   const [reveal, setReveal] = useState<LuckyPrize | null>(null);
   // пакет за баллы: что выпало, надпись на пакете и остаток баллов
-  const [ptsReveal, setPtsReveal] = useState<{ prize: LuckyPrize; name: string; left: number } | null>(null);
-  const [ptsBusy, setPtsBusy] = useState<PointsBoxKey | null>(null);
-  const points = useQuery({ queryKey: ["points"], queryFn: api.points, retry: false });
+  const [caseKey, setCaseKey] = useState<PointsBoxKey | null>(null);
+  const points = useQuery({
+    queryKey: ["points"],
+    queryFn: api.points,
+    retry: false,
+  });
   const [waitBox, setWaitBox] = useState(false); // звёзды оплачены — ждём, пока сервер начислит бонус-пакет
-  const lucky = useQuery({ queryKey: ["lucky"], queryFn: api.lucky, retry: false, refetchInterval: waitBox ? 1500 : false });
+  const lucky = useQuery({
+    queryKey: ["lucky"],
+    queryFn: api.lucky,
+    retry: false,
+    refetchInterval: waitBox ? 1500 : false,
+  });
 
   // С плитки на главной (?lucky=1) — сразу прокручиваем к бонус-пакету
   const luckyRef = useRef<HTMLDivElement>(null);
@@ -41,7 +53,14 @@ export function Packages() {
   const toLucky = params.get("lucky") === "1";
   useEffect(() => {
     if (toLucky && lucky.data && catalog.data) {
-      const id = setTimeout(() => luckyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+      const id = setTimeout(
+        () =>
+          luckyRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        350,
+      );
       return () => clearTimeout(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -52,7 +71,14 @@ export function Packages() {
   const toPoints = params.get("points") === "1";
   useEffect(() => {
     if (toPoints && points.data && catalog.data) {
-      const id = setTimeout(() => pointsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 350);
+      const id = setTimeout(
+        () =>
+          pointsRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          }),
+        350,
+      );
       return () => clearTimeout(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,21 +90,6 @@ export function Packages() {
       setReveal(await api.luckyOpen());
     } catch (e) {
       await alert(e instanceof ApiError ? e.message : t("error"));
-    }
-  }
-
-  async function openPoints(key: PointsBoxKey) {
-    if (ptsBusy) return;
-    setPtsBusy(key);
-    try {
-      haptic.tap();
-      const r = await api.pointsOpen(key);
-      setPtsReveal({ prize: { prize: r.prize, count: r.value }, name: t(`pts_${key}` as Key), left: r.points });
-      void qc.invalidateQueries({ queryKey: ["points"] });
-    } catch (e) {
-      await alert(e instanceof ApiError ? e.message : t("error"));
-    } finally {
-      setPtsBusy(null);
     }
   }
 
@@ -113,38 +124,78 @@ export function Packages() {
 
       <Section footer={t("pkg_note")}>
         <div className="stack gap-12 packs-grid">
-          {!c && [0, 1, 2].map((i) => <Skeleton key={i} height={230} radius={24} />)}
+          {!c &&
+            [0, 1, 2].map((i) => <Skeleton key={i} height={230} radius={24} />)}
           {c?.plans.map((p) => {
             const single = c.prices.s20 * p.count;
             const save = Math.round((1 - p.price / single) * 100);
-            const perks = [p.notes_free && t("pkg_notes"), p.priority && t("pkg_priority")].filter(Boolean);
+            const perks = [
+              p.notes_free && t("pkg_notes"),
+              p.priority && t("pkg_priority"),
+            ].filter(Boolean);
             return (
-              <div key={p.code} className={`pack pack-${p.code}`}>
-                <img className="pack-bg" src={`./packs/${PACK_ART[p.code] ?? "p0"}.webp`} alt="" draggable={false} />
-                <div className="pack-body">
-                  <div className="row" style={{ gap: 6 }}>
-                    {p.code === "vip" && <span className="pack-chip vip">VIP</span>}
-                    <span className="pack-chip">{t("pkg_save", { pct: save })}</span>
-                    <span className="pack-chip ghost">{t("pkg_days", { days: p.days })}</span>
+              <div key={p.code} className={`env env-${p.code}`}>
+                {/* конверт: сзади стенка, из неё выглядывает карта пакета, спереди — карман с клапаном и печатью */}
+                <div className="env-box">
+                  <div className="env-back" />
+                  <EnvCard>
+                    <PackCard
+                      pkg={{
+                        plan: p.code,
+                        left: p.count,
+                        total: p.count,
+                        expires_at: new Date(
+                          Date.now() + p.days * 864e5,
+                        ).toISOString(),
+                      }}
+                      holder={me.data?.first_name || "SlideLab"}
+                      hint={false}
+                      still
+                    />
+                  </EnvCard>
+                  <div className="env-pocket">
+                    <span className="env-seal">S</span>
+                    <div className="env-front">
+                      <div className="env-chips">
+                        {p.code === "vip" && (
+                          <span className="pack-chip vip">VIP</span>
+                        )}
+                        <span className="pack-chip">
+                          {t("pkg_save", { pct: save })}
+                        </span>
+                        <span className="pack-chip ghost">
+                          {t("pkg_days", { days: p.days })}
+                        </span>
+                      </div>
+                      <div className="pack-count">
+                        <span className="pack-num tabular">{p.count}</span>
+                        <span className="pack-unit">
+                          {presWord(lang, p.count)}
+                        </span>
+                      </div>
+                      <div className="pack-per">
+                        {t("per_one", {
+                          price: `${money(Math.round(p.price / p.count))} ${t("sum")}`,
+                        })}
+                      </div>
+                      {perks.length > 0 && (
+                        <div className="pack-perks">{perks.join(" · ")}</div>
+                      )}
+                    </div>
                   </div>
-                  <div className="pack-count">
-                    <span className="pack-num tabular">{p.count}</span>
-                    <span className="pack-unit">{presWord(lang, p.count)}</span>
-                  </div>
-                  <div className="pack-per">
-                    {t("per_one", { price: `${money(Math.round(p.price / p.count))} ${t("sum")}` })}
-                  </div>
-                  {perks.length > 0 && <div className="pack-perks">{perks.join(" · ")}</div>}
-                  <button className="pack-buy" onClick={() => setBuying(p)}>
-                    <span>{t("buy")}</span>
-                    <span className="tabular">
-                      {money(p.price)} {t("sum")}
-                    </span>
-                  </button>
-                  <button className="pack-gift" onClick={() => setBuying({ ...p, gift: true })}>
-                    <Gift size={16} /> {t("pkg_gift_buy")}
-                  </button>
                 </div>
+                <button className="pack-buy" onClick={() => setBuying(p)}>
+                  <span>{t("buy")}</span>
+                  <span className="tabular">
+                    {money(p.price)} {t("sum")}
+                  </span>
+                </button>
+                <button
+                  className="pack-gift"
+                  onClick={() => setBuying({ ...p, gift: true })}
+                >
+                  <Gift size={16} /> {t("pkg_gift_buy")}
+                </button>
               </div>
             );
           })}
@@ -165,7 +216,13 @@ export function Packages() {
       {points.data && (
         <Section title={t("pts_title")}>
           <div ref={pointsRef} />
-          <PointsShop info={points.data} onOpen={(k) => void openPoints(k)} busy={ptsBusy} />
+          <PointsShop
+            info={points.data}
+            onSelect={(k) => {
+              haptic.tap();
+              setCaseKey(k);
+            }}
+          />
         </Section>
       )}
 
@@ -174,8 +231,12 @@ export function Packages() {
         title={buying ? (buying.gift ? "🎁 " : "") + planName(buying.code) : ""}
         amount={buying?.price ?? 0}
         onClose={() => setBuying(null)}
-        createInvoice={(provider) => api.packageInvoice(buying!.code, provider, !!buying?.gift)}
-        sendReceipt={(image) => api.packageReceipt(buying!.code, image, !!buying?.gift)}
+        createInvoice={(provider) =>
+          api.packageInvoice(buying!.code, provider, !!buying?.gift)
+        }
+        sendReceipt={(image) =>
+          api.packageReceipt(buying!.code, image, !!buying?.gift)
+        }
         onReceipt={() => setToast(t("pay_shot_sent"))}
         onPaid={() => {
           if (buying?.gift) {
@@ -205,14 +266,17 @@ export function Packages() {
           }}
         />
       )}
-      {ptsReveal && (
-        <LuckyReveal
-          prize={ptsReveal.prize}
-          name={ptsReveal.name}
-          points={ptsReveal.left}
-          onDone={() => {
-            setPtsReveal(null);
-            void qc.invalidateQueries({ queryKey: ["me"] });
+      {caseKey && points.data && (
+        <CaseSheet
+          box={points.data.boxes.find((b) => b.key === caseKey)!}
+          points={points.data.points}
+          onOpen={() => api.pointsOpen(caseKey)}
+          onClose={(opened) => {
+            setCaseKey(null);
+            if (opened) {
+              void qc.invalidateQueries({ queryKey: ["points"] });
+              void qc.invalidateQueries({ queryKey: ["me"] });
+            }
           }}
         />
       )}
@@ -220,3 +284,29 @@ export function Packages() {
     </div>
   );
 }
+
+/** Карта пакета в конверте: рисуется в натуральную ширину и уменьшается под конверт, чтобы текст не переносился. */
+function EnvCard({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [k, setK] = useState(0.8);
+  useEffect(() => {
+    const box = ref.current?.parentElement;
+    if (!box) return;
+    const fit = () => setK((box.clientWidth * 0.86) / ENV_CARD_W);
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div
+      className="env-card"
+      ref={ref}
+      style={{ ["--k" as string]: k, width: ENV_CARD_W }}
+    >
+      {children}
+    </div>
+  );
+}
+
+const ENV_CARD_W = 360;

@@ -9,6 +9,7 @@ import { Home } from "./screens/Home";
 import { LangPick } from "./screens/LangPick";
 import { Button, Empty } from "./ui";
 import { NowBar } from "./ui/NowBar";
+import { PointsFly, usePointsGain } from "./ui/PointsFly";
 
 // Главная — в основной сборке, остальные экраны догружаются при переходе (быстрее первый экран)
 const Done = lazy(() => import("./screens/Done").then((m) => ({ default: m.Done })));
@@ -75,13 +76,24 @@ export function App() {
 function TabBar({ activeOrders, vouchers }: { activeOrders: number; vouchers: number }) {
   const t = useT();
   const nav = useNavigate();
-  const tab = ({ to, icon: Icon, label, badge }: { to: string; icon: typeof HomeIcon; label: string; badge?: number }) => (
+  const pts = usePointsGain();
+  const tab = ({
+    to,
+    icon: Icon,
+    label,
+    badge,
+  }: {
+    to: string;
+    icon: typeof HomeIcon;
+    label: string;
+    badge?: number | string;
+  }) => (
     <NavLink key={to} to={to} end replace onClick={() => haptic.select()}>
       <span className="tab-in">
         <Icon strokeWidth={1.9} />
         <span>{label}</span>
       </span>
-      {!!badge && <span className="dot">{badge}</span>}
+      {!!badge && <span className={`dot${typeof badge === "string" ? " gold" : ""}`}>{badge}</span>}
     </NavLink>
   );
   return (
@@ -110,7 +122,8 @@ function TabBar({ activeOrders, vouchers }: { activeOrders: number; vouchers: nu
         {/* подпись видна только в боковом меню на широком экране */}
         <span className="tab-plus-label">{t("cta_order")}</span>
       </button>
-      {tab({ to: "/packages", icon: Package, label: t("tab_packages") })}
+      {tab({ to: "/packages", icon: Package, label: t("tab_packages"), badge: pts.gain ? `+${pts.gain}` : undefined })}
+      {pts.flying > 0 && <PointsFly gain={pts.flying} onDone={pts.done} />}
       {tab({ to: "/profile", icon: UserRound, label: t("tab_profile") })}
     </nav>
   );

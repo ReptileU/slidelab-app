@@ -43,37 +43,44 @@ class PointsBox:
 
 
 # Призы: ONE — 1 купон, COUPONS — несколько купонов (без срока), TWO — пакет «Неделя», FOUR — пакет «Месяц»,
-# DISCOUNT — скидка % на следующий заказ, POINTS — часть баллов обратно. На 100 баллов в среднем:
-# малый ≈ 0,75 презентации, средний ≈ 0,82, большой ≈ 0,88 — копить выгоднее.
+# DISCOUNT — скидка % на следующий заказ, POINTS — часть баллов обратно.
+# Скидка — самый частый приз: купон — это целая презентация, а со скидкой клиент всё равно платит.
+# В пересчёте на 100 баллов (скидка N% ≈ N/100 презентации): малый ≈ 0,44, средний ≈ 0,47, большой ≈ 0,57 —
+# копить выгоднее, чем открывать сразу.
+DISCOUNT_MAX = 70  # потолок сложенных карт скидки, %
+
 BOXES: dict[str, PointsBox] = {
     "small": PointsBox(
         "small",
         100,
         (
-            PointsPrize(BoxPrize.ONE, 1, 550),
-            PointsPrize(BoxPrize.TWO, 2, 100),
-            PointsPrize(BoxPrize.DISCOUNT, 30, 200),
-            PointsPrize(BoxPrize.POINTS, 60, 150),
+            PointsPrize(BoxPrize.DISCOUNT, 20, 450),
+            PointsPrize(BoxPrize.DISCOUNT, 30, 250),
+            PointsPrize(BoxPrize.ONE, 1, 150),
+            PointsPrize(BoxPrize.POINTS, 60, 100),
+            PointsPrize(BoxPrize.TWO, 2, 50),
         ),
     ),
     "medium": PointsBox(
         "medium",
         250,
         (
-            PointsPrize(BoxPrize.COUPONS, 2, 400),
-            PointsPrize(BoxPrize.TWO, 2, 250),
-            PointsPrize(BoxPrize.COUPONS, 3, 250),
-            PointsPrize(BoxPrize.DISCOUNT, 50, 100),
+            PointsPrize(BoxPrize.DISCOUNT, 30, 300),
+            PointsPrize(BoxPrize.DISCOUNT, 50, 250),
+            PointsPrize(BoxPrize.COUPONS, 2, 250),
+            PointsPrize(BoxPrize.TWO, 2, 150),
+            PointsPrize(BoxPrize.COUPONS, 3, 50),
         ),
     ),
     "large": PointsBox(
         "large",
         500,
         (
-            PointsPrize(BoxPrize.COUPONS, 3, 150),
-            PointsPrize(BoxPrize.FOUR, 4, 400),
-            PointsPrize(BoxPrize.COUPONS, 5, 350),
-            PointsPrize(BoxPrize.COUPONS, 6, 100),
+            PointsPrize(BoxPrize.DISCOUNT, 50, 350),
+            PointsPrize(BoxPrize.COUPONS, 3, 200),
+            PointsPrize(BoxPrize.FOUR, 4, 250),
+            PointsPrize(BoxPrize.COUPONS, 5, 150),
+            PointsPrize(BoxPrize.COUPONS, 6, 50),
         ),
     ),
 }
@@ -161,7 +168,8 @@ class PointsService:
             package = await PackageService(self.session, self.clock).activate(user.id, plan, LedgerReason.BONUS)
             record.user_package_id = package.id
         elif prize.code is BoxPrize.DISCOUNT:
-            user.discount_pct = max(user.discount_pct or 0, prize.value)  # лучшая скидка не теряется
+            # карты скидки складываются (30% + 20% = 50%), но не больше DISCOUNT_MAX
+            user.discount_pct = min((user.discount_pct or 0) + prize.value, DISCOUNT_MAX)
         elif prize.code is BoxPrize.POINTS:
             user.points += prize.value
             self.session.add(PointsLedger(user_id=user.id, delta=prize.value, reason=PointsReason.BOX_PRIZE))
