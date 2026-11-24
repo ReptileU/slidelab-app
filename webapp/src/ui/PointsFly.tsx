@@ -8,6 +8,7 @@ import { playTick } from "../lib/sound";
 import { haptic } from "../lib/tg";
 import { pointsWord } from "../lib/words";
 
+export const DEMO = "sl_points_fly_demo";
 const SEEN = "sl_points_seen"; // сколько баллов клиент уже «видел» на вкладке «Пакеты»
 
 function readSeen(): number | null {
@@ -40,6 +41,23 @@ export function usePointsGain(): { gain: number; flying: number; done: () => voi
   const flown = useRef<number | null>(null);
 
   useEffect(() => {
+    // демо (/demo → «Полёт баллов»): показать полёт без настоящей покупки
+    let demo = 0;
+    try {
+      demo = Number(sessionStorage.getItem(DEMO) || 0);
+    } catch {
+      /* нет памяти — нет демо */
+    }
+    if (demo > 0 && pathname !== "/packages" && pathname !== "/demo") {
+      try {
+        sessionStorage.removeItem(DEMO);
+      } catch {
+        /* ignore */
+      }
+      setGain(demo);
+      setFlying(demo);
+      return;
+    }
     if (points === undefined) return;
     const seen = readSeen();
     if (pathname === "/packages") {

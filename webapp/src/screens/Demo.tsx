@@ -9,6 +9,7 @@ import { Button, Section, Segmented } from "../ui";
 import { DiscountCard } from "../ui/Discount";
 import { LuckyCard, LuckyReveal } from "../ui/LuckyPack";
 import { CaseSheet } from "../ui/PointsCase";
+import { DEMO as FLY_DEMO } from "../ui/PointsFly";
 import { PointsShop } from "../ui/PointsShop";
 import { PackCard } from "../ui/PackCard";
 import { CouponTear } from "../ui/CouponTear";
@@ -169,6 +170,21 @@ export function Demo() {
           onClose={() => setDemoCase(null)}
         />
       )}
+      <Section title="Баллы после оплаты">
+        <Button
+          kind="tinted"
+          onClick={() => {
+            try {
+              sessionStorage.setItem(FLY_DEMO, "50");
+            } catch {
+              /* ignore */
+            }
+            nav("/");
+          }}
+        >
+          Полёт баллов во вкладку «Пакеты»
+        </Button>
+      </Section>
       <Section title="Карта скидки">
         <DiscountCard pct={30} holder={holder} />
         <div className="mt-16">
