@@ -2064,3 +2064,12 @@ body::after{content:"";position:fixed;inset:0 0 auto;height:var(--safe-top);z-in
 /* на карте скидки крупное −N% не касается подписи */
 .dtag-for{margin-top:12px}
 .dtag-pct{font-size:clamp(54px,16vw,78px);line-height:.92}
+
+/* ---------- бесплатная обложка: короткая заявка ---------- */
+.hero-free{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  background:color-mix(in srgb,#10b981 18%,transparent);color:inherit;box-shadow:inset 0 0 0 1px rgba(16,185,129,.55)}
+.hero-free-tag{padding:3px 9px;border-radius:99px;background:#10b981;color:#fff;font-size:12.5px;font-weight:800;white-space:nowrap}
+.qc-hero{margin:8px 0 20px}
+.qc-hero p{margin:6px 0 0;font-size:15px;line-height:1.4}
+.qc-badge{display:inline-block;margin-bottom:10px;padding:5px 12px;border-radius:99px;background:linear-gradient(135deg,#34d399,#059669);
+  color:#fff;font-size:14px;font-weight:900;letter-spacing:.02em;box-shadow:0 8px 24px rgba(16,185,129,.35)}

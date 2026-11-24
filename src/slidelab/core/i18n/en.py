@@ -157,6 +157,10 @@ TEXTS: dict[str, str] = {
     "text_label": "slide text",
     "notes_label": "speech for the talk",
     # --- request received ---
+    "order_created_quick": "⟦order⟧<b>Request #{id} received</b>\nWe're making your free cover — I'll send it here. Nothing to pay now.\nLike the style — order the whole deck and pick the length and deadline then.",
+    "cover_ready_quick": "⟦cover⟧<b>Your free cover · #{id}</b>\nLike the style? Order the whole deck — topic and style are already filled in, just pick the length and deadline.",
+    "btn_cover_complete": "✨ Love it — order the whole deck",
+    "cover_quick_app": "Great! Just pick the length and deadline — open the form below, topic and style are already filled in.",
     "order_created": ("⟦order⟧<b>Order #{id} received</b>\nWe're making a free cover — I'll send it here.{package}"),
     "order_created_full": "⟦order⟧<b>Order #{id} received</b>\nYou chose the whole presentation right away. Pay and we start without waiting for a cover.{package}",
     "order_created_full_paid": "⟦order⟧<b>Order #{id} received</b>\nWe are making the whole presentation right away — I'll send it here.{package}",

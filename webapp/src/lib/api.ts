@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
+import type { QuickCover, BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
 
 /** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
 export interface MyReview {
@@ -46,6 +46,8 @@ export const api = {
   createOrder: (draft: OrderDraft, key: string) => post<Order>("/orders", draft, { "Idempotency-Key": key }),
   orders: () => request<Order[]>("/orders"),
   order: (id: number) => request<Order>(`/orders/${id}`),
+  quickCover: (body: QuickCover, key: string) => post<Order>("/orders/quick-cover", body, { "Idempotency-Key": key }),
+  completeOrder: (id: number, draft: OrderDraft) => post<Order>(`/orders/${id}/complete`, draft),
   approveCover: (id: number) => post<Order>(`/orders/${id}/approve-cover`),
   hideOrder: (id: number) => post<{ ok: boolean }>(`/orders/${id}/hide`),
   cancelOrder: (id: number) => post<Order>(`/orders/${id}/cancel`),

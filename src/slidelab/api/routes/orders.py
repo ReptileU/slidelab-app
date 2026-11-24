@@ -38,7 +38,7 @@ from slidelab.core.enums import AttachmentKind, Lang, OrderSource, OrderStatus, 
 from slidelab.core.i18n import guess_lang, t
 from slidelab.core.models import Attachment, Coupon, Order, OrderEvent, ShowcaseStyle, User
 from slidelab.core.models.order import REVISION_MAX
-from slidelab.core.schemas.order import OrderDraft
+from slidelab.core.schemas.order import OrderDraft, QuickCoverDraft
 from slidelab.core.services import pricing
 from slidelab.core.services.orders import OrderService
 from slidelab.core.services.payments import PaymentService
@@ -87,6 +87,8 @@ async def _out(session: AsyncSession, orders: list[Order], *, with_events: bool 
             deadline=o.deadline,
             due_at=o.due_at,
             skip_cover=o.skip_cover,
+            quick=o.quick,
+            title_author=o.title_author,
             is_paid=o.is_paid,
             voucher_open=o.id in kept,
             cancel_refund=service.refund_on_cancel(o, owners[o.user_id]) if o.user_id in owners else True,
@@ -143,6 +145,50 @@ async def create(
     )
     await session.commit()
     await flows.order_created(order, viewer.user)
+    await session.commit()
+    return (await _out(session, [order], with_events=True))[0]
+
+
+@router.post("/quick-cover", status_code=201)
+async def quick_cover(
+    body: QuickCoverDraft,
+    viewer: ViewerDep,
+    session: SessionDep,
+    flows: FlowsDep,
+    idempotency_key: Annotated[str | None, Header(max_length=64)] = None,
+) -> OrderOut:
+    """Бесплатная обложка по короткой заявке — без объёма, срока и оплаты."""
+    key = f"quick:{viewer.user.tg_id}:{idempotency_key}"[:64] if idempotency_key else None
+    if key and (existing := await repo.get_order_by_idempotency_key(session, viewer.user.id, key)):
+        return (await _out(session, [existing], with_events=True))[0]
+    order = await OrderService(session).create(
+        viewer.user.id,
+        body.as_draft(),
+        idempotency_key=key,
+        source=OrderSource.APP,
+        ui_lang=ui_lang(viewer.user, viewer.tg),
+        quick=True,
+    )
+    await session.commit()
+    await flows.order_created(order, viewer.user)
+    await session.commit()
+    return (await _out(session, [order], with_events=True))[0]
+
+
+@router.post("/{order_id}/complete")
+async def complete_quick(
+    order_id: int, body: OrderDraft, viewer: ViewerDep, session: SessionDep, flows: FlowsDep
+) -> OrderOut:
+    """Обложка понравилась — клиент дооформил всю презентацию (объём, срок, плашка, допы)."""
+    await _own(session, viewer.user, order_id)
+    order = await OrderService(session).complete_quick(order_id, viewer.user.id, body)
+    await flows.write_brief(order, viewer.user)
+    await flows.sync(order)
+    await session.commit()
+    note = "👍 обложка понравилась — оформил всю презентацию"
+    await flows.n.refresh_card(
+        order, note + (", оплачено — в работу" if order.status is OrderStatus.WORK else " — ждём оплату")
+    )
     await session.commit()
     return (await _out(session, [order], with_events=True))[0]
 

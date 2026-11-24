@@ -45,7 +45,7 @@ export function Promos() {
         <span className="promo-big silver-text">+50</span>
         <span className="promo-text">{t("promo_cases")}</span>
       </button>
-      <button className="promo promo-cover" onClick={() => go("/order?design=ours")}>
+      <button className="promo promo-cover" onClick={() => go("/cover")}>
         <span className="promo-big">
           0 <small>{t("sum")}</small>
         </span>

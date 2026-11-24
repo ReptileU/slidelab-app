@@ -65,3 +65,28 @@ class OrderDraft(BaseModel):
             extra_text=self.extra_text,
             extra_notes=self.extra_notes,
         )
+
+
+class QuickCoverDraft(BaseModel):
+    """Короткая заявка «бесплатная обложка»: тема, стиль, язык и (по желанию) имя на титульном слайде.
+
+    Объём, срок, допы и оплата — потом, если обложка понравится (OrderService.complete_quick)."""
+
+    model_config = ConfigDict(frozen=True)
+
+    topic: Topic
+    pres_lang: Lang
+    style_key: str | None = None
+    title_author: TitleName | None = None
+
+    def as_draft(self) -> OrderDraft:
+        # объём и срок — заглушки до дооформления: обложке они не нужны, цену по ним не берём
+        return OrderDraft(
+            topic=self.topic,
+            slides=SlideTier.S10,
+            deadline=Deadline.NORMAL,
+            pres_lang=self.pres_lang,
+            design=Design.OURS,
+            style_key=self.style_key or None,
+            title_author=self.title_author or None,
+        )

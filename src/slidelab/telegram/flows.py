@@ -79,7 +79,9 @@ class Flows:
             package = t(lang, "package_used", cost=order.package_cost, left=balance.left if balance else 0)
             if order.price:
                 package += t(lang, "package_extra", price=money(order.price))
-        if order.skip_cover:
+        if order.quick:
+            text = t(lang, "order_created_quick", id=order.id)
+        elif order.skip_cover:
             key = "order_created_full_paid" if order.is_paid else "order_created_full"
             text = t(lang, key, id=order.id, package=package)
         else:
@@ -92,7 +94,7 @@ class Flows:
         # Живая карточка статуса: сама обновляется по мере работы над заказом
         await widgets.send_status_card(self.bot, order, user, widgets.store_for(self.settings.data_dir))
 
-        if not order.is_paid and order.price > 0:
+        if not order.is_paid and order.price > 0 and not order.quick:  # короткой заявке счёт не нужен
             await self.n.send_pay(user, amount=order.price, order=order, early=True)
 
     async def save_materials(self, order_id: int, materials: list[Material], sub: str = "files") -> None:
@@ -367,14 +369,20 @@ class Flows:
 
     # --- обложка ----------------------------------------------------------------
 
+    def cover_message(self, order: Order, user: User) -> tuple[str, InlineKeyboardMarkup]:
+        """Короткая заявка — «понравилась? оформите всю», обычный заказ — «нравится? → оплата»."""
+        s = self.settings
+        if order.quick and not s.legacy_webapp and s.webapp_url.startswith("https://"):
+            return t(user.lang, "cover_ready_quick", id=order.id), kb.cover_quick(lang_of(user), order.id, s.webapp_url)
+        return t(user.lang, "cover_ready", id=order.id), kb.cover(lang_of(user), order.id)
+
     async def send_cover(self, order: Order, user: User, files: list[Path]) -> None:
-        caption = t(user.lang, "cover_ready", id=order.id)
-        await self.send_files(user.tg_id, files, caption, kb.cover(lang_of(user), order.id))
+        caption, markup = self.cover_message(order, user)
+        await self.send_files(user.tg_id, files, caption, markup)
 
     async def send_cover_file(self, order: Order, user: User, file_id: str, *, photo: bool) -> None:
         """Обложка, которую менеджер прислал вручную (без конвейера)."""
-        caption = t(user.lang, "cover_ready", id=order.id)
-        markup = kb.cover(lang_of(user), order.id)
+        caption, markup = self.cover_message(order, user)
         if photo:
             await self.bot.send_photo(user.tg_id, file_id, caption=caption, reply_markup=markup)
         else:

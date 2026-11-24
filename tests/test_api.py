@@ -414,3 +414,37 @@ async def test_open_every_case_over_http(env: dict[str, Any]) -> None:
                 pts.PointsService.roll = orig  # type: ignore[method-assign]
             assert r.status_code == 200, (key, prize, r.text)
             assert r.json()["prize"] == prize.code.value
+
+
+async def test_quick_cover_then_complete(env: dict[str, Any]) -> None:
+    """Короткая заявка на обложку → обложка → «нравится» → дооформление с объёмом и сроком."""
+    from sqlalchemy import select
+
+    from slidelab.core.models import Order
+    from slidelab.core.services.orders import OrderService
+
+    c: AsyncClient = env["client"]
+    r = await c.post(
+        "/api/orders/quick-cover",
+        json={"topic": "Экономика Японии", "pres_lang": "ru", "style_key": None, "title_author": "Азиз"},
+        headers=auth(),
+    )
+    assert r.status_code == 201, r.text
+    data = r.json()
+    assert data["quick"] is True and data["status"] == "new" and data["title_author"] == "Азиз"
+    oid = data["id"]
+    early = await c.post(f"/api/orders/{oid}/complete", json=ORDER, headers=auth())
+    assert early.status_code >= 400  # обложки ещё нет
+    async with env["sm"]() as s:
+        order = await s.scalar(select(Order).where(Order.id == oid))
+        assert order is not None
+        await OrderService(s).cover_sent(order, None)
+        await s.commit()
+    done = await c.post(
+        f"/api/orders/{oid}/complete",
+        json={**ORDER, "topic": "Экономика Японии", "slides": "s20", "deadline": "normal"},
+        headers=auth(),
+    )
+    assert done.status_code == 200, done.text
+    body = done.json()
+    assert body["quick"] is False and body["slides"] == "s20" and body["status"] == "awaiting_payment"

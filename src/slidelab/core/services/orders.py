@@ -79,6 +79,7 @@ class OrderService:
         *,
         source: OrderSource = OrderSource.CHAT,
         ui_lang: Lang = Lang.RU,
+        quick: bool = False,
     ) -> Order:
         if idempotency_key:
             existing = await repo.get_order_by_idempotency_key(self.session, user_id, idempotency_key)
@@ -111,19 +112,35 @@ class OrderService:
             source=source,
             ui_lang=ui_lang,
             status=S.NEW,
+            # короткая заявка на обложку: цена — ориентир, ничего не списываем, пока клиент не оформит всю
             price=q.price,
-            paid_from=q.paid_from,
-            package_cost=q.package_cost,
-            is_paid=q.price == 0,  # пакет без доплаты — уже оплачено
-            skip_cover=draft.skip_cover,
+            paid_from=PaidFrom.CASH if quick else q.paid_from,
+            package_cost=0 if quick else q.package_cost,
+            is_paid=False if quick else q.price == 0,  # пакет без доплаты — уже оплачено
+            skip_cover=False if quick else draft.skip_cover,
+            quick=quick,
             # бесплатную обложку конвейер начинает сразу; «сразу всю» ждёт оплаты и обложку не делает
-            stage=None if draft.skip_cover else Stage.COVER_TODO,
+            stage=None if (draft.skip_cover and not quick) else Stage.COVER_TODO,
             stage_at=self.clock(),
             idempotency_key=idempotency_key,
         )
         self.session.add(order)
         await self.session.flush()
-        if q.discount_pct:  # скидка из пакета за баллы потрачена этим заказом (вернётся, если его отменят до оплаты)
+        if not quick:
+            await self._settle(order, user_id, q)
+        if order.skip_cover and order.is_paid:  # из пакета без доплаты — сразу в работу
+            await self._apply(order, S.WORK, None, comment="сразу всю презентацию — из пакета")
+        self._event(order, None, S.NEW, actor_id=user_id)
+        await self.session.flush()
+        return order
+
+    async def _settle(self, order: Order, user_id: int, q: pricing.Quote) -> None:
+        """Чем платится заказ: купон, пакет, скидка из кейса — списываем здесь (после flush: нужен order.id)."""
+        order.price = q.price
+        order.paid_from = q.paid_from
+        order.package_cost = q.package_cost
+        order.is_paid = q.price == 0  # пакет без доплаты — уже оплачено
+        if q.discount_pct:  # скидка из кейса потрачена этим заказом (вернётся, если его отменят до оплаты)
             order.discount_pct = q.discount_pct
             user = await self.session.get(User, user_id)
             if user is not None:
@@ -132,13 +149,40 @@ class OrderService:
             coupon = (await repo.open_coupons(self.session, user_id, for_update=True))[0]
             coupon.used_order_id = order.id
             order.coupon_id = coupon.id
-        if order.skip_cover and order.is_paid:  # из пакета без доплаты — сразу в работу
-            await self._apply(order, S.WORK, None, comment="сразу всю презентацию — из пакета")
         if order.paid_from is PaidFrom.PACKAGE:
             await self.packages.debit(order)
-        self._event(order, None, S.NEW, actor_id=user_id)
+
+    async def complete_quick(self, order_id: int, user_id: int, draft: OrderDraft) -> Order:
+        """Клиенту понравилась бесплатная обложка из короткой заявки — он дооформил всю презентацию.
+
+        Тема и стиль уже есть; теперь — объём, срок, плашка и допы. Только здесь считается цена и списываются
+        купон / пакет / скидка; дальше всё как у обычного заказа с одобренной обложкой."""
+        order = await repo.get_order(self.session, order_id, for_update=True)
+        self._own(order, user_id)
+        if not order.quick:
+            return order  # уже дооформлен — повторное нажатие
+        if order.status is not S.COVER:
+            raise InvalidTransitionError("Сначала дождитесь бесплатной обложки")
+        q = await self.quote(user_id, draft.quote_request())
+        order.topic = draft.topic
+        order.slides = draft.slides
+        order.deadline = draft.deadline
+        order.due_at = self._due(draft)
+        order.pres_lang = draft.pres_lang
+        order.extra_text = draft.extra_text
+        order.extra_notes = draft.extra_notes
+        order.need_humor = draft.need_humor
+        order.title_author = draft.title_author or order.title_author
+        order.title_group = draft.title_group or order.title_group
+        order.title_teacher = draft.title_teacher or order.title_teacher
+        order.contact = draft.contact or None
+        order.comment = draft.comment or None
+        order.sources = draft.sources or None
+        order.has_source_files = draft.has_source_files
+        order.quick = False
+        await self._settle(order, user_id, q)
         await self.session.flush()
-        return order
+        return await self.approve_cover(order.id, user_id)
 
     async def transition(
         self, order_id: int, to: OrderStatus, actor_id: int | None, comment: str | None = None

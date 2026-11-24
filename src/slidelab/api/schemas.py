@@ -131,6 +131,8 @@ class OrderOut(BaseModel):
     deadline: Deadline
     due_at: datetime | None = None
     skip_cover: bool = False
+    quick: bool = False  # короткая заявка на бесплатную обложку — объём и срок ещё не выбраны
+    title_author: str | None = None  # для дооформления: имя на титульном слайде уже есть
     pres_lang: Lang
     design: Design
     style_key: str | None

@@ -14,6 +14,7 @@ import { PointsFly, usePointsGain } from "./ui/PointsFly";
 // Главная — в основной сборке, остальные экраны догружаются при переходе (быстрее первый экран)
 const Done = lazy(() => import("./screens/Done").then((m) => ({ default: m.Done })));
 const Help = lazy(() => import("./screens/Help").then((m) => ({ default: m.Help })));
+const QuickCover = lazy(() => import("./screens/QuickCover").then((m) => ({ default: m.QuickCover })));
 const Invite = lazy(() => import("./screens/Invite").then((m) => ({ default: m.Invite })));
 const Demo = lazy(() => import("./screens/Demo").then((m) => ({ default: m.Demo })));
 const NewOrder = lazy(() => import("./screens/NewOrder").then((m) => ({ default: m.NewOrder })));
@@ -56,6 +57,7 @@ export function App() {
           <Route path="/" element={<Home />} />
           <Route path="/styles" element={<Styles />} />
           <Route path="/order" element={<NewOrder />} />
+          <Route path="/cover" element={<QuickCover />} />
           <Route path="/order/done/:id" element={<Done />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:id" element={<OrderDetail />} />

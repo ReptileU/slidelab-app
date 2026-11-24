@@ -48,6 +48,10 @@ export function Home() {
         <button className="btn btn-inverse" onClick={() => go("ours")}>
           {t("cta_order")}
         </button>
+        <button className="btn hero-free" onClick={() => nav("/cover")}>
+          <span className="hero-free-tag">0 {t("sum")}</span>
+          {t("qc_entry")}
+        </button>
         <button className="hero-link" onClick={() => go("own")}>
           {t("own_link")} ›
         </button>

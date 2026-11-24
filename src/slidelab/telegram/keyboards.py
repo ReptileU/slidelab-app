@@ -293,6 +293,18 @@ def cover(lang: Lang, order_id: int) -> InlineKeyboardMarkup:
     )
 
 
+def cover_quick(lang: Lang, order_id: int, url: str) -> InlineKeyboardMarkup:
+    """Обложка по короткой заявке: понравилась — дооформить всю презентацию в приложении."""
+    sep = "&" if "?" in url else "?"
+    app = WebAppInfo(url=f"{url}{sep}go=complete&id={order_id}")
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=t(lang, "btn_cover_complete"), web_app=app)],
+            [_btn(t(lang, "btn_cover_change"), OrderCb(action="cover_change", order_id=order_id))],
+        ]
+    )
+
+
 def pay(
     lang: Lang,
     *,

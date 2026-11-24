@@ -152,6 +152,10 @@ async def on_cover_ok(
     order = await own(session, user, callback_data.order_id)
     if order is None or order.status is not OrderStatus.COVER:
         return
+    if order.quick:  # короткая заявка: объём и срок ещё не выбраны — оформляют в приложении
+        _, markup = flows.cover_message(order, user)
+        await flows.n.client(user, "cover_quick_app", markup, id=order.id)
+        return
     await OrderService(session).approve_cover(order.id, user.id)
     await flows.sync(order)
     await session.commit()

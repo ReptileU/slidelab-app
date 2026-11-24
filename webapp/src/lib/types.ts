@@ -161,6 +161,8 @@ export interface Order {
   style_key: string | null;
   status: OrderStatus;
   skip_cover?: boolean;
+  quick?: boolean; // короткая заявка на бесплатную обложку — объём и срок ещё не выбраны
+  title_author?: string | null;
   is_paid?: boolean;
   voucher_open?: boolean;
   cancel_refund?: boolean; // отменить сейчас — оплата вернётся (после начала работы — не всегда) // отменён после оплаты — оплата ждёт следующего заказа
@@ -216,4 +218,12 @@ export interface Referrals {
   friends: { name: string; joined_at: string; paid_at: string | null; points: number }[];
   invited: boolean;
   welcome: PointsBox | null; // приветственный кейс от друга — пока не открыт
+}
+
+/** Короткая заявка «бесплатная обложка»: только тема, стиль, язык и имя на титульном слайде. */
+export interface QuickCover {
+  topic: string;
+  pres_lang: Lang;
+  style_key: string | null;
+  title_author: string | null;
 }
