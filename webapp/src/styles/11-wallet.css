@@ -1,0 +1,77 @@
+/* кошелёк в профиле и подарки */
+/* ── Кошелёк в профиле: карты и купоны торчат из кармана ── */
+.wallet {
+  --front-top: calc(18px + (var(--n) - 1) * var(--peek) + 74px);
+  position: relative; width: 100%; max-width: 440px; margin: 0 auto;
+  height: calc(var(--front-top) + min(100vw - 32px, 440px) / 1.58);
+}
+.wallet.empty { --front-top: 0px; }
+.wallet-back {
+  position: absolute; left: 0; right: 0; top: 0; height: calc(var(--front-top) + 40px); border-radius: 22px 22px 0 0;
+  background: linear-gradient(180deg, #1d1915, #0f0d0b); box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06), inset 0 -20px 30px rgba(0, 0, 0, 0.5);
+}
+.wallet.empty .wallet-back { display: none; }
+.wallet-item {
+  position: absolute; left: 14px; right: 14px; padding: 0; border: 0; background: none; text-align: left;
+  transition: transform 0.35s var(--spring); filter: drop-shadow(0 -4px 10px rgba(0, 0, 0, 0.35));
+}
+.wallet-item .pcard { max-width: none; }
+.wallet-item:active { transform: translateY(-10px); }
+.wallet-front {
+  position: absolute; left: 0; right: 0; top: var(--front-top); bottom: 0; z-index: 50; overflow: hidden;
+  border-radius: 18px 18px 22px 22px; color: rgba(255, 236, 205, 0.85);
+  /* классическая кожа: тёплый тёмно-коричневый, мягкий блик и зерно */
+  background:
+    radial-gradient(120% 70% at 20% 0%, rgba(255, 220, 170, 0.16), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E"),
+    linear-gradient(160deg, #5a3a26 0%, #3b2417 55%, #24150d 100%);
+  background-size: cover, 160px 160px, cover;
+  box-shadow: inset 0 1px 0 rgba(255, 235, 200, 0.25), inset 0 -10px 24px rgba(0, 0, 0, 0.35), 0 -6px 18px rgba(0, 0, 0, 0.35), 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+/* фото клиента: кадр под кошелёк, затемнение снизу, чтобы читались инициалы */
+.wallet-front.photo { background-size: cover; background-position: center; }
+.wallet-front.photo::after { content: ""; position: absolute; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.15) 50%, rgba(0, 0, 0, 0.55) 100%); }
+/* строчка по краю */
+.wallet-front::before { content: ""; position: absolute; inset: 9px; z-index: 1; border-radius: 13px; pointer-events: none;
+  border: 1.5px dashed rgba(255, 228, 185, 0.45); }
+.wallet-front.photo::before { border-color: rgba(255, 255, 255, 0.55); }
+/* тиснёные инициалы */
+.wallet-mono { position: absolute; z-index: 2; left: 50%; top: 50%; translate: -50% -50%; font-size: 68px; font-weight: 800; letter-spacing: -0.04em;
+  color: rgba(0, 0, 0, 0.18); text-shadow: 0 1px 0 rgba(255, 230, 190, 0.22), 0 -1px 0 rgba(0, 0, 0, 0.45); font-family: Georgia, "Times New Roman", serif; font-style: italic; }
+.wallet-front.photo .wallet-mono { color: rgba(255, 255, 255, 0.85); text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45); }
+.wallet-brand { position: absolute; z-index: 2; left: 0; right: 0; bottom: 22px; text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.32em; opacity: 0.75; }
+.wallet-front.photo .wallet-brand { color: #fff; }
+.wallet-empty { position: absolute; z-index: 2; left: 24px; right: 24px; top: 22px; text-align: center; font-size: 14px; line-height: 1.35; }
+.wallet-front.photo .wallet-empty { color: #fff; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6); }
+.wallet-skin { position: absolute; z-index: 3; right: 16px; bottom: 14px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%;
+  color: #fff; background: rgba(0, 0, 0, 0.35); border: 0.5px solid rgba(255, 255, 255, 0.25); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.wallet-sheet-card { max-width: 420px; margin: 0 auto; }
+.wallet-item .coupon, .wallet-sheet-card .coupon { width: 100%; }
+.wallet-item { display: block; }
+
+/* ── Подарки из кошелька ── */
+.gift-count { display: flex; align-items: center; justify-content: center; gap: 28px; }
+.gift-count b { font-size: 56px; font-weight: 800; min-width: 70px; text-align: center; letter-spacing: -0.03em; }
+.gift-count button { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: var(--label);
+  background: var(--fill); border: 0; }
+.gift-count button:disabled { opacity: 0.35; }
+.gift-ready { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 4px 8px 22px; text-align: center; }
+.gift-ready svg { color: var(--paid); animation: gift-pop 0.6s var(--spring) both; }
+@keyframes gift-pop { from { transform: scale(0.3) rotate(-25deg); opacity: 0; } }
+.gift-ready b { font-size: 20px; }
+.gift-ready span { font-size: 14px; color: var(--secondary, var(--label)); opacity: 0.75; }
+.gift-pending { margin-top: 22px; }
+.gift-pending-t { margin: 0 16px 6px; letter-spacing: 0.02em; }
+.gift-acts { display: inline-flex; gap: 12px; }
+.gift-acts button { background: none; border: 0; padding: 4px 0; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); }
+.gift-acts button.danger { color: var(--danger); }
+/* «Купить в подарок» под кнопкой покупки пакета */
+.pack-gift { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; margin-top: 8px; padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 14px; background: rgba(0, 0, 0, 0.18); color: #fff;
+  font: inherit; font-size: 15px; font-weight: 600; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.pack-gift:active { transform: scale(0.98); }
+/* Бонус-пакет: выпавшая карточка (купон или карта пакета) */
+.lr-card { width: min(84vw, 360px); margin: 18px auto 14px; animation: lrCard 0.8s var(--spring) both; }
+@keyframes lrCard { from { transform: scale(0.4) rotate(-12deg); opacity: 0; } }
+.lr-card .coupon { width: 100%; }

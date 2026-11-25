@@ -1,0 +1,39 @@
+/* выравнивание по сетке (ПК/планшет) */
+/* ---------- выравнивание по общей сетке (ПК и планшет) ---------- */
+/* число презентаций в конверте никогда не разламывается на «1» и «0» */
+.env .pack-count{flex-wrap:wrap;row-gap:2px}
+.env .pack-unit{white-space:nowrap}
+.env .pack-num{white-space:nowrap}
+/* конверты одной высоты: карман растягивается, кнопки — на одной линии */
+.env{height:100%}
+.env-box{flex:1;display:flex;flex-direction:column}
+.env-pocket{flex:1;display:flex;flex-direction:column}
+.env-front{flex:1}
+@media (min-width: 860px) {
+  .packs-grid .env .pack-num{font-size:52px}
+}
+@media (min-width: 700px) {
+  /* плитки и стили — ровной сеткой по ширине контента, без обрезанных справа карточек */
+  .promos{overflow:visible;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .promo{flex:none;width:auto}
+  .styles-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 14px;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .styles-row .style-card{flex:none;width:auto}
+}
+@media (min-width: 1024px) {
+  /* стили — ровная сетка на всю ширину контента, без «хвоста» справа */
+  .styles-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px;margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .styles-row .style-card{flex:none;width:auto}
+  /* карусель работ — во всю ширину, как блоки над и под ней */
+  .wc{max-width:none}
+  .lucky{max-width:none}
+}
+/* печать конверта не садится на плашки «−41% · 14 дней» */
+.env-front{padding-top:66px}
+/* кошелёк не прилипает к списку под ним (тень снизу визуально «съедала» отступ) */
+.wallet{margin-bottom:12px}
+/* перенесённое «презентаций» не наезжает на крупную цифру */
+.env .pack-count{row-gap:10px}
+.env .pack-unit{line-height:1.2}
+/* на карте скидки крупное −N% не касается подписи */
+.dtag-for{margin-top:12px}
+.dtag-pct{font-size:clamp(54px,16vw,78px);line-height:.92}

@@ -1,0 +1,174 @@
+/* цены опций, выбор старта, отмена, купоны */
+/* ---------- цены у опций и разбивка стоимости ---------- */
+.toggle-acc{display:inline-flex;align-items:center;gap:10px;flex:0 0 auto}
+.cost-tag{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap;
+  font-variant-numeric:tabular-nums;color:var(--label);background:color-mix(in srgb,var(--label) 9%,transparent);
+  box-shadow:inset 0 0 0 .5px color-mix(in srgb,var(--label) 22%,transparent);transition:background .2s,color .2s}
+.cost-tag.on{background:var(--label);color:var(--bg);box-shadow:none}
+.cost-tag.free{font-weight:600;color:var(--secondary);background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 16%,transparent)}
+.price-card{display:flex;flex-direction:column;gap:2px}
+.price-line{display:flex;justify-content:space-between;gap:12px;font-size:15px;padding:5px 0;color:var(--secondary)}
+.price-line span:last-child{color:var(--label);font-weight:600;white-space:nowrap}
+.price-total.sep{margin-top:8px;padding-top:12px;border-top:.5px solid var(--separator)}
+
+/* платное — золотым: видно, за что доплата (тот же цвет в опциях и в разбивке цены) */
+:root{--paid:#b8860b;--paid-bg:rgba(212,160,23,.14);--paid-line:rgba(212,160,23,.45)}
+:root[data-theme="dark"]{--paid:#f5c451;--paid-bg:rgba(245,196,81,.12);--paid-line:rgba(245,196,81,.4)}
+.cost-tag{gap:6px;color:var(--paid);background:var(--paid-bg);box-shadow:inset 0 0 0 1px var(--paid-line)}
+.cost-tag.on{color:#1d1d1f;background:linear-gradient(180deg,#ffe08a,#f5c451 55%,#d9a521);box-shadow:0 2px 10px rgba(245,196,81,.35)}
+.cost-coin{width:12px;height:12px;border-radius:50%;flex:0 0 auto;background:radial-gradient(circle at 35% 35%,#fff3c4,#f5c451 45%,#b8860b);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.cost-tag.on .cost-coin{background:radial-gradient(circle at 35% 35%,#fff,#fbe3a0 50%,#c4920f)}
+.price-line.extra span:last-child{color:var(--paid)}
+.price-line.extra span:first-child::after{content:"";display:inline-block;width:8px;height:8px;margin-left:7px;border-radius:50%;vertical-align:1px;
+  background:radial-gradient(circle at 35% 35%,#fff3c4,#f5c451 45%,#b8860b)}
+
+/* срок к дате у «Обычно» */
+.due-cell .field{color-scheme:light dark;min-height:30px}
+.due-cell.need .field-label{color:var(--danger)}
+.due-warn{margin:-14px 16px 22px;font-size:13px;color:var(--danger)}
+
+/* ---------- выбор «как начнём»: бесплатная титулка или сразу вся презентация ---------- */
+.start-pick{display:flex;flex-direction:column;gap:10px}
+.start-opt{display:flex;align-items:center;gap:12px;width:100%;padding:14px 14px 14px 16px;border-radius:var(--r-lg);text-align:left;
+  background:var(--surface);box-shadow:var(--shadow),inset 0 0 0 1px var(--separator);transition:box-shadow .2s,transform .15s}
+.start-opt:active{transform:scale(.985)}
+.start-opt.on{box-shadow:var(--shadow),inset 0 0 0 2px var(--label)}
+.start-radio{flex:0 0 auto;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--label) 30%,transparent);
+  display:grid;place-items:center}
+.start-opt.on .start-radio{box-shadow:inset 0 0 0 2px var(--label)}
+.start-opt.on .start-radio::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--label)}
+.start-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.start-txt b{font-size:16px;font-weight:700;color:var(--label)}
+.start-txt small{font-size:13px;line-height:1.3;color:var(--secondary)}
+.start-tag{flex:0 0 auto;height:24px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;font-size:12px;font-weight:700;white-space:nowrap}
+.start-tag.free{color:var(--secondary);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--label) 18%,transparent)}
+.start-tag.fast{color:var(--paid);background:var(--paid-bg);box-shadow:inset 0 0 0 1px var(--paid-line)}
+
+/* Вторая кнопка формы: «Оплатить … — сразу всю» (основная внизу — бесплатная титулка) */
+.full-now { margin: 4px 0 8px; text-align: center; }
+.full-now-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  min-height: 50px; padding: 12px 16px; border-radius: 14px;
+  background: color-mix(in srgb, var(--paid) 14%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--paid) 55%, transparent);
+  color: var(--label); font: 600 16px/1.2 var(--font, inherit);
+}
+.full-now-btn svg { color: var(--paid); flex: none; }
+.full-now-btn:active { transform: scale(0.98); }
+.full-now-btn:disabled { opacity: 0.5; }
+.full-now p { margin: 8px 12px 0; }
+/* «Хочу сначала бесплатную титулку» — тихая ссылка на экране оплаты */
+.cover-first {
+  display: block; width: 100%; margin: 14px 0 4px; padding: 12px;
+  color: var(--accent); font: 500 15px/1.3 inherit; text-align: center; background: none;
+}
+.cover-first:disabled { opacity: 0.5; }
+
+/* Оплаченная презентация от отменённого заказа */
+.voucher-card {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 14px 16px; border-radius: 16px; margin: 0 0 12px;
+  background: color-mix(in srgb, var(--paid) 14%, var(--bg2, transparent));
+  border: 1.5px solid color-mix(in srgb, var(--paid) 50%, transparent);
+  color: var(--label);
+}
+.voucher-card > svg, .voucher-note > svg { color: var(--paid); flex: none; }
+.voucher-card b { display: block; font-size: 16px; }
+.voucher-card small { display: block; margin-top: 2px; font-size: 13px; color: var(--secondary, var(--label)); opacity: 0.75; }
+.voucher-go { color: var(--paid); font-weight: 600; font-size: 15px; white-space: nowrap; }
+.voucher-card:active { transform: scale(0.98); }
+.voucher-note {
+  display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 16px;
+  background: color-mix(in srgb, var(--paid) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--paid) 40%, transparent);
+}
+/* «Удалить / Отменить заказ» — внизу экрана заказа, красной ссылкой */
+.order-cancel {
+  display: block; width: 100%; margin: 6px 0 12px; padding: 12px;
+  color: var(--danger); font: 500 15px/1.3 inherit; text-align: center; background: none;
+}
+.order-cancel:disabled { opacity: 0.5; }
+/* Оплаченная презентация внутри главной карточки — над кнопкой «Заказать» */
+.hero-voucher {
+  display: flex; gap: 10px; align-items: flex-start; margin: -8px 0 14px; padding: 10px 12px;
+  border-radius: 12px; text-align: left; font-size: 15px; font-weight: 600; color: #f5f5f7; /* карточка тёмная в любой теме */
+  background: rgba(240, 200, 90, 0.14);
+  border: 1px solid rgba(240, 200, 90, 0.45);
+}
+.hero-voucher svg { color: #f0c85a; flex: none; margin-top: 2px; }
+.hero-voucher small { display: block; margin-top: 2px; font-size: 13px; font-weight: 400; color: rgba(245, 245, 247, 0.72); }
+
+/* Купончик у «+»: есть оплаченная презентация */
+.tab-plus-coupon {
+  position: absolute; z-index: 2; top: -31px; left: 50%; margin-left: 10px;
+  display: inline-flex; align-items: center; gap: 2px; height: 22px; min-width: 22px; padding: 0 5px;
+  border-radius: 11px; color: #3a2a00; font: 700 12px/1 inherit;
+  background: linear-gradient(180deg, #ffe08a, var(--paid));
+  box-shadow: 0 0 0 2px var(--bar, var(--bg)), 0 3px 8px rgba(0, 0, 0, 0.3);
+  animation: coupon-pop 0.5s var(--spring) both;
+}
+.tab-plus-coupon svg { width: 13px !important; height: 13px !important; transform: none !important; }
+:root.has-now .tab-plus-coupon { top: -23px; }
+@keyframes coupon-pop { from { transform: scale(0) rotate(-20deg); } }
+@media (min-width: 1024px) {
+  .tab-plus-coupon { top: 0; left: 40px; margin-left: 0; }
+}
+
+/* ── Отмена оплаченного заказа: оплата возвращается (обратная анимация) ── */
+.ret-ov.ok .paid-mark { opacity: 1; transform: none; }
+.ret-ov.ok .paid-mark circle { animation: paid-draw 0.45s ease-out forwards; }
+.ret-ov.ok .paid-mark path { animation: paid-draw 0.3s 0.32s ease-out forwards; }
+/* разбитая карта собирается: осколки прилетают с тех мест, куда разлетелись */
+.ret-ov.mended .paid-card { animation: paid-fade 0.3s ease both; }
+.ret-ov.mended .shard { animation: shard-back 1.2s cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.ret-ov.mended .shard.l { --from: translate(-30%, 60vh) rotate(-28deg); }
+.ret-ov.mended .shard.r { --from: translate(30%, 55vh) rotate(24deg); animation-delay: 0.08s; }
+@keyframes shard-back { from { transform: var(--from); opacity: 0; } 70% { opacity: 1; } }
+.ret-ov.mended.ok .paid-card { animation: ret-pulse 0.5s var(--spring); }
+@keyframes ret-pulse { 50% { transform: scale(1.04); filter: brightness(1.25); } }
+/* купон на одну презентацию */
+.coupon {
+  position: relative; overflow: hidden; display: flex; height: 150px; border-radius: 18px; color: #2b1d00;
+  background: linear-gradient(135deg, #fff3c4 0%, #f0c85a 40%, #d9a53a 70%, #fbe39a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 18px 50px rgba(224, 176, 74, 0.35);
+  /* вырезы по бокам у линии отрыва */
+  -webkit-mask: radial-gradient(circle 13px at 72% 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 13px at 72% 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+  mask: radial-gradient(circle 13px at 72% 0, #0000 98%, #000) top / 100% 51% no-repeat,
+    radial-gradient(circle 13px at 72% 100%, #0000 98%, #000) bottom / 100% 51% no-repeat;
+}
+.coupon-main { flex: 0 0 72%; display: flex; align-items: center; gap: 12px; padding: 0 18px; min-width: 0; }
+.coupon-main b { display: block; white-space: nowrap; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+.coupon-main small { display: block; margin-top: 4px; font-size: 14px; opacity: 0.7; }
+.coupon-stub { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  border-left: 2px dashed rgba(43, 29, 0, 0.35); }
+.coupon-stub span { font-size: 11px; font-weight: 800; letter-spacing: 0.18em; writing-mode: vertical-rl; rotate: 180deg; opacity: 0.6; }
+.coupon-stub i { font-style: normal; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 6px; border: 1.5px solid currentColor;
+  transform: rotate(-8deg) scale(2); opacity: 0; }
+.ret-ov.ok .coupon-stub i { animation: stamp 0.35s cubic-bezier(0.3, 1.6, 0.5, 1) forwards; }
+@keyframes stamp { to { transform: rotate(-8deg) scale(1); opacity: 0.85; } }
+.coupon-shine { position: absolute; inset: 0; width: 40%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  transform: translateX(-130%) skewX(-18deg); animation: coupon-shine 1.4s 0.6s ease-out both; }
+@keyframes coupon-shine { to { transform: translateX(330%) skewX(-18deg); } }
+
+/* ── Оплата купоном: купон рвётся по пунктиру ── */
+.tear { position: relative; }
+.tear-half { transition: transform 0.9s cubic-bezier(0.5, 0, 0.75, 0), opacity 0.9s ease-in; }
+/* линия отрыва — по пунктиру (72%), рваная: мелкие зубцы бумаги */
+.tear-half.l { clip-path: polygon(0 0, 72.6% 0, 71.6% 8%, 72.8% 16%, 71.7% 24%, 72.7% 33%, 71.5% 41%, 72.9% 50%, 71.6% 58%, 72.6% 67%, 71.4% 75%, 72.8% 84%, 71.7% 92%, 72.5% 100%, 0 100%); }
+.tear-half.r { position: absolute; inset: 0; clip-path: polygon(72.6% 0, 100% 0, 100% 100%, 72.5% 100%, 71.7% 92%, 72.8% 84%, 71.4% 75%, 72.6% 67%, 71.6% 58%, 72.9% 50%, 71.5% 41%, 72.7% 33%, 71.7% 24%, 72.8% 16%, 71.6% 8%); }
+/* тянут за корешок — пунктир натягивается */
+.tear-ov.tug .tear-half.r { transform: translateX(6px) rotate(2deg); transition: transform 0.4s cubic-bezier(0.3, 1.4, 0.5, 1); transform-origin: 72% 50%; }
+.tear-ov.tug .tear-half.l { transform: translateX(-3px) rotate(-0.6deg); transition: transform 0.4s ease; }
+/* оторвали: корешок летит вниз, купон отскакивает */
+.tear-ov.torn .tear-half.r { transform: translate(28%, 60vh) rotate(38deg); opacity: 0; transform-origin: 72% 0; }
+.tear-ov.torn .tear-half.l { transform: translateX(-10px) rotate(-2deg); transition: transform 0.6s var(--spring); }
+.tear-ov.torn .tear-half.l .coupon { filter: saturate(0.85) brightness(0.92); transition: filter 0.6s; }
+/* бумажная пыль на линии разрыва */
+.tear::after { content: ""; position: absolute; left: 72%; top: 0; bottom: 0; width: 3px; opacity: 0; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255, 248, 220, 0.95) 0 3px, transparent 3px 7px); filter: blur(0.5px); }
+.tear-ov.torn .tear::after { animation: tear-dust 0.5s ease-out; }
+@keyframes tear-dust { 0% { opacity: 1; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(6); } }
+.tear-ov .paid-mark { opacity: 0; }
+.tear-ov.torn .paid-mark { opacity: 1; transform: none; transition-delay: 0.35s; }
