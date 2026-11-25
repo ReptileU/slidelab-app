@@ -1,50 +1,34 @@
-"""Рабочее место владельца и менеджеров.
-
-Работает в личке владельца с ботом (как раньше) или в супергруппе менеджеров с темами.
-Ответ реплаем на сообщение со строкой «ID: …» уходит клиенту.
-"""
+"""Кнопки на карточке заказа: обложка, цена, оплата, файлы, отмена, проверка, статусы."""
 
 import html
 import re
 from contextlib import suppress
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import BaseFilter, Command, CommandObject, StateFilter
+from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ForceReply, Message
-from sqlalchemy import func, select
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from slidelab.bot.routers.staff.common import ORDER_RE, URL_RE, _ask, owner_of
 from slidelab.bot.utils import file_of
-from slidelab.config import Settings
 from slidelab.core import repositories as repo
 from slidelab.core.enums import (
     AttachmentKind,
-    LedgerReason,
-    MessageDirection,
     OrderStatus,
     PaymentProvider,
     PaymentStatus,
-    PlanCode,
     Stage,
 )
 from slidelab.core.errors import DomainError
 from slidelab.core.i18n import money, t
 from slidelab.core.models import (
     Attachment,
-    Order,
-    OrderEvent,
-    Payment,
-    Referral,
-    SupportMessage,
     User,
-    UserPackage,
 )
-from slidelab.core.models.base import utcnow
 from slidelab.core.services.orders import OrderService
-from slidelab.core.services.packages import PackageService
 from slidelab.core.services.payments import PaymentService
 from slidelab.core.services.pipeline import KIND_ACC, TODO, TODO_OF
 from slidelab.telegram import keyboards as kb
@@ -55,39 +39,7 @@ from slidelab.telegram.notifier import lang_of
 from slidelab.telegram.states import StaffForm
 from slidelab.telegram.widgets import service as widgets
 
-ORDER_RE = re.compile(r"#(\d+)")
-URL_RE = re.compile(r"https://\S+")
-
-
-class FromStaff(BaseFilter):
-    """Апдейт из чата команды (личка владельца или группа менеджеров) от человека из команды."""
-
-    async def __call__(self, event: Message | CallbackQuery, settings: Settings, is_manager: bool = False) -> bool:
-        message = event if isinstance(event, Message) else event.message
-        if not is_manager or message is None:
-            return False
-        if message.chat.id == settings.staff_chat_id:
-            return True
-        # Группа менеджеров задана — команды (/stats, /grant…) всё равно доступны в личке с ботом
-        return isinstance(event, Message) and message.chat.type == "private" and (event.text or "").startswith("/")
-
-
-router = Router(name="staff")
-router.message.filter(FromStaff())
-router.callback_query.filter(FromStaff())
-
-
-async def _ask(callback: CallbackQuery, text: str) -> None:
-    await callback.answer()
-    if isinstance(callback.message, Message):
-        await callback.message.answer(text, reply_markup=ForceReply(selective=True))
-
-
-async def owner_of(session: AsyncSession, order: Order) -> User:
-    return await repo.get_user(session, order.user_id)
-
-
-# --- обложка вручную ------------------------------------------------------------
+router = Router(name="staff_cards")
 
 
 @router.callback_query(MgrCb.filter(F.action == "cover"))
@@ -507,296 +459,3 @@ async def on_set_status(
 
 
 # --- статистика, пакеты ---------------------------------------------------------------
-
-
-@router.message(Command("stats"))
-async def cmd_stats(message: Message, session: AsyncSession) -> None:
-    now = utcnow()
-    lines = ["<b>Статистика</b>"]
-    for days in (7, 30):
-        since = now - timedelta(days=days)
-        created = await session.scalar(select(func.count(Order.id)).where(Order.created_at >= since)) or 0
-        covers = await _reached(session, OrderStatus.COVER, since)
-        started = await _reached(session, OrderStatus.WORK, since)
-        uzs = await _revenue(session, since, "UZS")
-        stars = await _revenue(session, since, "XTR")
-        conversion = f"{started * 100 // covers}%" if covers else "—"
-        lines.append(
-            f"\n<b>{days} дней</b>\nЗаказов: {created}\n"
-            f"Обложек: {covers} → в работу: {started} ({conversion})\n"
-            f"Выручка: {money(uzs)} сум + {stars} ⭐"
-        )
-    await message.answer("\n".join(lines))
-
-
-async def _reached(session: AsyncSession, status: OrderStatus, since: datetime) -> int:
-    stmt = select(func.count(func.distinct(OrderEvent.order_id))).where(
-        OrderEvent.to_status == status, OrderEvent.created_at >= since
-    )
-    return int(await session.scalar(stmt) or 0)
-
-
-async def _revenue(session: AsyncSession, since: datetime, currency: str) -> int:
-    stmt = select(func.coalesce(func.sum(Payment.amount), 0)).where(
-        Payment.status == PaymentStatus.PAID, Payment.currency == currency, Payment.created_at >= since
-    )
-    return int(await session.scalar(stmt) or 0)
-
-
-@router.message(Command("users"))
-async def cmd_users(message: Message, command: CommandObject, session: AsyncSession) -> None:
-    """Кто заходил в бота: сколько новых за сутки / неделю / месяц и последние пришедшие.
-
-    /users — последние 20, /users 50 — последние 50 (не больше 100). «Пришёл» — первый запуск бота
-    или приложения; ✓ — оформил хоть один заказ, ← — по чьей ссылке пришёл."""
-    arg = (command.args or "").strip()
-    limit = min(int(arg), 100) if arg.isdigit() and int(arg) > 0 else 20
-    now = utcnow()
-    total = await session.scalar(select(func.count(User.id))) or 0
-    counts = []
-    for label, delta in (("сутки", timedelta(days=1)), ("7 дней", timedelta(days=7)), ("30 дней", timedelta(days=30))):
-        n = await session.scalar(select(func.count(User.id)).where(User.created_at >= now - delta)) or 0
-        counts.append(f"{label}: {n}")
-    users = list(await session.scalars(select(User).order_by(User.id.desc()).limit(limit)))
-    ordered = set(
-        await session.scalars(
-            select(Order.user_id).where(Order.user_id.in_([u.id for u in users])).group_by(Order.user_id)
-        )
-    )
-    refs = dict(
-        (
-            await session.execute(
-                select(Referral.friend_id, User.first_name)
-                .join(User, User.id == Referral.inviter_id)
-                .where(Referral.friend_id.in_([u.id for u in users]))
-            )
-        ).all()
-    )
-    lines = [f"<b>Пользователи</b> · всего {total}", "Новых — " + " · ".join(counts), ""]
-    for u in users:
-        name = html.escape(views.client_name(u))
-        mark = " ✓" if u.id in ordered else ""
-        via = f" ← {html.escape(refs[u.id] or '—')}" if u.id in refs else ""
-        lines.append(f"• {name} <code>{u.tg_id}</code> — {views.date_short(u.created_at)}{mark}{via}")
-    lines.append("\n✓ — заказывал · ← — пришёл по ссылке друга · /users 50 — показать больше")
-    await message.answer("\n".join(lines))
-
-
-@router.message(Command("subs"))
-async def cmd_subs(message: Message, session: AsyncSession) -> None:
-    rows = (
-        await session.execute(
-            select(UserPackage, User)
-            .join(User, User.id == UserPackage.user_id)
-            .where(UserPackage.expires_at > utcnow(), UserPackage.left > 0)
-            .order_by(UserPackage.expires_at)
-        )
-    ).all()
-    lines = [
-        f"• {html.escape(views.client_name(u))} <code>{u.tg_id}</code> — {t(None, 'plan_' + p.plan_code.value)}, "
-        f"осталось {p.left}/{p.total}, до {views.date_short(p.expires_at)}"
-        for p, u in rows
-    ]
-    await message.answer("<b>Активные пакеты</b>\n" + ("\n".join(lines) if lines else "пока нет"))
-
-
-@router.message(Command("grant"))
-async def cmd_grant(message: Message, command: CommandObject, session: AsyncSession, flows: Flows) -> None:
-    """/grant <Telegram ID> <week|month|vip> — выдать пакет без оплаты."""
-    parts = (command.args or "").split()
-    if len(parts) != 2 or not parts[0].isdigit() or parts[1] not in PlanCode._value2member_map_:
-        await message.answer("Формат: <code>/grant 123456789 month</code>")
-        return
-    client = await repo.get_user_by_tg(session, int(parts[0]))
-    if client is None:
-        await message.answer("Клиент ещё не писал боту — пусть нажмёт /start.")
-        return
-    package = await PackageService(session).activate(client.id, PlanCode(parts[1]), LedgerReason.GRANT)
-    await session.commit()
-    name = t(client.lang, "plan_" + package.plan_code.value)
-    await flows.n.client(
-        client,
-        "pkg_on",
-        await flows.n.menu(client),
-        plan=name,
-        left=package.left,
-        date=views.date_short(package.expires_at),
-    )
-    await message.answer(f"Выдан пакет «{t(None, 'plan_' + package.plan_code.value)}» · осталось {package.left}")
-
-
-# --- ответ клиенту ---------------------------------------------------------------------
-
-
-def _reply_target(message: Message) -> int | None:
-    src = message.reply_to_message
-    if src is None or src.from_user is None or not src.from_user.is_bot:
-        return None
-    # Адресат — только «ID: <code>123</code>», который пишет сам бот. Имя и текст клиента в сообщениях бота
-    # экранированы, поэтому «ID: 555» в них — просто текст и адресата не подменит.
-    text = src.text or src.caption or ""
-    for entity in src.entities or src.caption_entities or []:
-        if entity.type != "code":
-            continue
-        value = entity.extract_from(text)
-        before = text.encode("utf-16-le")[: entity.offset * 2].decode("utf-16-le")
-        if value.isdigit() and before.rstrip().endswith("ID:"):
-            return int(value)
-    return None
-
-
-@router.message(StateFilter(None), F.func(lambda m: _reply_target(m) is not None))
-async def on_reply(message: Message, session: AsyncSession, flows: Flows) -> None:
-    """Реплай на сообщение с «ID: …» — клиенту. Ссылка или файл в ответ на заказ сохраняются в его «Моих работах»."""
-    tg_id = _reply_target(message)
-    assert tg_id is not None
-    client = await repo.get_user_by_tg(session, tg_id)
-    if client is None:
-        await message.reply("Клиент не найден.")
-        return
-    await send_to_client(message, client, session, flows)
-    src_text = (
-        message.reply_to_message.text or message.reply_to_message.caption or "" if message.reply_to_message else ""
-    )
-    note = await _remember_result(session, client, src_text, message)
-    await session.commit()
-    await message.reply("Отправил клиенту" + note)
-
-
-@router.message(StateFilter(None), F.message_thread_id, F.chat.type == "supergroup", ~F.text.startswith("/"))
-async def on_topic_reply(message: Message, session: AsyncSession, flows: Flows) -> None:
-    """В группе менеджеров любое сообщение в теме клиента уходит клиенту."""
-    assert message.message_thread_id is not None
-    client = await repo.get_user_by_topic(session, message.message_thread_id)
-    if client is not None:
-        await send_to_client(message, client, session, flows)
-        await session.commit()
-
-
-async def send_to_client(message: Message, client: User, session: AsyncSession, flows: Flows) -> None:
-    await flows.n.client(client, "manager_reply")
-    await message.copy_to(client.tg_id)
-    text = message.text or message.caption
-    if text:
-        session.add(SupportMessage(user_id=client.id, direction=MessageDirection.OUT, text=text))
-
-
-async def _remember_result(session: AsyncSession, client: User, src_text: str, message: Message) -> str:
-    """Админ ответил ссылкой на готовую презентацию на сообщение заказа — запомним её у клиента."""
-    found = ORDER_RE.search(src_text)
-    link = URL_RE.search(message.text or message.caption or "")
-    if not found or not link:
-        return ""
-    order = await session.get(Order, int(found.group(1)))
-    if order is None or order.user_id != client.id:
-        return ""
-    order.result_link = link.group(0).rstrip(").,;")
-    return f"\nСохранил ссылку в «Моих заказах» клиента (#{order.id})"
-
-
-@router.message(Command("emoji"))
-async def cmd_emoji(message: Message, command: CommandObject, settings: Settings) -> None:
-    """/emoji — премиум-эмодзи бота. /emoji <ключ> <премиум-эмодзи> — выбрать, /emoji <ключ> off — убрать."""
-    from slidelab.telegram.premium import MARKS, EmojiStore, button_keys
-
-    store = EmojiStore(settings.content_dir / "emoji.json")
-    data = store.data()
-    buttons = sorted(set(button_keys().values()))
-    parts = (command.args or "").split()
-    if not parts:
-
-        def row(key: str, about: str, group: str) -> str:
-            item = data[group].get(key)
-            if not item:
-                return f"— <code>{key}</code> · {about}"
-            alt = html.escape(item.get("alt") or "⭐")
-            mark = f'<tg-emoji emoji-id="{item["id"]}">{alt}</tg-emoji>'
-            return f"{mark} <code>{key}</code> · {about}"
-
-        lines = [row(k, v, "marks") for k, v in MARKS.items()]
-        lines += [row(k, html.escape(strip_btn(k)), "buttons") for k in buttons]
-        await message.answer(
-            "<b>Премиум-эмодзи</b>\nНужен Telegram Premium у владельца бота. Работают в личке с клиентами "
-            "(в канале Telegram их боту не разрешает).\n\n"
-            "Выбрать: <code>/emoji logo</code> и сразу за ним премиум-эмодзи из своих наборов.\n"
-            "Убрать: <code>/emoji logo off</code>\n\n" + "\n".join(lines)
-        )
-        return
-    key = parts[0]
-    group = "marks" if key in MARKS else "buttons" if key in buttons else ""
-    if not group:
-        await message.answer(f"Нет ключа <code>{html.escape(key)}</code>. Список — /emoji")
-        return
-    if len(parts) > 1 and parts[1].lower() == "off":
-        store.set(group, key, None)
-        await message.answer(f"Убрал эмодзи у <code>{key}</code>.")
-        return
-    found = next((e for e in (message.entities or []) if e.type == "custom_emoji" and e.custom_emoji_id), None)
-    if found is None:
-        await message.answer(
-            "Не вижу премиум-эмодзи в сообщении. Напишите <code>/emoji " + key + "</code> и вставьте эмодзи из "
-            "набора (обычные эмодзи не подойдут)."
-        )
-        return
-    alt = found.extract_from(message.text or "") if hasattr(found, "extract_from") else ""
-    store.set(group, key, found.custom_emoji_id, alt)
-    await message.answer(
-        f'Готово: <tg-emoji emoji-id="{found.custom_emoji_id}">{html.escape(alt or "⭐")}</tg-emoji> → '
-        f"<code>{key}</code>. Клиенты увидят его в следующих сообщениях."
-    )
-
-
-def strip_btn(key: str) -> str:
-    from slidelab.core.enums import Lang
-    from slidelab.core.i18n import TEXTS
-
-    return TEXTS[Lang.RU].get(key, key)
-
-
-@router.message(Command("demo"))
-async def cmd_demo(message: Message, settings: Settings) -> None:
-    """/demo — открыть в приложении показ эффектов пакета (оплата, последняя презентация) без настоящего заказа."""
-    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-
-    base = settings.webapp_url.split("#")[0].split("?")[0].rstrip("/")
-    if settings.legacy_webapp or not base.startswith("https://"):
-        await message.answer("Приложение сейчас недоступно — нет ссылки.")
-        return
-    await message.answer(
-        "🎬 Демо эффектов пакета — без заказов и списаний.",
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[[InlineKeyboardButton(text="Открыть демо", web_app=WebAppInfo(url=f"{base}/?demo=1"))]]
-        ),
-    )
-
-
-@router.message(Command("logo"))
-async def cmd_logo(message: Message, command: CommandObject, settings: Settings) -> None:
-    """/logo — логотип на аватар бота (avatar_bot.png, с подписью «Bot») и канала (avatar_mono.png)."""
-    from aiogram.exceptions import TelegramAPIError
-    from aiogram.types import FSInputFile, InputProfilePhotoStatic
-
-    path = settings.content_dir / "media" / "avatar_mono.png"
-    if not path.exists():
-        await message.answer(f"Нет файла <code>{html.escape(str(path))}</code>.")
-        return
-    bot_path = settings.content_dir / "media" / "avatar_bot.png"
-    if not bot_path.exists():
-        bot_path = path
-    bot = message.bot
-    assert bot is not None
-    report = []
-    try:
-        await bot.set_my_profile_photo(photo=InputProfilePhotoStatic(photo=FSInputFile(bot_path)))
-        report.append("бот — готово")
-    except TelegramAPIError as e:
-        report.append(f"бот — не вышло ({html.escape(str(e))[:200]}). Можно вручную: @BotFather → /setuserpic")
-    try:
-        await bot.set_chat_photo(chat_id=settings.channel, photo=FSInputFile(path))
-        report.append("канал — готово")
-    except TelegramAPIError as e:
-        report.append(
-            f"канал — не вышло ({html.escape(str(e))[:200]}). Нужно право бота «Изменение профиля канала» "
-            "в админах канала, или поставьте фото вручную"
-        )
-    await message.answer("<b>Логотип</b>\n" + "\n".join(f"— {r}" for r in report))

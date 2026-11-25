@@ -1,0 +1,64 @@
+/* адаптив под телефоны/планшеты, цена со скидкой, «Назад» */
+/* ---------- адаптив: маленькие телефоны, планшеты, компьютер ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, video, svg { max-width: 100%; height: auto; }
+.page, .card, .sheet { overflow-wrap: anywhere; }
+
+/* узкие телефоны (iPhone SE, старые Android) */
+@media (max-width: 360px) {
+  .page { padding-left: 12px; padding-right: 12px; }
+  .large-title { font-size: 28px; line-height: 34px; }
+  .title1 { font-size: 24px; line-height: 30px; }
+  .title2 { font-size: 20px; line-height: 25px; }
+  .way-grid, .style-grid { gap: 10px 8px; }
+  .tabbar { grid-template-columns: 1fr 1fr 64px 1fr 1fr; }
+  .sheet { padding-left: 12px; padding-right: 12px; }
+}
+/* совсем узкие (до 320px) — сетки в одну колонку */
+@media (max-width: 320px) {
+  .way-grid { grid-template-columns: 1fr; }
+}
+/* планшеты и Telegram Desktop — шире контент, больше колонок */
+@media (min-width: 700px) {
+  .page { max-width: 720px; padding-left: 24px; padding-right: 24px; }
+  .sheet { max-width: 640px; border-radius: 16px; bottom: 16px; }
+  .bottom-bar .btn { max-width: 672px; }
+  .style-grid { grid-template-columns: repeat(3, 1fr); }
+  .tabbar { max-width: 720px; margin: 0 auto; border-radius: 18px 18px 0 0; }
+}
+@media (min-width: 1024px) {
+  .page { max-width: 860px; }
+  .bottom-bar .btn { max-width: 812px; }
+  .style-grid { grid-template-columns: repeat(4, 1fr); }
+  .tabbar { max-width: 860px; }
+}
+/* телефон боком — меньше отступов по высоте */
+@media (orientation: landscape) and (max-height: 500px) {
+  .page { padding-top: calc(var(--safe-top) + 6px); }
+  .hero { margin-bottom: 16px !important; }
+  .sheet { max-height: 96vh; }
+}
+
+/* ---------- цена со скидкой ---------- */
+.price-tag { display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+.price-old { color: #ff453a; text-decoration: line-through; text-decoration-color: #ff453a; text-decoration-thickness: 2px; font-size: 0.9em; opacity: 0.95; }
+.price-new.hot { font-weight: 700; color: var(--text, inherit); }
+.price-tag.big .price-new { font-size: 28px; line-height: 34px; font-weight: 800; }
+.price-tag.big .price-old { font-size: 18px; }
+.offer {
+  margin-top: 16px; padding: 14px 16px; border-radius: 16px; text-align: left;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.14);
+}
+.offer .offer-t { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: rgba(245,245,247,.7); display: flex; align-items: center; gap: 6px; }
+.offer .offer-s { font-size: 13px; color: rgba(245,245,247,.55); margin-top: 2px; }
+.hero .offer .price-new { color: #fff; }
+
+/* «Назад» на странице — когда своей кнопки Telegram нет (открыто через «Открыть») */
+.page-back {
+  position: fixed; z-index: 30; left: 12px; top: calc(var(--safe-top) + 10px);
+  width: 36px; height: 36px; border-radius: 50%; font-size: 26px; line-height: 32px; padding-bottom: 3px;
+  background: var(--glass, rgba(40,40,42,.8)); color: inherit; border: 0.5px solid var(--separator, rgba(255,255,255,.12));
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+}
+.sl-via .page { padding-top: calc(var(--safe-top) + 54px); }

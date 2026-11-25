@@ -1,0 +1,69 @@
+/* раскладка для ПК и планшета */
+/* =====================================================================================
+   Адаптив: планшет и компьютер. Телефон — как выше; здесь только то, что меняется.
+   ===================================================================================== */
+.tab-plus-label{display:none}
+
+/* ---------- планшет: всё по центру, панель шириной с контент ---------- */
+@media (min-width: 700px) {
+  .now-wrap{max-width:720px;margin:0 auto}
+  .promos{margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+  .promo{flex-basis:160px;height:150px;padding:14px}
+  .promo-big{font-size:36px}
+  .promo-text{font-size:14px}
+}
+@media (min-width: 860px) {
+  .packs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+  .packs-grid > *{margin:0}
+  /* три карточки в ряд — «10 презентаций» не помещалось и ломалось по буквам */
+  .packs-grid .pack-num{font-size:60px}
+  .packs-grid .pack-unit{font-size:17px;white-space:nowrap}
+}
+
+/* ---------- компьютер: меню — слева колонкой, контент — справа ---------- */
+@media (min-width: 1024px) {
+  :root{--tabbar-h:0px;--side:248px}
+  .tabbar,:root.has-now .tabbar{top:0;bottom:0;left:0;right:auto;width:var(--side);height:auto;max-width:none;margin:0;
+    display:flex;flex-direction:column;gap:4px;padding:calc(var(--safe-top) + 22px) 14px 22px;
+    border-radius:0;border-right:.5px solid var(--separator);box-shadow:none}
+  .tabbar a{flex:0 0 auto;flex-direction:row;justify-content:flex-start;font-size:15px;font-weight:600}
+  .tab-in{flex-direction:row;gap:12px;width:100%;padding:11px 14px;border-radius:14px}
+  .tabbar a:hover .tab-in{background:color-mix(in srgb,var(--label) 6%,transparent)}
+  .tabbar .dot{top:50%;left:auto;right:14px;transform:translateY(-50%);animation:none}
+  .tab-plus{order:-1;margin:0 0 18px;justify-content:flex-start;align-items:center;gap:12px;padding:6px 8px;border-radius:18px;text-align:left}
+  .tab-plus:hover{background:color-mix(in srgb,var(--label) 6%,transparent)}
+  .tab-plus i,:root.has-now .tab-plus i,:root[data-theme="dark"] .tab-plus i{flex:0 0 auto;width:46px;height:46px;margin-top:0;
+    box-shadow:var(--gloss-btn-hi),0 6px 16px rgba(0,0,0,.25)}
+  .tab-plus svg{width:24px;height:24px}
+  .tab-plus-label{display:block;font-size:15px;font-weight:700;line-height:1.2;color:var(--label)}
+
+  /* контент рядом с меню; на очень широком экране — по центру оставшегося места */
+  .page{max-width:1000px;margin:0 0 0 max(var(--side), calc(var(--side) + (100vw - var(--side) - 1000px) / 2));padding:36px 44px 56px}
+  :root.has-now .page:not(.no-tabbar){padding-bottom:56px}
+  .page.no-tabbar{max-width:720px;margin:0 auto}
+  .promos{overflow:visible;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+  .promo{flex:none;width:auto;height:160px}
+  .styles-row{flex-wrap:wrap;overflow:visible}
+
+  /* заказы в работе — карточкой внизу бокового меню */
+  .now-wrap{left:14px;right:auto;bottom:18px;width:calc(var(--side) - 28px);max-width:none;margin:0;z-index:21;border-radius:18px;
+    background:color-mix(in srgb,var(--label) 7%,var(--bar));box-shadow:inset 0 0 0 .5px var(--separator)}
+  :root[data-theme="dark"] .now-wrap{box-shadow:inset 0 0 0 .5px var(--separator)}
+  .now,:root[data-theme="dark"] .now,.now-wrap.multi .now{height:auto;padding:16px 12px 14px;gap:10px}
+  .now-wrap.multi .now{padding-top:24px}
+  .now-art{width:48px;height:34px;border-radius:8px}
+  .now-title{font-size:14px}
+  .now-stage{font-size:12px}
+  .now-eq,.now-go{display:none}
+  .toast{left:calc(var(--side) + 24px)}
+}
+
+/* панель меню не сливается с чёрным фоном: чуть светлее и со светлой кромкой сверху */
+:root[data-theme="dark"]{--bar:#222225}
+.now-wrap,:root[data-theme="dark"] .now-wrap{box-shadow:0 -12px 36px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.22)}
+:root:not(.has-now) .tabbar{box-shadow:0 -12px 36px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 .5px rgba(255,255,255,.1)}
+:root[data-theme="light"] .now-wrap,:root[data-theme="light"]:not(.has-now) .tabbar{box-shadow:0 -10px 30px rgba(0,0,0,.14),inset 0 .5px 0 var(--separator)}
+@media (min-width: 1024px) {
+  .now-wrap,:root[data-theme="dark"] .now-wrap,:root[data-theme="light"] .now-wrap{box-shadow:inset 0 0 0 .5px var(--separator)}
+  .tabbar,:root:not(.has-now) .tabbar,:root[data-theme="light"]:not(.has-now) .tabbar{box-shadow:none}
+}

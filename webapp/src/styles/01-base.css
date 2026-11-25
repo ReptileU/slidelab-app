@@ -1,0 +1,109 @@
+/* цвета, темы, шрифты */
+/* SlideLab Mini App — дизайн-система в духе Apple: чёрно-белая, с глянцем.
+   Палитра строго монохромная; от Telegram берём только светлую или тёмную схему. */
+
+:root {
+  --bg: #f5f5f7;
+  --surface: #ffffff;
+  --label: #1d1d1f;
+  --secondary: rgba(29, 29, 31, 0.56);
+  --tertiary: rgba(29, 29, 31, 0.28);
+  --separator: rgba(0, 0, 0, 0.1);
+  --fill: rgba(0, 0, 0, 0.05);
+  --fill-strong: rgba(0, 0, 0, 0.1);
+  --accent: #1d1d1f;
+  --accent-tint: rgba(0, 0, 0, 0.06);
+  --on-accent: #ffffff;
+  --danger: #ff3b30;
+  --gold: #6e6e73;
+
+  /* глянец: кнопки — как чёрное стекло, карточки — белое с бликом */
+  --gloss-btn: linear-gradient(180deg, #48484a 0%, #1d1d1f 48%, #000 100%);
+  --gloss-btn-hi: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+  --gloss-btn-shadow: 0 6px 18px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.18);
+  --gloss-card: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+  --gloss-border: 0.5px solid rgba(0, 0, 0, 0.08);
+  --gloss-tile: linear-gradient(160deg, #3a3a3c 0%, #000 100%);
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%);
+  --hero-sheen: linear-gradient(115deg, rgba(255, 255, 255, 0) 30%, rgba(255, 255, 255, 0.07) 48%, rgba(255, 255, 255, 0) 62%);
+  --shadow: 0 1px 1px rgba(0, 0, 0, 0.03), 0 8px 28px rgba(0, 0, 0, 0.07);
+  --glass: rgba(255, 255, 255, 0.72);
+
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --silver: linear-gradient(100deg, #8e8e93 0%, #f5f5f7 22%, #8e8e93 40%, #ffffff 58%, #a1a1a6 76%, #f5f5f7 100%);
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+
+  --safe-top: calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px));
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-h: 56px;
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --surface: #161617;
+  --label: #f5f5f7;
+  --secondary: rgba(245, 245, 247, 0.56);
+  --tertiary: rgba(245, 245, 247, 0.28);
+  --separator: rgba(255, 255, 255, 0.1);
+  --fill: rgba(255, 255, 255, 0.07);
+  --fill-strong: rgba(255, 255, 255, 0.14);
+  --accent: #f5f5f7;
+  --accent-tint: rgba(255, 255, 255, 0.08);
+  --on-accent: #000000;
+  --gold: #a1a1a6;
+
+  --gloss-btn: linear-gradient(180deg, #ffffff 0%, #e8e8ed 55%, #c7c7cc 100%);
+  --gloss-btn-hi: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+  --gloss-btn-shadow: 0 6px 20px rgba(255, 255, 255, 0.08);
+  --gloss-card: linear-gradient(180deg, #1f1f21 0%, #121213 100%);
+  --gloss-border: 0.5px solid rgba(255, 255, 255, 0.09);
+  --gloss-tile: linear-gradient(160deg, #ffffff 0%, #b8b8bd 100%);
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 55%);
+  --shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --glass: rgba(22, 22, 23, 0.72);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--label);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Inter", Roboto, sans-serif;
+  letter-spacing: -0.2px;
+  font-size: 17px;
+  line-height: 22px;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+body { background: transparent; min-height: 100vh; min-height: var(--app-h, 100dvh); overflow-x: hidden; }
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
