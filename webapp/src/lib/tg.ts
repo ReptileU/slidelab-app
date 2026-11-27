@@ -149,6 +149,12 @@ export function openChat(botUsername: string): void {
   else window.open(url, "_blank");
 }
 
+/** Внешняя ссылка (статья, видео): в Telegram — во встроенном браузере, вне его — новая вкладка. */
+export function openLink(url: string): void {
+  if (tg) tg.openLink(url);
+  else window.open(url, "_blank", "noopener");
+}
+
 export function openTelegramUrl(url: string): void {
   if (tg) tg.openTelegramLink(url);
   else window.open(url, "_blank");

@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { Credits, Deck, DeckAsset, DeckBrief, DeckSlide, DeckVersion, QuickCover, BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
+import type { Credits, Fact, FoundPhoto, Paper, ResearchPlan, ResearchSources, Stats, Video, Deck, DeckAsset, DeckBrief, DeckSlide, DeckVersion, QuickCover, BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
 
 /** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
 export interface MyReview {
@@ -73,6 +73,19 @@ export const decksApi = {
   credits: () => request<Credits>("/credits"),
   /** Адрес картинки с сервера — относительный, от корня API. */
   assetSrc: (url: string) => `.${url}`,
+};
+
+/** Помощник конструктора: бесплатные открытые источники. */
+export const researchApi = {
+  sources: () => request<ResearchSources>("/research/sources"),
+  facts: (q: string, lang: string) => request<Fact[]>(`/research/facts?${new URLSearchParams({ q, lang })}`),
+  plan: (q: string, lang: string) => request<ResearchPlan | null>(`/research/plan?${new URLSearchParams({ q, lang })}`),
+  papers: (q: string) => request<Paper[]>(`/research/papers?${new URLSearchParams({ q })}`),
+  photos: (q: string) => request<FoundPhoto[]>(`/research/photos?${new URLSearchParams({ q })}`),
+  stats: (country: string, indicator: string, lang: string) =>
+    request<Stats>(`/research/stats?${new URLSearchParams({ country, indicator, lang })}`),
+  videos: (q: string, lang: string) => request<Video[]>(`/research/videos?${new URLSearchParams({ q, lang })}`),
+  addPhoto: (deckId: number, url: string) => post<DeckAsset>(`/research/decks/${deckId}/photo`, { url }),
 };
 
 export const api = {

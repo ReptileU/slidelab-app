@@ -1,4 +1,4 @@
-import { BarChart3, ImagePlus, Play, Plus, Trash2, Type, X } from "lucide-react";
+import { BarChart3, ImagePlus, Play, Plus, Sparkles, Trash2, Type, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -6,8 +6,9 @@ import { ApiError, decksApi } from "../lib/api";
 import { useT } from "../lib/app";
 import type { Key } from "../lib/i18n";
 import { confirm, haptic } from "../lib/tg";
-import type { AnimPreset, Deck, DeckElement, DeckSlide } from "../lib/types";
+import type { AnimPreset, Deck, DeckAsset, DeckElement, DeckSlide } from "../lib/types";
 import { Button, Chips, Sheet, Skeleton, TextArea, Toast } from "../ui";
+import { AssistantSheet, captionEl } from "../ui/AssistantSheet";
 import { SlideCanvas } from "../ui/SlideCanvas";
 import { BackButton } from "../ui/TelegramButtons";
 
@@ -66,6 +67,7 @@ export function DeckEditor() {
   const [uploading, setUploading] = useState(false);
   const [playing, setPlaying] = useState<number | null>(null);
   const [playKey, setPlayKey] = useState(0);
+  const [assist, setAssist] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Версия и очередь сохранений: правки уходят по одной, каждая — с версией после предыдущей
@@ -175,6 +177,54 @@ export function DeckEditor() {
     setSelected(el.id);
   };
 
+  /** Несколько элементов сразу (из помощника): один снимок слайда — одно сохранение. */
+  const addElements = (els: DeckElement[], asNewSlide = false) => {
+    if (asNewSlide || !slide) {
+      const s: DeckSlide = { id: uid(), layout: "blank", elements: els };
+      const pos = slide ? slides.indexOf(slide) + 1 : 0;
+      setDeck({ ...deck, body: { ...deck.body, slides: [...slides.slice(0, pos), s, ...slides.slice(pos)] } });
+      setCurrent(pos);
+      setSelected(null);
+      const after = slide?.id ?? null;
+      enqueue((v) => decksApi.insertSlide(id, v, s, after));
+      return;
+    }
+    changeSlide({ ...slide, elements: [...slide.elements, ...els] });
+    setSelected(null);
+  };
+
+  /** Слайды из плана: каждый пункт — новый слайд с заголовком, после текущего, по порядку. */
+  const addSlides = (titles: string[]) => {
+    const made = titles.map((title) => newSlide(title));
+    const pos = slide ? slides.indexOf(slide) + 1 : 0;
+    setDeck({ ...deck, body: { ...deck.body, slides: [...slides.slice(0, pos), ...made, ...slides.slice(pos)] } });
+    let after = slide?.id ?? null;
+    for (const s of made) {
+      const prev = after;
+      enqueue((v) => decksApi.insertSlide(id, v, s, prev));
+      after = s.id;
+    }
+    setCurrent(pos);
+    setSelected(null);
+  };
+
+  const photoElement = (asset: DeckAsset): DeckElement => {
+    const ratio = asset.height / asset.width;
+    const w = Math.min(0.5, 0.6 / ratio / (16 / 9));
+    return {
+      id: uid(),
+      type: "image",
+      asset_id: asset.id,
+      box: { x: 0.5 - w / 2, y: 0.25, w, h: Math.min(0.6, ((w * 16) / 9) * ratio) },
+      anim: { preset: "fade" },
+    };
+  };
+
+  const addFoundPhoto = (asset: DeckAsset, caption: string) => {
+    setAssets((a) => ({ ...a, [asset.id]: decksApi.assetSrc(asset.url) }));
+    addElements([photoElement(asset), captionEl(caption)]);
+  };
+
   const patchElement = (patch: Partial<DeckElement>) => {
     if (!slide || !element) return;
     changeSlide({ ...slide, elements: slide.elements.map((e) => (e.id === element.id ? { ...e, ...patch } : e)) });
@@ -192,15 +242,7 @@ export function DeckEditor() {
     try {
       const asset = await decksApi.upload(id, await shrinkForDeck(file));
       setAssets((a) => ({ ...a, [asset.id]: decksApi.assetSrc(asset.url) }));
-      const ratio = asset.height / asset.width;
-      const w = Math.min(0.5, 0.6 / ratio / (16 / 9));
-      addElement({
-        id: uid(),
-        type: "image",
-        asset_id: asset.id,
-        box: { x: 0.5 - w / 2, y: 0.3, w, h: Math.min(0.6, ((w * 16) / 9) * ratio) },
-        anim: { preset: "fade" },
-      });
+      addElement(photoElement(asset));
     } catch (e) {
       setToast(e instanceof Error ? e.message : t("b_upload_err"));
     } finally {
@@ -265,6 +307,16 @@ export function DeckEditor() {
         <div className="editor-canvas slide-canvas" />
       )}
       <p className="footnote secondary editor-hint">{t("b_tap_hint")}</p>
+
+      <button className="assist-open" onClick={() => (haptic.tap(), setAssist(true))}>
+        <Sparkles size={18} />
+        <span>
+          <b>{t("a_btn")}</b>
+          <small>
+            {t("a_plan")} · {t("a_facts")} · {t("a_papers")} · {t("a_photos")} · {t("a_stats")}
+          </small>
+        </span>
+      </button>
 
       <div className="editor-tools">
         <button onClick={() => addElement({ id: uid(), type: "text", role: "body", box: { x: 0.08, y: 0.35, w: 0.84, h: 0.4 }, text: t("b_new_text"), style: { size: 24 }, anim: { preset: "fade" } })}>
@@ -355,6 +407,15 @@ export function DeckEditor() {
           </>
         )}
       </Sheet>
+      <AssistantSheet
+        open={assist}
+        onClose={() => setAssist(false)}
+        deckId={id}
+        topic={deck.title}
+        onElements={addElements}
+        onSlides={addSlides}
+        onPhoto={addFoundPhoto}
+      />
       <Toast text={toast} onDone={() => setToast(null)} />
     </div>
   );

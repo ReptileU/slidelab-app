@@ -310,3 +310,61 @@ export interface Credits {
   daily_cap: number;
   costs: Record<string, number>;
 }
+
+// --- Помощник конструктора (src/slidelab/core/services/research.py) ---
+
+export interface ResearchSources {
+  videos: boolean;
+  indicators: Record<string, string>;
+}
+
+export interface Fact {
+  title: string;
+  text: string;
+  url: string;
+  image: string | null;
+}
+
+export interface ResearchPlan {
+  source_title: string;
+  url: string;
+  items: { title: string; level: number }[];
+  history: string[];
+}
+
+export interface Paper {
+  title: string;
+  year: number | null;
+  authors: string;
+  cited: number;
+  url: string;
+  abstract: string;
+}
+
+export interface FoundPhoto {
+  title: string;
+  thumb: string;
+  url: string;
+  page: string;
+  author: string;
+  license: string;
+  width: number;
+  height: number;
+}
+
+export interface Stats {
+  country: string;
+  indicator: string;
+  label: string;
+  labels: string[];
+  values: number[];
+  url: string;
+}
+
+export interface Video {
+  title: string;
+  channel: string;
+  url: string;
+  thumb: string;
+  published: string;
+}
