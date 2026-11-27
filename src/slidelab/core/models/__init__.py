@@ -13,6 +13,7 @@ from slidelab.core.models.billing import (
     UserPackage,
 )
 from slidelab.core.models.content import FaqItem, PortfolioWork, Review, ShowcaseStyle, SupportMessage
+from slidelab.core.models.deck import CreditsLedger, Deck, DeckAsset
 from slidelab.core.models.order import Attachment, Order, OrderEvent, Revision
 from slidelab.core.models.storage import StoredFile
 from slidelab.core.models.user import User
@@ -21,6 +22,9 @@ __all__ = [
     "Attachment",
     "Base",
     "Coupon",
+    "CreditsLedger",
+    "Deck",
+    "DeckAsset",
     "FaqItem",
     "Gift",
     "Order",

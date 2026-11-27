@@ -25,10 +25,12 @@ from pydantic import BaseModel, Field
 from starlette.responses import Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from slidelab.api.routes import catalog, gifts, me, orders, packages, pipeline, support
+from slidelab.api.routes import catalog, decks, gifts, me, orders, packages, pipeline, support
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
 from slidelab.core.errors import DomainError, ForbiddenError, NotFoundError
+from slidelab.core.services.credits import NotEnoughCreditsError
+from slidelab.core.services.decks import InvalidDeckError
 from slidelab.core.services.pricing import PricingError
 
 log = logging.getLogger("slidelab.webapp")
@@ -101,7 +103,12 @@ class WebappFiles(StaticFiles):
         return response
 
 
-ERROR_STATUS: dict[type[DomainError], int] = {NotFoundError: 404, ForbiddenError: 403}
+ERROR_STATUS: dict[type[DomainError], int] = {
+    NotFoundError: 404,
+    ForbiddenError: 403,
+    NotEnoughCreditsError: 402,
+    InvalidDeckError: 422,
+}
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -148,7 +155,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def pricing_error(request: Request, exc: PricingError) -> JSONResponse:
         return JSONResponse({"code": "pricing", "detail": str(exc)}, status_code=422)
 
-    for module in (me, catalog, orders, packages, support, gifts):
+    for module in (me, catalog, orders, packages, support, gifts, decks):
         app.include_router(module.router, prefix="/api")
     if settings.pipeline_key:  # облако: сессия Claude работает с заказами через HTTP, а не через папку
         app.include_router(pipeline.router)

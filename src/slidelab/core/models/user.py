@@ -27,5 +27,9 @@ class User(CreatedAtMixin, Base):
     # Баллы за покупки (тратятся на пакет за баллы); сгорают, если до points_expire_at не было новой покупки
     points: Mapped[int] = mapped_column(default=0, server_default="0")
     points_expire_at: Mapped[datetime | None]
+    # Кредиты конструктора (действия ИИ). credits_refill_at — когда последний раз пополняли до дневного потолка;
+    # None — ещё не получал стартовый подарок
+    credits: Mapped[int] = mapped_column(default=0, server_default="0")
+    credits_refill_at: Mapped[datetime | None]
     # Скидка в процентах на следующий оплачиваемый заказ (выпала в пакете за баллы)
     discount_pct: Mapped[int | None]

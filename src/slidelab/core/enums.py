@@ -151,3 +151,29 @@ class GiftStatus(StrEnum):
     PENDING = "pending"  # ссылка отправлена, ещё не забрали
     CLAIMED = "claimed"
     REVOKED = "revoked"  # даритель передумал — вернулось ему
+
+
+class DeckStatus(StrEnum):
+    """Презентация из конструктора."""
+
+    DRAFT = "draft"  # собирается
+    EXPORTED = "exported"  # хотя бы раз скачана файлом
+
+
+class DeckAssetKind(StrEnum):
+    IMAGE = "image"  # картинка на слайде
+    LOGO = "logo"  # логотип клиента на всех слайдах
+    BACKGROUND = "background"  # общий фон
+
+
+class CreditReason(StrEnum):
+    """Движения кредитов конструктора: каждое — строкой в credits_ledger."""
+
+    WELCOME = "welcome"  # стартовый подарок новичку
+    DAILY = "daily"  # ежедневное пополнение до потолка
+    ORDER = "order"  # оплатил презентацию деньгами
+    REFERRAL = "referral"  # пригласил друга / пришёл по ссылке
+    BOX_PRIZE = "box_prize"  # выпали в кейсе
+    GRANT = "grant"  # начислил менеджер
+    SPEND = "spend"  # потратил на действие ИИ
+    REFUND = "refund"  # ИИ не справился — вернули
