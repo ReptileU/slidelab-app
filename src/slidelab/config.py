@@ -78,6 +78,8 @@ class Settings(BaseSettings):
     # Картинки конструктора презентаций хранит Telegram: бот кладёт их файлами в этот закрытый канал
     # (бот — администратор канала). Пусто — в чат команды без звука. Позже — R2 (core/services/deck_assets.py)
     assets_chat_id: int | None = None
+    # Помощник конструктора: поиск видео (бесплатный ключ Google Cloud с YouTube Data API). Пусто — без видео
+    youtube_api_key: SecretStr | None = None
 
     # --- Оплата ---
     pay_uzum: str = ""

@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from starlette.responses import Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-from slidelab.api.routes import catalog, decks, gifts, me, orders, packages, pipeline, support
+from slidelab.api.routes import catalog, decks, gifts, me, orders, packages, pipeline, research, support
 from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
 from slidelab.core.errors import DomainError, ForbiddenError, NotFoundError
@@ -33,6 +33,7 @@ from slidelab.core.services.credits import NotEnoughCreditsError
 from slidelab.core.services.deck_assets import AssetError, AssetLimitError, StorageUnavailableError
 from slidelab.core.services.decks import InvalidDeckError
 from slidelab.core.services.pricing import PricingError
+from slidelab.core.services.research import ResearchError, SourceDisabledError, TooManyRequestsError
 
 log = logging.getLogger("slidelab.webapp")
 
@@ -112,6 +113,9 @@ ERROR_STATUS: dict[type[DomainError], int] = {
     AssetError: 422,
     AssetLimitError: 409,
     StorageUnavailableError: 503,
+    ResearchError: 502,
+    SourceDisabledError: 404,
+    TooManyRequestsError: 429,
 }
 
 
@@ -159,7 +163,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def pricing_error(request: Request, exc: PricingError) -> JSONResponse:
         return JSONResponse({"code": "pricing", "detail": str(exc)}, status_code=422)
 
-    for module in (me, catalog, orders, packages, support, gifts, decks):
+    for module in (me, catalog, orders, packages, support, gifts, decks, research):
         app.include_router(module.router, prefix="/api")
     if settings.pipeline_key:  # облако: сессия Claude работает с заказами через HTTP, а не через папку
         app.include_router(pipeline.router)
