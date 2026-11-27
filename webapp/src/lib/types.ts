@@ -229,3 +229,84 @@ export interface QuickCover {
   template_url: string | null;
   title_author: string | null;
 }
+
+// --- Конструктор презентаций (схема — src/slidelab/core/services/decks.py) ---
+
+export type AnimPreset = "none" | "fade" | "fade-up" | "zoom" | "slide-left" | "grow";
+
+export interface DeckBox {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface DeckElement {
+  id: string;
+  type: "text" | "image" | "chart" | "shape" | "icon" | "flag";
+  box: DeckBox;
+  role?: "title" | "subtitle" | "body" | "caption" | "number" | "quote";
+  text?: string;
+  style?: { size?: number; weight?: number; align?: "left" | "center" | "right"; color?: string; italic?: boolean };
+  asset_id?: number;
+  fit?: "cover" | "contain";
+  chart?: {
+    kind: "bar" | "line" | "pie" | "donut";
+    labels: string[];
+    series: { name: string; values: number[] }[];
+    unit?: string;
+    legend?: boolean;
+  };
+  shape?: "rect" | "round" | "circle" | "line" | "arrow";
+  fill?: string;
+  anim?: { preset: AnimPreset; delay?: number; trigger?: "slide" | "click" };
+}
+
+export interface DeckSlide {
+  id: string;
+  layout: string;
+  bg?: string;
+  bg_asset_id?: number;
+  notes?: string;
+  elements: DeckElement[];
+}
+
+export interface DeckTheme {
+  palette: { bg: string; fg: string; accent: string; muted: string };
+  fonts: { head: string; body: string };
+}
+
+export interface DeckBrief {
+  id: number;
+  title: string;
+  lang: Lang;
+  status: "draft" | "exported";
+  slides: number;
+  updated_at: string;
+}
+
+export interface Deck extends DeckBrief {
+  version: number;
+  body: { v: 1; theme: DeckTheme; slides: DeckSlide[] };
+}
+
+export interface DeckVersion {
+  id: number;
+  version: number;
+  updated_at: string;
+}
+
+export interface DeckAsset {
+  id: number;
+  kind: "image" | "logo" | "background";
+  width: number;
+  height: number;
+  bytes: number;
+  url: string;
+}
+
+export interface Credits {
+  balance: number;
+  daily_cap: number;
+  costs: Record<string, number>;
+}

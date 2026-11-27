@@ -175,7 +175,7 @@ def blank_body(title: str) -> dict[str, Any]:
             )
         ],
     )
-    return DeckBody(slides=[cover]).model_dump(mode="json")
+    return DeckBody(slides=[cover]).model_dump(mode="json", exclude_none=True)
 
 
 def check_body(raw: dict[str, Any]) -> dict[str, Any]:

@@ -1,5 +1,5 @@
 import { initData } from "./tg";
-import type { QuickCover, BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
+import type { Credits, Deck, DeckAsset, DeckBrief, DeckSlide, DeckVersion, QuickCover, BuyPlan, PointsBoxKey, PointsInfo, PointsResult, Referrals, Catalog, Gift, Invoice, Lang, LuckyInfo, LuckyPrize, Me, Order, OrderDraft, Quote, SlideMark } from "./types";
 
 /** Отправленный отзыв клиента — показываем в профиле, его можно отозвать. */
 export interface MyReview {
@@ -42,11 +42,38 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const detail = typeof body.detail === "string" ? body.detail : res.statusText || `HTTP ${res.status}`;
     throw new ApiError(res.status, body.code ?? "http", detail);
   }
+  if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
 
 const post = <T>(path: string, body?: unknown, headers?: HeadersInit) =>
   request<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body), headers });
+
+const put = <T>(path: string, body: unknown) => request<T>(path, { method: "PUT", body: JSON.stringify(body) });
+const patch = <T>(path: string, body: unknown) => request<T>(path, { method: "PATCH", body: JSON.stringify(body) });
+const del = <T>(path: string) => request<T>(path, { method: "DELETE" });
+
+/** Конструктор презентаций: каждое изменение — с версией, ответ — новая версия. */
+export const decksApi = {
+  list: () => request<DeckBrief[]>("/decks"),
+  create: (title: string) => post<Deck>("/decks", { title }),
+  get: (id: number) => request<Deck>(`/decks/${id}`),
+  remove: (id: number) => del<void>(`/decks/${id}`),
+  rename: (id: number, version: number, title: string) => patch<DeckVersion>(`/decks/${id}`, { version, title }),
+  saveSlide: (id: number, version: number, slide: DeckSlide) =>
+    put<DeckVersion>(`/decks/${id}/slides/${slide.id}`, { version, slide }),
+  insertSlide: (id: number, version: number, slide: DeckSlide, after: string | null) =>
+    post<DeckVersion>(`/decks/${id}/slides`, { version, slide, after }),
+  deleteSlide: (id: number, version: number, slideId: string) =>
+    del<DeckVersion>(`/decks/${id}/slides/${slideId}?version=${version}`),
+  reorder: (id: number, version: number, order: string[]) => put<DeckVersion>(`/decks/${id}/order`, { version, order }),
+  assets: (id: number) => request<DeckAsset[]>(`/decks/${id}/assets`),
+  upload: (id: number, data: string, kind: DeckAsset["kind"] = "image") =>
+    post<DeckAsset>(`/decks/${id}/assets`, { data, kind }),
+  credits: () => request<Credits>("/credits"),
+  /** Адрес картинки с сервера — относительный, от корня API. */
+  assetSrc: (url: string) => `.${url}`,
+};
 
 export const api = {
   me: () => request<Me>("/me"),

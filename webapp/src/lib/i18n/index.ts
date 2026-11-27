@@ -4,6 +4,7 @@ import * as form from "./form";
 import * as order from "./order";
 import * as rewards from "./rewards";
 import * as wallet from "./wallet";
+import * as builder from "./builder";
 import * as common from "./common";
 
 // Тексты разложены по разделам приложения (form, order, rewards, wallet, common) — правка одного раздела не трогает остальные.
@@ -12,6 +13,7 @@ const ru = {
   ...order.ru,
   ...rewards.ru,
   ...wallet.ru,
+  ...builder.ru,
   ...common.ru,
 } as const;
 
@@ -23,6 +25,7 @@ const uz: Dict = {
   ...order.uz,
   ...rewards.uz,
   ...wallet.uz,
+  ...builder.uz,
   ...common.uz,
 };
 const en: Dict = {
@@ -30,6 +33,7 @@ const en: Dict = {
   ...order.en,
   ...rewards.en,
   ...wallet.en,
+  ...builder.en,
   ...common.en,
 };
 

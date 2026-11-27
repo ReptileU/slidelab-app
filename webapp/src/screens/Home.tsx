@@ -55,6 +55,9 @@ export function Home() {
         <button className="hero-link" onClick={() => go("own")}>
           {t("own_link")} ›
         </button>
+        <button className="hero-link" onClick={() => nav("/builder")}>
+          {t("b_entry")} ›
+        </button>
       </header>
 
       {/* пришёл по ссылке друга — показываем его подарок */}

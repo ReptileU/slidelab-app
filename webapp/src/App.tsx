@@ -22,6 +22,8 @@ const OrderDetail = lazy(() => import("./screens/OrderDetail").then((m) => ({ de
 const Orders = lazy(() => import("./screens/Orders").then((m) => ({ default: m.Orders })));
 const Packages = lazy(() => import("./screens/Packages").then((m) => ({ default: m.Packages })));
 const Profile = lazy(() => import("./screens/Profile").then((m) => ({ default: m.Profile })));
+const Builder = lazy(() => import("./screens/Builder").then((m) => ({ default: m.Builder })));
+const DeckEditor = lazy(() => import("./screens/DeckEditor").then((m) => ({ default: m.DeckEditor })));
 const Styles = lazy(() => import("./screens/Styles").then((m) => ({ default: m.Styles })));
 
 // Пока главная на экране — тихо подгружаем частые экраны, чтобы переход был мгновенным
@@ -66,6 +68,8 @@ export function App() {
           <Route path="/help" element={<Help />} />
           <Route path="/invite" element={<Invite />} />
           <Route path="/demo" element={<Demo />} />
+          <Route path="/builder" element={<Builder />} />
+          <Route path="/builder/:id" element={<DeckEditor />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
