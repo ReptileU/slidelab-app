@@ -75,6 +75,9 @@ class Settings(BaseSettings):
     content_dir: Path = Path("content")
     # Служебные файлы бота (карточки-виджеты: data/widgets.json)
     data_dir: Path = Path("data")
+    # Картинки конструктора презентаций хранит Telegram: бот кладёт их файлами в этот закрытый канал
+    # (бот — администратор канала). Пусто — в чат команды без звука. Позже — R2 (core/services/deck_assets.py)
+    assets_chat_id: int | None = None
 
     # --- Оплата ---
     pay_uzum: str = ""
@@ -147,6 +150,10 @@ class Settings(BaseSettings):
     def staff_chat_id(self) -> int | None:
         """Куда идут заявки и вопросы: супергруппа менеджеров или личка владельца."""
         return self.managers_chat_id or self.admin_id
+
+    @property
+    def deck_assets_chat_id(self) -> int | None:
+        return self.assets_chat_id or self.staff_chat_id
 
     @property
     def channel(self) -> str:

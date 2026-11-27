@@ -20,6 +20,8 @@ services:
         sync: false
       - key: BOT_USERNAME
         sync: false
+      - key: ASSETS_CHAT_ID # закрытый канал для картинок конструктора (бот — админ); пусто — чат команды
+        sync: false
       # адрес сервиса (webhook и Mini App) Render подставляет сам — RENDER_EXTERNAL_URL
       - key: PAY_UZUM
         sync: false

@@ -4,19 +4,27 @@
 клиент перезагружает её. Ответ на любое изменение — новая версия.
 """
 
+import base64
+import binascii
+import hashlib
+import hmac
+import time
 from datetime import datetime
 from typing import Annotated, Any
+from urllib.parse import urlencode
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import BaseModel, Field, StringConstraints
 
-from slidelab.api.deps import SessionDep, ViewerDep
-from slidelab.core.enums import DeckStatus, Lang
+from slidelab.api.deps import BotDep, SessionDep, SettingsDep, ViewerDep
+from slidelab.config import Settings
+from slidelab.core.enums import DeckAssetKind, DeckStatus, Lang
 from slidelab.core.errors import DomainError
-from slidelab.core.models import Deck
+from slidelab.core.models import Deck, DeckAsset
 from slidelab.core.models.deck import DECK_TITLE_MAX
 from slidelab.core.services import credits as cr
 from slidelab.core.services.credits import CreditsService
+from slidelab.core.services.deck_assets import AssetError, DeckAssetService, TelegramStore
 from slidelab.core.services.decks import MAX_SLIDES, DeckService
 
 router = APIRouter(tags=["decks"])
@@ -66,6 +74,20 @@ class SlideIn(BaseModel):
 class OrderIn(BaseModel):
     version: int
     order: list[str] = Field(max_length=MAX_SLIDES)
+
+
+class AssetIn(BaseModel):
+    kind: DeckAssetKind = DeckAssetKind.IMAGE
+    data: str = Field(max_length=17 * 1024 * 1024)  # base64 или data:image/...;base64,...
+
+
+class AssetOut(BaseModel):
+    id: int
+    kind: DeckAssetKind
+    width: int
+    height: int
+    bytes: int
+    url: str  # относительный адрес с подписью: работает в <img> без заголовка Authorization
 
 
 class CreditsOut(BaseModel):
@@ -165,3 +187,78 @@ async def get_credits(viewer: ViewerDep, session: SessionDep) -> CreditsOut:
     balance = await CreditsService(session).balance(viewer.user)
     await session.commit()
     return CreditsOut(balance=balance, daily_cap=cr.DAILY_CAP, costs=cr.COSTS)
+
+
+# --- Картинки ---------------------------------------------------------------
+
+ASSET_URL_TTL = 24 * 3600
+
+
+def _asset_sig(settings: Settings, asset_id: int, exp: int) -> str:
+    key = hashlib.sha256(b"slidelab-deck-asset:" + settings.bot_token.get_secret_value().encode()).digest()
+    return hmac.new(key, f"{asset_id}:{exp}".encode(), hashlib.sha256).hexdigest()[:32]
+
+
+def _asset_out(settings: Settings, asset: DeckAsset) -> AssetOut:
+    # срок — до конца следующих суток (округлён), чтобы адрес картинки не менялся при каждом запросе и кэшировался
+    exp = (int(time.time()) // ASSET_URL_TTL + 2) * ASSET_URL_TTL
+    query = urlencode({"exp": exp, "sig": _asset_sig(settings, asset.id, exp)})
+    return AssetOut(
+        id=asset.id,
+        kind=asset.kind,
+        width=asset.width,
+        height=asset.height,
+        bytes=asset.bytes,
+        url=f"/api/deck-assets/{asset.id}?{query}",
+    )
+
+
+def _decode(raw: str) -> bytes:
+    data = raw.split(",", 1)[1] if raw.startswith("data:") else raw
+    try:
+        return base64.b64decode(data, validate=True)
+    except (binascii.Error, ValueError):
+        raise AssetError("Не получилось прочитать картинку — попробуйте другой файл") from None
+
+
+@router.post("/decks/{deck_id}/assets", status_code=201)
+async def upload_asset(
+    deck_id: int, data: AssetIn, viewer: ViewerDep, session: SessionDep, bot: BotDep, settings: SettingsDep
+) -> AssetOut:
+    deck = await DeckService(session).get(viewer.user, deck_id)
+    store = TelegramStore(bot, settings.deck_assets_chat_id)
+    asset = await DeckAssetService(session, store).add(deck, data.kind, _decode(data.data))
+    await session.commit()
+    return _asset_out(settings, asset)
+
+
+@router.get("/decks/{deck_id}/assets")
+async def list_assets(
+    deck_id: int, viewer: ViewerDep, session: SessionDep, bot: BotDep, settings: SettingsDep
+) -> list[AssetOut]:
+    deck = await DeckService(session).get(viewer.user, deck_id)
+    store = TelegramStore(bot, settings.deck_assets_chat_id)
+    return [_asset_out(settings, a) for a in await DeckAssetService(session, store).list_for(deck)]
+
+
+@router.delete("/decks/{deck_id}/assets/{asset_id}", status_code=204)
+async def delete_asset(
+    deck_id: int, asset_id: int, viewer: ViewerDep, session: SessionDep, bot: BotDep, settings: SettingsDep
+) -> None:
+    deck = await DeckService(session).get(viewer.user, deck_id)
+    await DeckAssetService(session, TelegramStore(bot, settings.deck_assets_chat_id)).delete(deck, asset_id)
+    await session.commit()
+
+
+@router.get("/deck-assets/{asset_id}")
+async def asset_file(
+    asset_id: int, exp: int, sig: str, session: SessionDep, bot: BotDep, settings: SettingsDep
+) -> Response:
+    """Картинка по подписанной ссылке — для <img> в Mini App (он не передаёт заголовки)."""
+    if exp < time.time() or not hmac.compare_digest(sig, _asset_sig(settings, asset_id, exp)):
+        raise HTTPException(status_code=403, detail="Ссылка устарела — откройте презентацию заново")
+    asset = await session.get(DeckAsset, asset_id)
+    if asset is None:
+        raise HTTPException(status_code=404, detail="Нет такой картинки")
+    data = await DeckAssetService(session, TelegramStore(bot, settings.deck_assets_chat_id)).read(asset)
+    return Response(data, media_type="image/webp", headers={"Cache-Control": "private, max-age=86400, immutable"})

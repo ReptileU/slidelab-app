@@ -13,6 +13,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.methods import TelegramMethod
 from aiogram.types import (
     Chat,
+    Document,
     File,
     ForumTopic,
     Message,
@@ -59,11 +60,17 @@ class FakeSession(BaseSession):
                 if type(method).__name__ == "SendPhoto"
                 else None
             )
+            document = (
+                Document(file_id=f"doc{next(self._ids)}", file_unique_id="u")
+                if type(method).__name__ == "SendDocument"
+                else None
+            )
             return Message(
                 message_id=next(self._ids),
                 date=datetime.now(UTC),
                 chat=Chat(id=int(chat_id), type="private"),
                 photo=photo,
+                document=document,
             )
         if returning is PreparedInlineMessage:
             return PreparedInlineMessage(id=f"prep{next(self._ids)}", expiration_date=datetime.now(UTC))

@@ -30,6 +30,7 @@ from slidelab.config import Settings, get_settings
 from slidelab.core.db import make_engine, make_sessionmaker
 from slidelab.core.errors import DomainError, ForbiddenError, NotFoundError
 from slidelab.core.services.credits import NotEnoughCreditsError
+from slidelab.core.services.deck_assets import AssetError, AssetLimitError, StorageUnavailableError
 from slidelab.core.services.decks import InvalidDeckError
 from slidelab.core.services.pricing import PricingError
 
@@ -108,6 +109,9 @@ ERROR_STATUS: dict[type[DomainError], int] = {
     ForbiddenError: 403,
     NotEnoughCreditsError: 402,
     InvalidDeckError: 422,
+    AssetError: 422,
+    AssetLimitError: 409,
+    StorageUnavailableError: 503,
 }
 
 
